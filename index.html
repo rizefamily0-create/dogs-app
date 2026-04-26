@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<h2>🐶 DOGS Кран</h2>
+
+<div id="page1">
+    <p>Баланс: <span id="balance">0</span></p>
+    <button onclick="claim()">Получить 100 DOGS</button>
+</div>
+
+<hr>
+
+<div id="page2">
+    <h3>Вывод</h3>
+    <input id="wallet" placeholder="TON кошелек">
+    <button onclick="withdraw()">Вывести</button>
+</div>
+
+<script>
+let user_id = Telegram.WebApp.initDataUnsafe.user.id
+
+function send(msg){
+    Telegram.WebApp.sendData(msg)
+}
+
+function claim(){
+    send("CLAIM:" + user_id)
+}
+
+function withdraw(){
+    let wallet = document.getElementById("wallet").value
+    send("WITHDRAW:" + user_id + ":" + wallet)
+}
+</script>
+
+</body>
+</html>
