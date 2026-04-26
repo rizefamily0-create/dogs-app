@@ -157,7 +157,7 @@ function soon(){
 }
 
 async function claim(){
-    const r = await fetch("https://dogs-6guk.onrender.com",{
+    const r = await fetch("https://dogs-6guk.onrender.com/claim",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({user_id:tg.initDataUnsafe.user.id})
@@ -167,7 +167,7 @@ async function claim(){
 }
 
 async function withdraw(){
-    const r = await fetch("https://dogs-6guk.onrender.com",{
+    const r = await fetch("https://dogs-6guk.onrender.com/withdraw",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
