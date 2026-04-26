@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -17,48 +17,30 @@ body{
     padding-bottom:env(safe-area-inset-bottom);
 }
 
-/* APP WRAPPER */
 .app{
     height:100vh;
     display:flex;
     flex-direction:column;
     padding:16px;
-    padding-bottom:90px; /* ВАЖНО: место под bottom bar */
+    padding-bottom:90px;
     box-sizing:border-box;
 }
 
-/* PAGES */
-.page{
-    flex:1;
-    display:none;
-    animation:fade 0.2s ease;
-}
+.page{display:none;}
+.page.active{display:block;}
 
-.page.active{
-    display:block;
-}
-
-@keyframes fade{
-    from{opacity:0; transform:translateY(10px)}
-    to{opacity:1; transform:translateY(0)}
-}
-
-/* BALANCE */
 .balance{
     font-size:34px;
     text-align:center;
     color:#f5c542;
-    margin-top:10px;
 }
 
 .timer{
     text-align:center;
     color:#aaa;
     font-size:13px;
-    margin-top:5px;
 }
 
-/* DOG */
 .dog{
     display:flex;
     justify-content:center;
@@ -70,7 +52,6 @@ body{
     border-radius:18px;
 }
 
-/* BUTTON */
 button{
     width:100%;
     padding:16px;
@@ -78,10 +59,8 @@ button{
     border-radius:14px;
     background:#f5c542;
     font-weight:800;
-    margin-top:10px;
 }
 
-/* INPUT */
 input{
     width:100%;
     padding:12px;
@@ -92,27 +71,16 @@ input{
     margin-top:10px;
 }
 
-/* SMALL TEXT */
-small{
-    color:#888;
-    font-size:11px;
-}
-
-/* BOTTOM NAV (FIXED) */
 .nav{
     position:fixed;
     bottom:0;
     left:0;
     right:0;
-
     display:flex;
     background:#15161c;
     border-top:1px solid #222;
-
-    padding:10px 5px;
-    padding-bottom:calc(10px + env(safe-area-inset-bottom));
-
-    z-index:9999;
+    padding:10px;
+    z-index:999;
 }
 
 .nav-item{
@@ -120,7 +88,6 @@ small{
     text-align:center;
     color:#aaa;
     font-size:11px;
-    cursor:pointer;
 }
 
 .nav-item span{
@@ -138,138 +105,78 @@ small{
 
 <div class="app">
 
-<!-- FAUCET -->
 <div id="faucet" class="page active">
-
-    <div class="balance" id="bal">0 DOGS</div>
-    <div class="timer" id="timer">Next claim: ready</div>
+    <div class="balance">0 DOGS</div>
+    <div class="timer">Next claim: ready</div>
 
     <div class="dog">
-        <img src="https://i.imgur.com/3G5bQ9V.png" alt="DOGS">
+        <img src="https://i.imgur.com/3G5bQ9V.png">
     </div>
 
     <button onclick="claim()">CLAIM</button>
-
 </div>
 
-<!-- WITHDRAW -->
 <div id="withdraw" class="page">
-
     <div class="balance">0 DOGS</div>
 
     <input id="amount" placeholder="Amount">
     <input id="wallet" placeholder="TON wallet">
-    <input id="memo" placeholder="Memo (optional)">
-
-    <small>Min 1000 DOGS • Fee 250 DOGS</small>
+    <input id="memo" placeholder="Memo">
 
     <button onclick="withdraw()">WITHDRAW</button>
-
 </div>
 
-<!-- TASKS -->
 <div id="tasks" class="page">
     <div class="balance">SOON</div>
 </div>
 
-<!-- REF -->
 <div id="ref" class="page">
     <div class="balance">SOON</div>
 </div>
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="nav">
-
-    <div class="nav-item active" onclick="openTab('faucet')">
-        <span>🐶</span>
-        Claim
-    </div>
-
-    <div class="nav-item" onclick="openTab('withdraw')">
-        <span>💸</span>
-        Withdraw
-    </div>
-
-    <div class="nav-item" onclick="soon()">
-        <span>📋</span>
-        Tasks
-    </div>
-
-    <div class="nav-item" onclick="soon()">
-        <span>👥</span>
-        Ref
-    </div>
-
+    <div class="nav-item active" onclick="tab('faucet')"><span>🐶</span>Claim</div>
+    <div class="nav-item" onclick="tab('withdraw')"><span>💸</span>Withdraw</div>
+    <div class="nav-item" onclick="soon()"><span>📋</span>Tasks</div>
+    <div class="nav-item" onclick="soon()"><span>👥</span>Ref</div>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const user = tg.initDataUnsafe.user;
-
-/* TIMER */
-let nextClaim = Date.now() + 3600000;
-
-/* SWITCH TAB */
-function openTab(id){
-
+function tab(id){
     document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-
-    setTimeout(()=>{
-        document.getElementById(id).classList.add("active");
-    },120);
-
-    event.target.closest(".nav-item").classList.add("active");
+    document.getElementById(id).classList.add("active");
 }
 
-/* CLAIM */
+function soon(){
+    alert("Coming soon");
+}
+
 async function claim(){
-
-    if(Date.now() < nextClaim){
-        alert("DOGS are not generated yet 🐶");
-        return;
-    }
-
     const r = await fetch("https://YOUR-API/claim",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            user_id:user.id
-        })
+        body:JSON.stringify({user_id:tg.initDataUnsafe.user.id})
     });
-
     const d = await r.json();
-
-    if(d.ok){
-        nextClaim = Date.now() + 3600000;
-        alert("+" + d.reward + " DOGS");
-    }
+    alert(d.ok ? "+"+d.reward : d.error);
 }
 
-/* WITHDRAW */
 async function withdraw(){
-
     const r = await fetch("https://YOUR-API/withdraw",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            user_id:user.id,
-            wallet:document.getElementById("wallet").value,
-            memo:document.getElementById("memo").value
+            user_id:tg.initDataUnsafe.user.id,
+            wallet:document.getElementById("wallet").value
         })
     });
-
     const d = await r.json();
     alert(d.ok ? "Sent" : "Error");
-}
-
-/* SOON */
-function soon(){
-    alert("Coming soon");
 }
 </script>
 
