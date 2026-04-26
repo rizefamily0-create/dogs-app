@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -12,79 +12,124 @@ body{
     background:#0b0c10;
     color:white;
     font-family:system-ui;
+    height:100vh;
+    overflow:hidden;
+    padding-bottom:env(safe-area-inset-bottom);
 }
 
+/* APP WRAPPER */
 .app{
-    max-width:420px;
-    margin:auto;
-    padding:16px;
     height:100vh;
     display:flex;
     flex-direction:column;
+    padding:16px;
+    padding-bottom:90px; /* ВАЖНО: место под bottom bar */
+    box-sizing:border-box;
 }
 
-.card{
-    background:#15161c;
-    padding:16px;
-    border-radius:16px;
+/* PAGES */
+.page{
+    flex:1;
+    display:none;
+    animation:fade 0.2s ease;
+}
+
+.page.active{
+    display:block;
+}
+
+@keyframes fade{
+    from{opacity:0; transform:translateY(10px)}
+    to{opacity:1; transform:translateY(0)}
+}
+
+/* BALANCE */
+.balance{
+    font-size:34px;
+    text-align:center;
+    color:#f5c542;
     margin-top:10px;
 }
 
-.balance{
-    font-size:34px;
-    color:#f5c542;
+.timer{
     text-align:center;
+    color:#aaa;
+    font-size:13px;
+    margin-top:5px;
 }
 
+/* DOG */
+.dog{
+    display:flex;
+    justify-content:center;
+    margin:20px 0;
+}
+
+.dog img{
+    width:140px;
+    border-radius:18px;
+}
+
+/* BUTTON */
 button{
     width:100%;
-    padding:14px;
+    padding:16px;
     border:none;
     border-radius:14px;
     background:#f5c542;
     font-weight:800;
+    margin-top:10px;
 }
 
+/* INPUT */
 input{
     width:100%;
     padding:12px;
     border-radius:12px;
     border:none;
-    background:#0f1117;
+    background:#15161c;
     color:white;
+    margin-top:10px;
 }
 
-.view{
-    display:none;
-    opacity:0;
-    transform:translateY(10px);
-    transition:0.25s;
+/* SMALL TEXT */
+small{
+    color:#888;
+    font-size:11px;
 }
 
-.view.active{
-    display:block;
-    opacity:1;
-    transform:translateY(0);
-}
+/* BOTTOM NAV (FIXED) */
+.nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
 
-.tabs{
     display:flex;
-    margin-top:auto;
-    gap:10px;
+    background:#15161c;
+    border-top:1px solid #222;
+
+    padding:10px 5px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom));
+
+    z-index:9999;
 }
 
-.tab{
+.nav-item{
     flex:1;
     text-align:center;
-    padding:12px;
-    background:#15161c;
-    border-radius:12px;
     color:#aaa;
+    font-size:11px;
+    cursor:pointer;
 }
 
-.tab.active{
-    background:#f5c542;
-    color:#111;
+.nav-item span{
+    display:block;
+    font-size:22px;
+}
+
+.nav-item.active{
+    color:#f5c542;
 }
 </style>
 </head>
@@ -93,27 +138,69 @@ input{
 
 <div class="app">
 
-<div class="card">
-    Balance: <div class="balance" id="bal">0</div>
-</div>
+<!-- FAUCET -->
+<div id="faucet" class="page active">
 
-<div class="view active" id="faucet">
-    <div class="card">
-        <button onclick="claim()">Claim</button>
+    <div class="balance" id="bal">0 DOGS</div>
+    <div class="timer" id="timer">Next claim: ready</div>
+
+    <div class="dog">
+        <img src="https://i.imgur.com/3G5bQ9V.png" alt="DOGS">
     </div>
+
+    <button onclick="claim()">CLAIM</button>
+
 </div>
 
-<div class="view" id="withdraw">
-    <div class="card">
-        <input id="wallet">
-        <button onclick="withdraw()">Withdraw</button>
+<!-- WITHDRAW -->
+<div id="withdraw" class="page">
+
+    <div class="balance">0 DOGS</div>
+
+    <input id="amount" placeholder="Amount">
+    <input id="wallet" placeholder="TON wallet">
+    <input id="memo" placeholder="Memo (optional)">
+
+    <small>Min 1000 DOGS • Fee 250 DOGS</small>
+
+    <button onclick="withdraw()">WITHDRAW</button>
+
+</div>
+
+<!-- TASKS -->
+<div id="tasks" class="page">
+    <div class="balance">SOON</div>
+</div>
+
+<!-- REF -->
+<div id="ref" class="page">
+    <div class="balance">SOON</div>
+</div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+
+    <div class="nav-item active" onclick="openTab('faucet')">
+        <span>🐶</span>
+        Claim
     </div>
-</div>
 
-<div class="tabs">
-    <div class="tab active" onclick="tab('faucet')">Faucet</div>
-    <div class="tab" onclick="tab('withdraw')">Withdraw</div>
-</div>
+    <div class="nav-item" onclick="openTab('withdraw')">
+        <span>💸</span>
+        Withdraw
+    </div>
+
+    <div class="nav-item" onclick="soon()">
+        <span>📋</span>
+        Tasks
+    </div>
+
+    <div class="nav-item" onclick="soon()">
+        <span>👥</span>
+        Ref
+    </div>
 
 </div>
 
@@ -122,47 +209,67 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 const user = tg.initDataUnsafe.user;
-const device = navigator.userAgent + screen.width;
 
-function tab(t){
-    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(v=>v.classList.remove("active"));
+/* TIMER */
+let nextClaim = Date.now() + 3600000;
 
-    document.getElementById(t).classList.add("active");
-    event.target.classList.add("active");
+/* SWITCH TAB */
+function openTab(id){
+
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+
+    setTimeout(()=>{
+        document.getElementById(id).classList.add("active");
+    },120);
+
+    event.target.closest(".nav-item").classList.add("active");
 }
 
+/* CLAIM */
 async function claim(){
+
+    if(Date.now() < nextClaim){
+        alert("DOGS are not generated yet 🐶");
+        return;
+    }
+
     const r = await fetch("https://YOUR-API/claim",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            user_id:user.id,
-            initData:tg.initData,
-            device:device,
-            ip:"client"
+            user_id:user.id
         })
     });
 
     const d = await r.json();
-    alert(d.ok ? "+"+d.reward : d.error);
+
+    if(d.ok){
+        nextClaim = Date.now() + 3600000;
+        alert("+" + d.reward + " DOGS");
+    }
 }
 
+/* WITHDRAW */
 async function withdraw(){
-    const wallet = document.getElementById("wallet").value;
 
     const r = await fetch("https://YOUR-API/withdraw",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
             user_id:user.id,
-            wallet:wallet,
-            initData:tg.initData
+            wallet:document.getElementById("wallet").value,
+            memo:document.getElementById("memo").value
         })
     });
 
     const d = await r.json();
-    alert(d.ok ? "OK" : "error");
+    alert(d.ok ? "Sent" : "Error");
+}
+
+/* SOON */
+function soon(){
+    alert("Coming soon");
 }
 </script>
 
