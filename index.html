@@ -38,6 +38,20 @@ body{
     display:flex;
 }
 
+/* ---------- TRANSITION OVERLAY ---------- */
+.fade{
+    position:fixed;
+    inset:0;
+    background:#000;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s;
+    z-index:999;
+}
+.fade.show{
+    opacity:0.5;
+}
+
 /* ---------- CARD ---------- */
 .card{
     background:#0b0b0c;
@@ -48,10 +62,18 @@ body{
 
 /* ---------- BALANCE ---------- */
 .balance{
-    font-size:28px;
     text-align:center;
     font-weight:700;
-    color:white;
+}
+
+.balance .num{
+    font-size:30px;
+}
+
+.balance .unit{
+    font-size:14px;
+    opacity:0.7;
+    margin-left:6px;
 }
 
 /* ---------- CENTER ---------- */
@@ -60,7 +82,11 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    font-size:80px;
+}
+
+.center img{
+    width:180px;
+    border-radius:50%;
 }
 
 /* ---------- BUTTON ---------- */
@@ -143,17 +169,23 @@ input{
 
 <body>
 
+<div class="fade" id="fade"></div>
+
 <div class="app">
 
 <!-- FAUCET -->
 <div id="faucet" class="page active">
 
     <div class="card">
-        <div id="balance1" class="balance">0 DOGS</div>
+        <div id="balance1" class="balance">
+            <span class="num">0</span>
+            <span class="unit">DOGS</span>
+        </div>
     </div>
 
     <div class="center">
-        🐾
+        <!-- ВСТАВЬ СЮДА СВОЮ КАРТИНКУ -->
+        <img src="dog.png">
     </div>
 
     <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
@@ -164,7 +196,10 @@ input{
 <div id="withdraw" class="page">
 
     <div class="card">
-        <div id="balance2" class="balance">0 DOGS</div>
+        <div id="balance2" class="balance">
+            <span class="num">0</span>
+            <span class="unit">DOGS</span>
+        </div>
     </div>
 
     <div class="card">
@@ -185,14 +220,14 @@ input{
 <!-- TASKS -->
 <div id="tasks" class="page">
     <div class="card">
-        <div class="balance">SOON</div>
+        <div class="balance"><span class="num">SOON</span></div>
     </div>
 </div>
 
 <!-- REF -->
 <div id="ref" class="page">
     <div class="card">
-        <div class="balance">SOON</div>
+        <div class="balance"><span class="num">SOON</span></div>
     </div>
 </div>
 
@@ -226,14 +261,23 @@ function getUserId(){
     catch { return 1; }
 }
 
+// ---------- NAV WITH FADE ----------
 function tab(id, el){
-    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+    const fade = document.getElementById("fade");
+    fade.classList.add("show");
 
-    document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-    if(el) el.classList.add("active");
+    setTimeout(()=>{
+        document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+
+        document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+        if(el) el.classList.add("active");
+
+        fade.classList.remove("show");
+    },150);
 }
 
+// ---------- TIMER ----------
 function startTimer(seconds){
     cooldown = seconds;
     const btn = document.getElementById("claimBtn");
@@ -257,6 +301,13 @@ function startTimer(seconds){
     }, 1000);
 }
 
+// ---------- BALANCE SET ----------
+function setBalance(id, value){
+    const el = document.getElementById(id);
+    el.querySelector(".num").innerText = value;
+}
+
+// ---------- STATUS ----------
 async function loadStatus(){
     const r = await fetch("https://dogs-7ntt.onrender.com/status",{
         method:"POST",
@@ -266,8 +317,8 @@ async function loadStatus(){
 
     const d = await r.json();
 
-    document.getElementById("balance1").innerText = d.balance + " DOGS";
-    document.getElementById("balance2").innerText = d.balance + " DOGS";
+    setBalance("balance1", d.balance);
+    setBalance("balance2", d.balance);
 
     if(d.remaining > 0){
         startTimer(d.remaining);
@@ -278,6 +329,7 @@ async function loadStatus(){
     }
 }
 
+// ---------- CLAIM ----------
 async function claim(){
     const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
         method:"POST",
@@ -294,6 +346,7 @@ async function claim(){
     loadStatus();
 }
 
+// ---------- WITHDRAW ----------
 async function withdraw(){
     const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
         method:"POST",
