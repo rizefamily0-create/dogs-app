@@ -60,6 +60,11 @@ button{
     font-weight:800;
 }
 
+button:disabled{
+    background:#555;
+    color:#999;
+}
+
 input{
     width:100%;
     padding:12px;
@@ -107,13 +112,14 @@ input{
 <!-- FAUCET -->
 <div id="faucet" class="page active">
     <div id="balance1" class="balance">0 DOGS</div>
-    <div class="timer">Tap to claim</div>
+
+    <div class="timer" id="timerText">Tap to claim</div>
 
     <div class="dog">
         <img src="https://i.imgur.com/3G5bQ9V.png">
     </div>
 
-    <button onclick="claim()">CLAIM</button>
+    <button id="claimBtn" onclick="claim()">CLAIM</button>
 </div>
 
 <!-- WITHDRAW -->
@@ -160,7 +166,10 @@ input{
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// ---------- SAFE USER ----------
+let cooldown = 0;
+let timerInterval = null;
+
+// ---------- USER ----------
 function getUserId(){
     try {
         return tg.initDataUnsafe?.user?.id || 1;
@@ -182,15 +191,41 @@ function soon(){
     alert("Coming soon");
 }
 
+// ---------- TIMER ----------
+function startTimer(seconds){
+    cooldown = seconds;
+
+    const btn = document.getElementById("claimBtn");
+    const text = document.getElementById("timerText");
+
+    btn.disabled = true;
+
+    clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        if(cooldown <= 0){
+            text.innerText = "Ready to claim";
+            btn.disabled = false;
+            clearInterval(timerInterval);
+            return;
+        }
+
+        let m = Math.floor(cooldown / 60);
+        let s = cooldown % 60;
+
+        text.innerText = `Next claim: ${m}:${s.toString().padStart(2,"0")}`;
+
+        cooldown--;
+    }, 1000);
+}
+
 // ---------- BALANCE ----------
 async function loadBalance(){
     try{
         const r = await fetch("https://dogs-7ntt.onrender.com/balance",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({
-                user_id: getUserId()
-            })
+            body:JSON.stringify({user_id:getUserId()})
         });
 
         const d = await r.json();
@@ -199,62 +234,64 @@ async function loadBalance(){
         document.getElementById("balance2").innerText = d.balance + " DOGS";
 
     }catch(e){
-        console.log("balance error", e);
+        console.log(e);
     }
 }
 
 // ---------- CLAIM ----------
 async function claim(){
-    console.log("claim clicked");
-
     try{
         const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
-                user_id: getUserId(),
-                device: navigator.userAgent,
-                ip: "tg"
+                user_id:getUserId(),
+                device:navigator.userAgent,
+                ip:"tg"
             })
         });
 
         const d = await r.json();
-        console.log(d);
 
-        alert(d.ok ? "+" + d.reward + " DOGS" : d.error);
+        alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
 
-        if(d.ok) loadBalance();
+        if(d.ok){
+            loadBalance();
+
+            if(d.remaining){
+                startTimer(d.remaining);
+            }
+        }else{
+            if(d.remaining){
+                startTimer(d.remaining);
+            }
+        }
 
     }catch(e){
-        console.log(e);
         alert("Server error");
     }
 }
 
 // ---------- WITHDRAW ----------
 async function withdraw(){
-    console.log("withdraw clicked");
-
     try{
         const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
-                user_id: getUserId(),
-                wallet: document.getElementById("wallet").value,
-                memo: document.getElementById("memo").value
+                user_id:getUserId(),
+                wallet:document.getElementById("wallet").value,
+                memo:document.getElementById("memo").value
             })
         });
 
         const d = await r.json();
-        console.log(d);
 
         alert(d.ok ? "Sent" : d.error);
 
         if(d.ok) loadBalance();
 
     }catch(e){
-        console.log(e);
         alert("Server error");
     }
 }
