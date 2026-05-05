@@ -9,79 +9,129 @@
 <style>
 body{
     margin:0;
-    background:#0b0c10;
+    background: radial-gradient(circle at top, #1a0f2e, #0b0c10);
     color:white;
     font-family:system-ui;
     height:100vh;
     overflow:hidden;
 }
 
+*{
+    box-sizing:border-box; /* 🔥 фикс уезжающих инпутов */
+}
+
+/* ---------- APP ---------- */
 .app{
     height:100vh;
     display:flex;
     flex-direction:column;
     padding:16px;
     padding-bottom:90px;
-    box-sizing:border-box;
 }
 
-.page{display:none;}
-.page.active{display:block;}
+/* ---------- SCROLL FIX ---------- */
+.page{
+    display:none;
+    overflow-y:auto;
+}
+.page.active{
+    display:block;
+}
 
+/* ---------- CARD ---------- */
+.card{
+    background: linear-gradient(145deg,#141420,#0f0f18);
+    border-radius:18px;
+    padding:14px;
+    margin-top:12px;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
+}
+
+/* ---------- BALANCE ---------- */
 .balance{
-    font-size:34px;
+    font-size:28px;
     text-align:center;
-    color:#f5c542;
+    font-weight:700;
+    background: linear-gradient(90deg,#b16cff,#ff4fd8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
+/* ---------- TIMER ---------- */
 .timer{
     text-align:center;
     color:#aaa;
     font-size:13px;
 }
 
+/* ---------- DOG ---------- */
 .dog{
     display:flex;
     justify-content:center;
-    margin:20px 0;
+    margin:25px 0;
 }
 
 .dog img{
     width:140px;
-    border-radius:18px;
+    border-radius:20px;
+    box-shadow:0 0 40px rgba(177,108,255,0.4);
 }
 
+/* ---------- BUTTON ---------- */
 button{
     width:100%;
     padding:16px;
     border:none;
-    border-radius:14px;
-    background:#f5c542;
+    border-radius:18px;
+    background: linear-gradient(90deg,#7a5cff,#ff4fd8);
+    color:white;
     font-weight:800;
+    letter-spacing:1px;
+    font-size:16px;
+    box-shadow:0 0 20px rgba(255,79,216,0.4);
 }
 
 button:disabled{
-    background:#555;
-    color:#999;
+    background:#2a2a2a;
+    color:#777;
 }
 
+/* ---------- INPUT ---------- */
 input{
     width:100%;
-    padding:12px;
-    border-radius:12px;
+    padding:14px;
+    border-radius:16px;
     border:none;
     background:#15161c;
     color:white;
     margin-top:10px;
 }
 
+/* ---------- HISTORY ---------- */
+.history-item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #222;
+    font-size:13px;
+}
+
+.status{
+    font-size:12px;
+}
+
+.status.pending{color:#ffaa00;}
+.status.done{color:#00ff99;}
+.status.rejected{color:#ff4d4d;}
+
+/* ---------- NAV ---------- */
 .nav{
     position:fixed;
     bottom:0;
     left:0;
     right:0;
     display:flex;
-    background:#15161c;
+    background:rgba(20,20,30,0.9);
     border-top:1px solid #222;
     padding:10px;
 }
@@ -89,7 +139,7 @@ input{
 .nav-item{
     flex:1;
     text-align:center;
-    color:#aaa;
+    color:#888;
     font-size:11px;
     cursor:pointer;
 }
@@ -100,7 +150,7 @@ input{
 }
 
 .nav-item.active{
-    color:#f5c542;
+    color:#ff4fd8;
 }
 </style>
 </head>
@@ -111,25 +161,47 @@ input{
 
 <!-- FAUCET -->
 <div id="faucet" class="page active">
-    <div id="balance1" class="balance">0 DOGS</div>
 
-    <div class="timer" id="timerText">Loading...</div>
+    <div class="card">
+        <div id="balance1" class="balance">0 DOGS</div>
+        <div class="timer" id="timerText">Loading...</div>
+    </div>
 
     <div class="dog">
         <img src="https://i.imgur.com/3G5bQ9V.png">
     </div>
 
     <button id="claimBtn" onclick="claim()">CLAIM</button>
+
 </div>
 
 <!-- WITHDRAW -->
 <div id="withdraw" class="page">
-    <div id="balance2" class="balance">0 DOGS</div>
 
-    <input id="wallet" placeholder="TON wallet">
-    <input id="memo" placeholder="Memo">
+    <div class="card">
+        <div id="balance2" class="balance">0 DOGS</div>
+    </div>
+
+    <div class="card">
+        <input id="wallet" placeholder="TON wallet">
+        <input id="memo" placeholder="Memo">
+        <input id="amount" placeholder="Amount (TON)">
+    </div>
 
     <button onclick="withdraw()">WITHDRAW</button>
+
+    <!-- HISTORY -->
+    <div class="card">
+        <div style="font-weight:700; margin-bottom:10px;">Withdraw history</div>
+
+        <div id="historyList">
+            <div class="history-item">
+                <span>0.01 TON</span>
+                <span class="status pending">pending</span>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- SOON -->
@@ -219,7 +291,7 @@ function startTimer(seconds){
     }, 1000);
 }
 
-// ---------- STATUS (NEW IMPORTANT FIX) ----------
+// ---------- STATUS ----------
 async function loadStatus(){
     try{
         const r = await fetch("https://dogs-7ntt.onrender.com/status",{
@@ -262,12 +334,7 @@ async function claim(){
 
         alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
 
-        if(d.ok){
-            loadStatus();
-            if(d.remaining) startTimer(d.remaining);
-        }else{
-            if(d.remaining) startTimer(d.remaining);
-        }
+        loadStatus();
 
     }catch(e){
         alert("Server error");
@@ -283,7 +350,8 @@ async function withdraw(){
             body:JSON.stringify({
                 user_id:getUserId(),
                 wallet:document.getElementById("wallet").value,
-                memo:document.getElementById("memo").value
+                memo:document.getElementById("memo").value,
+                amount:document.getElementById("amount").value
             })
         });
 
