@@ -113,7 +113,7 @@ input{
 <div id="faucet" class="page active">
     <div id="balance1" class="balance">0 DOGS</div>
 
-    <div class="timer" id="timerText">Tap to claim</div>
+    <div class="timer" id="timerText">Loading...</div>
 
     <div class="dog">
         <img src="https://i.imgur.com/3G5bQ9V.png">
@@ -219,10 +219,10 @@ function startTimer(seconds){
     }, 1000);
 }
 
-// ---------- BALANCE ----------
-async function loadBalance(){
+// ---------- STATUS (NEW IMPORTANT FIX) ----------
+async function loadStatus(){
     try{
-        const r = await fetch("https://dogs-7ntt.onrender.com/balance",{
+        const r = await fetch("https://dogs-7ntt.onrender.com/status",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({user_id:getUserId()})
@@ -233,8 +233,15 @@ async function loadBalance(){
         document.getElementById("balance1").innerText = d.balance + " DOGS";
         document.getElementById("balance2").innerText = d.balance + " DOGS";
 
+        if(d.remaining > 0){
+            startTimer(d.remaining);
+        }else{
+            document.getElementById("timerText").innerText = "Ready to claim";
+            document.getElementById("claimBtn").disabled = false;
+        }
+
     }catch(e){
-        console.log(e);
+        console.log("status error", e);
     }
 }
 
@@ -256,15 +263,10 @@ async function claim(){
         alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
 
         if(d.ok){
-            loadBalance();
-
-            if(d.remaining){
-                startTimer(d.remaining);
-            }
+            loadStatus();
+            if(d.remaining) startTimer(d.remaining);
         }else{
-            if(d.remaining){
-                startTimer(d.remaining);
-            }
+            if(d.remaining) startTimer(d.remaining);
         }
 
     }catch(e){
@@ -289,7 +291,7 @@ async function withdraw(){
 
         alert(d.ok ? "Sent" : d.error);
 
-        if(d.ok) loadBalance();
+        if(d.ok) loadStatus();
 
     }catch(e){
         alert("Server error");
@@ -297,7 +299,7 @@ async function withdraw(){
 }
 
 // ---------- INIT ----------
-loadBalance();
+loadStatus();
 </script>
 
 </body>
