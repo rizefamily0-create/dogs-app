@@ -9,9 +9,9 @@
 <style>
 body{
     margin:0;
-    background: radial-gradient(circle at top, #0a1a2f, #000000);
+    background:#000;
     color:white;
-    font-family:system-ui;
+    font-family:-apple-system, system-ui;
     height:100vh;
     overflow:hidden;
 }
@@ -40,11 +40,10 @@ body{
 
 /* ---------- CARD ---------- */
 .card{
-    background: linear-gradient(145deg,#0b1624,#05080d);
-    border-radius:18px;
-    padding:14px;
+    background:#0b0b0c;
+    border-radius:16px;
+    padding:16px;
     margin-top:12px;
-    box-shadow:0 0 20px rgba(0,150,255,0.15);
 }
 
 /* ---------- BALANCE ---------- */
@@ -52,9 +51,7 @@ body{
     font-size:28px;
     text-align:center;
     font-weight:700;
-    background: linear-gradient(90deg,#4da3ff,#ffffff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color:white;
 }
 
 /* ---------- CENTER ---------- */
@@ -63,13 +60,7 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-}
-
-/* ---------- DOG IMAGE ---------- */
-.dog img{
-    width:160px;
-    border-radius:20px;
-    box-shadow:0 0 40px rgba(0,150,255,0.4);
+    font-size:80px;
 }
 
 /* ---------- BUTTON ---------- */
@@ -77,19 +68,16 @@ button{
     width:100%;
     padding:16px;
     border:none;
-    border-radius:18px;
-    background: linear-gradient(90deg,#008cff,#00c6ff);
+    border-radius:16px;
+    background:#008cff;
     color:white;
-    font-weight:800;
-    letter-spacing:1px;
+    font-weight:700;
     font-size:16px;
-    box-shadow:0 0 20px rgba(0,140,255,0.5);
 }
 
 button:disabled{
     background:#1a1a1a;
     color:#555;
-    box-shadow:none;
 }
 
 /* ---------- CLAIM BTN ---------- */
@@ -102,9 +90,9 @@ button:disabled{
 input{
     width:100%;
     padding:14px;
-    border-radius:16px;
+    border-radius:14px;
     border:none;
-    background:#0c0f14;
+    background:#111;
     color:white;
     margin-top:10px;
 }
@@ -129,7 +117,7 @@ input{
     left:0;
     right:0;
     display:flex;
-    background:rgba(5,10,20,0.95);
+    background:#0a0a0a;
     border-top:1px solid #111;
     padding:10px;
 }
@@ -148,7 +136,7 @@ input{
 }
 
 .nav-item.active{
-    color:#00aaff;
+    color:#008cff;
 }
 </style>
 </head>
@@ -165,9 +153,7 @@ input{
     </div>
 
     <div class="center">
-        <div class="dog">
-            <img src="https://i.imgur.com/8Km9tLL.png">
-        </div>
+        🐾
     </div>
 
     <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
