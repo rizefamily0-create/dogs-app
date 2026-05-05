@@ -16,9 +16,7 @@ body{
     overflow:hidden;
 }
 
-*{
-    box-sizing:border-box; /* 🔥 фикс уезжающих инпутов */
-}
+*{ box-sizing:border-box; }
 
 /* ---------- APP ---------- */
 .app{
@@ -29,13 +27,15 @@ body{
     padding-bottom:90px;
 }
 
-/* ---------- SCROLL FIX ---------- */
+/* ---------- PAGE ---------- */
 .page{
     display:none;
+    flex-direction:column;
+    height:100%;
     overflow-y:auto;
 }
 .page.active{
-    display:block;
+    display:flex;
 }
 
 /* ---------- CARD ---------- */
@@ -57,20 +57,16 @@ body{
     -webkit-text-fill-color: transparent;
 }
 
-/* ---------- TIMER ---------- */
-.timer{
-    text-align:center;
-    color:#aaa;
-    font-size:13px;
+/* ---------- CENTER ---------- */
+.center{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
 }
 
 /* ---------- DOG ---------- */
-.dog{
-    display:flex;
-    justify-content:center;
-    margin:25px 0;
-}
-
 .dog img{
     width:140px;
     border-radius:20px;
@@ -94,6 +90,13 @@ button{
 button:disabled{
     background:#2a2a2a;
     color:#777;
+    box-shadow:none;
+}
+
+/* ---------- CLAIM BTN ---------- */
+.claim-btn{
+    margin-top:auto;
+    font-size:18px;
 }
 
 /* ---------- INPUT ---------- */
@@ -114,10 +117,6 @@ input{
     padding:10px 0;
     border-bottom:1px solid #222;
     font-size:13px;
-}
-
-.status{
-    font-size:12px;
 }
 
 .status.pending{color:#ffaa00;}
@@ -164,14 +163,15 @@ input{
 
     <div class="card">
         <div id="balance1" class="balance">0 DOGS</div>
-        <div class="timer" id="timerText">Loading...</div>
     </div>
 
-    <div class="dog">
-        <img src="https://i.imgur.com/3G5bQ9V.png">
+    <div class="center">
+        <div class="dog">
+            <img src="https://i.imgur.com/3G5bQ9V.png">
+        </div>
     </div>
 
-    <button id="claimBtn" onclick="claim()">CLAIM</button>
+    <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
 
 </div>
 
@@ -190,27 +190,25 @@ input{
 
     <button onclick="withdraw()">WITHDRAW</button>
 
-    <!-- HISTORY -->
     <div class="card">
         <div style="font-weight:700; margin-bottom:10px;">Withdraw history</div>
-
-        <div id="historyList">
-            <div class="history-item">
-                <span>0.01 TON</span>
-                <span class="status pending">pending</span>
-            </div>
-        </div>
+        <div id="historyList"></div>
     </div>
 
 </div>
 
-<!-- SOON -->
+<!-- TASKS (вернул) -->
 <div id="tasks" class="page">
-    <div class="balance">SOON</div>
+    <div class="card">
+        <div class="balance">SOON</div>
+    </div>
 </div>
 
+<!-- REF (вернул) -->
 <div id="ref" class="page">
-    <div class="balance">SOON</div>
+    <div class="card">
+        <div class="balance">SOON</div>
+    </div>
 </div>
 
 </div>
@@ -220,16 +218,13 @@ input{
     <div class="nav-item active" onclick="tab('faucet', this)">
         <span>🐶</span>Claim
     </div>
-
     <div class="nav-item" onclick="tab('withdraw', this)">
         <span>💸</span>Withdraw
     </div>
-
-    <div class="nav-item" onclick="soon()">
+    <div class="nav-item" onclick="tab('tasks', this)">
         <span>📋</span>Tasks
     </div>
-
-    <div class="nav-item" onclick="soon()">
+    <div class="nav-item" onclick="tab('ref', this)">
         <span>👥</span>Ref
     </div>
 </div>
@@ -259,24 +254,18 @@ function tab(id, el){
     if(el) el.classList.add("active");
 }
 
-function soon(){
-    alert("Coming soon");
-}
-
-// ---------- TIMER ----------
+// ---------- TIMER (в кнопке) ----------
 function startTimer(seconds){
     cooldown = seconds;
 
     const btn = document.getElementById("claimBtn");
-    const text = document.getElementById("timerText");
-
     btn.disabled = true;
 
     clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         if(cooldown <= 0){
-            text.innerText = "Ready to claim";
+            btn.innerText = "CLAIM";
             btn.disabled = false;
             clearInterval(timerInterval);
             return;
@@ -285,7 +274,7 @@ function startTimer(seconds){
         let m = Math.floor(cooldown / 60);
         let s = cooldown % 60;
 
-        text.innerText = `Next claim: ${m}:${s.toString().padStart(2,"0")}`;
+        btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
 
         cooldown--;
     }, 1000);
@@ -308,8 +297,9 @@ async function loadStatus(){
         if(d.remaining > 0){
             startTimer(d.remaining);
         }else{
-            document.getElementById("timerText").innerText = "Ready to claim";
-            document.getElementById("claimBtn").disabled = false;
+            const btn = document.getElementById("claimBtn");
+            btn.innerText = "CLAIM";
+            btn.disabled = false;
         }
 
     }catch(e){
