@@ -265,14 +265,12 @@ tg.expand();
 let cooldown = 0;
 let timerInterval = null;
 
-function getUserId(){
-    try { return tg.initDataUnsafe?.user?.id || 1; }
-    catch { return 1; }
-}
+// ❌ УБРАЛИ getUserId для API (больше не нужен)
 
 function loadUser(){
     try{
         const user = tg.initDataUnsafe?.user;
+
         if(user?.photo_url){
             avatar.src = user.photo_url;
             avatar2.src = user.photo_url;
@@ -322,11 +320,14 @@ function setBalance(id, value){
     document.getElementById(id).querySelector(".num").innerText = value;
 }
 
+// ================= STATUS =================
 async function loadStatus(){
     const r = await fetch("https://dogs-7ntt.onrender.com/status",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({user_id:getUserId()})
+        body:JSON.stringify({
+            init_data: tg.initData
+        })
     });
 
     const d = await r.json();
@@ -342,7 +343,7 @@ async function loadStatus(){
     }
 }
 
-// CLAIM (без рекламы)
+// ================= CLAIM =================
 async function claim(){
     const btn = claimBtn;
 
@@ -354,9 +355,8 @@ async function claim(){
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
-                user_id:getUserId(),
-                device:navigator.userAgent,
-                ip:"tg"
+                init_data: tg.initData,
+                device: navigator.userAgent
             })
         });
 
@@ -378,14 +378,7 @@ async function claim(){
     }
 }
 
-function showX3(){
-    x3modal.style.display = "flex";
-}
-
-function closeX3(){
-    x3modal.style.display = "none";
-}
-
+// ================= X3 =================
 async function watchX3(){
     try{
         const result = await AdController.show();
@@ -399,7 +392,7 @@ async function watchX3(){
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
-                user_id:getUserId(),
+                init_data: tg.initData,
                 ad_watched:true
             })
         });
@@ -420,15 +413,16 @@ async function watchX3(){
     closeX3();
 }
 
+// ================= WITHDRAW =================
 async function withdraw(){
     const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            user_id:getUserId(),
-            wallet:wallet.value,
-            memo:memo.value,
-            amount:amount.value
+            init_data: tg.initData,
+            wallet: wallet.value,
+            memo: memo.value,
+            amount: amount.value
         })
     });
 
@@ -436,10 +430,11 @@ async function withdraw(){
     alert(d.ok ? "Sent" : d.error);
 }
 
+// ================= INIT =================
 loadUser();
 loadStatus();
 
 </script>
-
+    
 </body>
 </html>
