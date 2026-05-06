@@ -395,35 +395,15 @@ async function claim(){
 // ---------------- X3 ----------------
 
 async function watchX3(){
-    try{
-        const res = await AdController.show();
+    await AdController.show();
 
-        if(res !== "completed"){
-            tg.showPopup?.({ message: "Ad not completed" });
-            return;
-        }
-
-        const r = await fetch("https://dogs-7ntt.onrender.com/claim_x3",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({
-                init_data: tg.initData,
-                ad_watched:true
-            })
-        });
-
-        const d = await r.json();
-
-        if(d.ok){
-            tg.showPopup?.({ message: "+"+d.reward+" DOGS (x3)" });
-            loadStatus();
-        } else {
-            tg.showPopup?.({ message: d.error });
-        }
-
-    }catch(e){
-        tg.showPopup?.({ message: "Error" });
-    }
+    await fetch("https://dogs-7ntt.onrender.com/claim_x3", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            init_data: tg.initData
+        })
+    });
 
     closeX3();
 }
