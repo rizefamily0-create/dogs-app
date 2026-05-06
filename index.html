@@ -332,12 +332,13 @@ tg.expand();
 let cooldown = 0;
 let timerInterval = null;
 
+let lastReward = 25; // фикс базовой награды
+
 function getUserId(){
     try { return tg.initDataUnsafe?.user?.id || 1; }
     catch { return 1; }
 }
 
-// ---------- ДОБАВЛЕНА АВАТАРКА ----------
 function loadUser(){
     try{
         const user = tg.initDataUnsafe?.user;
@@ -348,7 +349,6 @@ function loadUser(){
     }catch(e){}
 }
 
-// ---------- NAV ----------
 function tab(id, el){
     const fade = document.getElementById("fade");
     fade.classList.add("show");
@@ -364,37 +364,11 @@ function tab(id, el){
     },150);
 }
 
-// ---------- TIMER ----------
-function startTimer(seconds){
-    cooldown = seconds;
-    const btn = document.getElementById("claimBtn");
-    btn.disabled = true;
-
-    clearInterval(timerInterval);
-
-    timerInterval = setInterval(() => {
-        if(cooldown <= 0){
-            btn.innerText = "CLAIM";
-            btn.disabled = false;
-            clearInterval(timerInterval);
-            return;
-        }
-
-        let m = Math.floor(cooldown / 60);
-        let s = cooldown % 60;
-
-        btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
-        cooldown--;
-    }, 1000);
-}
-
-// ---------- BALANCE ----------
 function setBalance(id, value){
     const el = document.getElementById(id);
     el.querySelector(".num").innerText = value;
 }
 
-// ---------- STATUS ----------
 async function loadStatus(){
     const r = await fetch("https://dogs-7ntt.onrender.com/status",{
         method:"POST",
@@ -407,16 +381,12 @@ async function loadStatus(){
     setBalance("balance1", d.balance);
     setBalance("balance2", d.balance);
 
-    if(d.remaining > 0){
-        startTimer(d.remaining);
-    }else{
-        const btn = document.getElementById("claimBtn");
-        btn.innerText = "CLAIM";
-        btn.disabled = false;
-    }
+    const btn = document.getElementById("claimBtn");
+    btn.innerText = "CLAIM";
+    btn.disabled = false;
 }
 
-// ---------- CLAIM ----------
+// ---------------- CLAIM ----------------
 async function claim(){
     const btn = document.getElementById("claimBtn");
 
@@ -425,10 +395,7 @@ async function claim(){
         btn.innerText = "Loading...";
 
         const result = await AdController.show();
-
-        if(result !== "completed"){
-            throw new Error("Ad skipped");
-        }
+        if(result !== "completed") throw new Error();
 
         const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
             method:"POST",
@@ -442,19 +409,68 @@ async function claim(){
 
         const d = await r.json();
 
-        alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
+        if(d.ok){
+
+            // ✔️ ВАЖНО: 25 DOGS уже с backend
+            lastReward = d.reward;
+
+            alert("+"+d.reward+" DOGS");
+
+            // ✔️ ПОКАЗ X3 ТОЛЬКО ПОСЛЕ УСПЕШНОГО CLAIM
+            showX3();
+        }
+
         loadStatus();
-        showX3();
 
     }catch(e){
         alert("Watch ad to claim reward");
-
         btn.innerText = "CLAIM";
         btn.disabled = false;
     }
 }
 
-// ---------- WITHDRAW ----------
+// ---------------- X3 MODAL ----------------
+function showX3(){
+    document.getElementById("x3modal").style.display = "flex";
+}
+
+function closeX3(){
+    document.getElementById("x3modal").style.display = "none";
+}
+
+// ---------------- X3 CLAIM ----------------
+async function watchX3(){
+
+    try{
+        const result = await AdController.show();
+        if(result !== "completed") throw new Error();
+
+        const r = await fetch("https://dogs-7ntt.onrender.com/claim_x3",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                user_id:getUserId(),
+                ad_watched:true
+            })
+        });
+
+        const d = await r.json();
+
+        if(d.ok){
+            alert("+"+d.reward+" DOGS (x3)");
+            loadStatus();
+        }else{
+            alert(d.error);
+        }
+
+    }catch(e){
+        alert("Ad not completed");
+    }
+
+    closeX3();
+}
+
+// ---------------- WITHDRAW ----------------
 async function withdraw(){
     const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
         method:"POST",
@@ -469,30 +485,10 @@ async function withdraw(){
 
     const d = await r.json();
     alert(d.ok ? "Sent" : d.error);
-    if(d.ok) loadStatus();
 }
 
-// 🔥 FIX VIDEO STOP AFTER ADS
-function resumeVideo(){
-    const v = document.querySelector("video");
-    if(!v) return;
-
-    setTimeout(() => {
-        v.play().catch(()=>{});
-    }, 300);
-}    
-
-function showX3(){
-    document.getElementById("x3modal").style.display = "flex";
-}
-
-function closeX3(){
-    document.getElementById("x3modal").style.display = "none";
-}
-
-loadUser(); // 🔥 ВАЖНО
+loadUser();
 loadStatus();
-resumeVideo();    
 
 </script>
 
