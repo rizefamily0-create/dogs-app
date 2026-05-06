@@ -18,7 +18,6 @@ body{
 
 *{ box-sizing:border-box; }
 
-/* ---------- APP ---------- */
 .app{
     height:100vh;
     display:flex;
@@ -27,18 +26,14 @@ body{
     padding-bottom:90px;
 }
 
-/* ---------- PAGE ---------- */
 .page{
     display:none;
     flex-direction:column;
     height:100%;
     overflow-y:auto;
 }
-.page.active{
-    display:flex;
-}
+.page.active{ display:flex; }
 
-/* ---------- TRANSITION OVERLAY ---------- */
 .fade{
     position:fixed;
     inset:0;
@@ -48,11 +43,8 @@ body{
     transition:opacity .25s;
     z-index:999;
 }
-.fade.show{
-    opacity:0.5;
-}
+.fade.show{ opacity:0.5; }
 
-/* ---------- CARD ---------- */
 .card{
     background:#0b0b0c;
     border-radius:16px;
@@ -60,35 +52,19 @@ body{
     margin-top:12px;
 }
 
-/* ---------- BALANCE ---------- */
 .balance{
-    display:flex; /* ДОБАВЛЕНО */
-    justify-content:space-between; /* ДОБАВЛЕНО */
-    align-items:center; /* ДОБАВЛЕНО */
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
     font-weight:700;
 }
 
-.balance-left{
-    display:flex;
-    align-items:baseline;
-}
+.balance-left{ display:flex; align-items:baseline; }
 
-.balance .num{
-    font-size:30px;
-}
+.balance .num{ font-size:30px; }
+.balance .unit{ font-size:14px; opacity:0.7; margin-left:6px; }
 
-.balance .unit{
-    font-size:14px;
-    opacity:0.7;
-    margin-left:6px;
-}
-
-/* ---------- USER AVATAR ---------- */
-.user{
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
+.user{ display:flex; align-items:center; gap:8px; }
 
 .user img{
     width:36px;
@@ -96,7 +72,6 @@ body{
     border-radius:50%;
 }
 
-/* ---------- CENTER ---------- */
 .center{
     flex:1;
     display:flex;
@@ -104,12 +79,6 @@ body{
     align-items:center;
 }
 
-.center img{
-    width:180px;
-    border-radius:50%;
-}
-
-/* ---------- BUTTON ---------- */
 button{
     width:100%;
     padding:16px;
@@ -126,13 +95,11 @@ button:disabled{
     color:#555;
 }
 
-/* ---------- CLAIM BTN ---------- */
 .claim-btn{
     margin-top:auto;
     font-size:18px;
 }
 
-/* ---------- INPUT ---------- */
 input{
     width:100%;
     padding:14px;
@@ -143,20 +110,6 @@ input{
     margin-top:10px;
 }
 
-/* ---------- HISTORY ---------- */
-.history-item{
-    display:flex;
-    justify-content:space-between;
-    padding:10px 0;
-    border-bottom:1px solid #111;
-    font-size:13px;
-}
-
-.status.pending{color:#ffaa00;}
-.status.done{color:#00ffcc;}
-.status.rejected{color:#ff4d4d;}
-
-/* ---------- NAV ---------- */
 .nav{
     position:fixed;
     bottom:0;
@@ -184,6 +137,17 @@ input{
 .nav-item.active{
     color:#008cff;
 }
+
+/* X3 MODAL */
+#x3modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+}
 </style>
 </head>
 
@@ -198,17 +162,13 @@ input{
 
     <div class="card">
         <div id="balance1" class="balance">
-
             <div class="balance-left">
                 <span class="num">0</span>
                 <span class="unit">DOGS</span>
             </div>
-
-            <!-- ДОБАВЛЕН АВАТАР -->
             <div class="user">
                 <img id="avatar" src="">
             </div>
-
         </div>
     </div>
 
@@ -232,16 +192,13 @@ input{
 
     <div class="card">
         <div id="balance2" class="balance">
-
             <div class="balance-left">
                 <span class="num">0</span>
                 <span class="unit">DOGS</span>
             </div>
-
             <div class="user">
                 <img id="avatar2" src="">
             </div>
-
         </div>
     </div>
 
@@ -276,7 +233,7 @@ input{
 
 </div>
 
-<!-- NAV -->
+<!-- NAV (НЕ ТРОГАЛ) -->
 <div class="nav">
     <div class="nav-item active" onclick="tab('faucet', this)">
         <span>🐶</span>Claim
@@ -292,47 +249,30 @@ input{
     </div>
 </div>
 
-    <div id="x3modal" style="
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.8);
-z-index:9999;
-justify-content:center;
-align-items:center;
-">
-
+<!-- X3 MODAL -->
+<div id="x3modal">
     <div style="background:#111;padding:20px;border-radius:16px;text-align:center;width:80%;">
         <div style="margin-bottom:15px;font-size:18px;">
             Multiply reward x3?
         </div>
 
-        <button onclick="watchX3()" style="margin-bottom:10px;width:100%;">
+        <button onclick="watchX3()" style="margin-bottom:10px;">
             Watch ad x3
         </button>
 
-        <button onclick="closeX3()" style="width:100%;background:#333;">
+        <button onclick="closeX3()" style="background:#333;">
             No thanks
         </button>
     </div>
-
 </div>
-    
 
 <script>
 
-// 🔥 Adsgram
-const AdController = window.Adsgram.init({
-    blockId: "29572"
-});    
+// Adsgram
+const AdController = window.Adsgram.init({ blockId: "29572" });    
     
 const tg = window.Telegram.WebApp;
 tg.expand();
-
-let cooldown = 0;
-let timerInterval = null;
-
-let lastReward = 25; // фикс базовой награды
 
 function getUserId(){
     try { return tg.initDataUnsafe?.user?.id || 1; }
@@ -343,8 +283,8 @@ function loadUser(){
     try{
         const user = tg.initDataUnsafe?.user;
         if(user?.photo_url){
-            document.getElementById("avatar").src = user.photo_url;
-            document.getElementById("avatar2").src = user.photo_url;
+            avatar.src = user.photo_url;
+            avatar2.src = user.photo_url;
         }
     }catch(e){}
 }
@@ -365,8 +305,7 @@ function tab(id, el){
 }
 
 function setBalance(id, value){
-    const el = document.getElementById(id);
-    el.querySelector(".num").innerText = value;
+    document.getElementById(id).querySelector(".num").innerText = value;
 }
 
 async function loadStatus(){
@@ -381,12 +320,11 @@ async function loadStatus(){
     setBalance("balance1", d.balance);
     setBalance("balance2", d.balance);
 
-    const btn = document.getElementById("claimBtn");
-    btn.innerText = "CLAIM";
-    btn.disabled = false;
+    claimBtn.innerText = "CLAIM";
+    claimBtn.disabled = false;
 }
 
-// ---------------- CLAIM ----------------
+// ✅ FIXED CLAIM
 async function claim(){
     const btn = document.getElementById("claimBtn");
 
@@ -394,9 +332,7 @@ async function claim(){
         btn.disabled = true;
         btn.innerText = "Loading...";
 
-        const result = await AdController.show();
-        if(result !== "completed") throw new Error();
-
+        // ❗ СРАЗУ backend (без рекламы)
         const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
@@ -410,26 +346,22 @@ async function claim(){
         const d = await r.json();
 
         if(d.ok){
-
-            // ✔️ ВАЖНО: 25 DOGS уже с backend
-            lastReward = d.reward;
-
             alert("+"+d.reward+" DOGS");
-
-            // ✔️ ПОКАЗ X3 ТОЛЬКО ПОСЛЕ УСПЕШНОГО CLAIM
             showX3();
+        }else{
+            alert(d.error);
         }
 
         loadStatus();
 
     }catch(e){
-        alert("Watch ad to claim reward");
-        btn.innerText = "CLAIM";
+        alert("Error");
         btn.disabled = false;
+        btn.innerText = "CLAIM";
     }
 }
 
-// ---------------- X3 MODAL ----------------
+// X3
 function showX3(){
     document.getElementById("x3modal").style.display = "flex";
 }
@@ -438,12 +370,16 @@ function closeX3(){
     document.getElementById("x3modal").style.display = "none";
 }
 
-// ---------------- X3 CLAIM ----------------
+// ✅ РЕКЛАМА ТОЛЬКО ТУТ
 async function watchX3(){
 
     try{
         const result = await AdController.show();
-        if(result !== "completed") throw new Error();
+
+        if(result !== "completed"){
+            alert("Ad not completed");
+            return;
+        }
 
         const r = await fetch("https://dogs-7ntt.onrender.com/claim_x3",{
             method:"POST",
@@ -464,22 +400,21 @@ async function watchX3(){
         }
 
     }catch(e){
-        alert("Ad not completed");
+        alert("Error");
     }
 
     closeX3();
 }
 
-// ---------------- WITHDRAW ----------------
 async function withdraw(){
     const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
             user_id:getUserId(),
-            wallet:document.getElementById("wallet").value,
-            memo:document.getElementById("memo").value,
-            amount:document.getElementById("amount").value
+            wallet:wallet.value,
+            memo:memo.value,
+            amount:amount.value
         })
     });
 
@@ -494,3 +429,4 @@ loadStatus();
 
 </body>
 </html>
+
