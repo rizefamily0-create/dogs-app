@@ -444,8 +444,19 @@ async function withdraw(){
     if(d.ok) loadStatus();
 }
 
+// 🔥 FIX VIDEO STOP AFTER ADS
+function resumeVideo(){
+    const v = document.querySelector("video");
+    if(!v) return;
+
+    setTimeout(() => {
+        v.play().catch(()=>{});
+    }, 300);
+}    
+
 loadUser(); // 🔥 ВАЖНО
 loadStatus();
+resumeVideo();    
 
 </script>
 
