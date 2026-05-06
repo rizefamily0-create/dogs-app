@@ -3,6 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -110,14 +111,6 @@ input{
     margin-top:10px;
 }
 
-.history-item{
-    display:flex;
-    justify-content:space-between;
-    padding:10px 0;
-    border-bottom:1px solid #111;
-    font-size:13px;
-}
-
 .nav{
     position:fixed;
     bottom:0;
@@ -151,10 +144,18 @@ input{
     display:none;
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,0.8);
+    background:rgba(0,0,0,0.85);
     z-index:9999;
     justify-content:center;
     align-items:center;
+}
+
+.x3box{
+    background:#111;
+    padding:20px;
+    border-radius:16px;
+    text-align:center;
+    width:80%;
 }
 </style>
 </head>
@@ -167,6 +168,7 @@ input{
 
 <!-- FAUCET -->
 <div id="faucet" class="page active">
+
     <div class="card">
         <div id="balance1" class="balance">
             <div class="balance-left">
@@ -174,7 +176,7 @@ input{
                 <span class="unit">DOGS</span>
             </div>
             <div class="user">
-                <img id="avatar" src="">
+                <img id="avatar">
             </div>
         </div>
     </div>
@@ -188,6 +190,7 @@ input{
 
 <!-- WITHDRAW -->
 <div id="withdraw" class="page">
+
     <div class="card">
         <div id="balance2" class="balance">
             <div class="balance-left">
@@ -195,7 +198,7 @@ input{
                 <span class="unit">DOGS</span>
             </div>
             <div class="user">
-                <img id="avatar2" src="">
+                <img id="avatar2">
             </div>
         </div>
     </div>
@@ -207,30 +210,21 @@ input{
     </div>
 
     <button onclick="withdraw()">WITHDRAW</button>
-
-    <div class="card">
-        <div style="font-weight:700;margin-bottom:10px;">Withdraw history</div>
-        <div id="historyList"></div>
-    </div>
 </div>
 
 <!-- TASKS -->
 <div id="tasks" class="page">
-    <div class="card">
-        <div class="balance"><span class="num">SOON</span></div>
-    </div>
+    <div class="card"><div class="balance"><span class="num">SOON</span></div></div>
 </div>
 
 <!-- REF -->
 <div id="ref" class="page">
-    <div class="card">
-        <div class="balance"><span class="num">SOON</span></div>
-    </div>
+    <div class="card"><div class="balance"><span class="num">SOON</span></div></div>
 </div>
 
 </div>
 
-<!-- NAV (НЕ ТРОГАЛ) -->
+<!-- NAV -->
 <div class="nav">
     <div class="nav-item active" onclick="tab('faucet', this)">
         <span>🐶</span>Claim
@@ -246,82 +240,73 @@ input{
     </div>
 </div>
 
-<!-- X3 -->
+<!-- X3 MODAL -->
 <div id="x3modal">
-    <div style="background:#111;padding:20px;border-radius:16px;text-align:center;width:80%;">
-        <div style="margin-bottom:15px;font-size:18px;">Multiply reward x3?</div>
+    <div class="x3box">
+        <div style="margin-bottom:15px;font-size:18px;">
+            Multiply reward x3?
+        </div>
 
-        <button onclick="watchX3()" style="margin-bottom:10px;">Watch ad x3</button>
-        <button onclick="closeX3()" style="background:#333;">No thanks</button>
+        <button onclick="watchX3()" style="margin-bottom:10px;">
+            Watch ad x3
+        </button>
+
+        <button onclick="closeX3()" style="background:#333;">
+            No thanks
+        </button>
     </div>
 </div>
 
 <script>
 
-const AdController = window.Adsgram.init({ blockId: "29588" });    
 const tg = window.Telegram.WebApp;
 tg.expand();
+
+const AdController = window.Adsgram.init({ blockId: "29588" });
 
 let cooldown = 0;
 let timerInterval = null;
 
-// ❌ УБРАЛИ getUserId для API (больше не нужен)
-
-function loadUser(){
-    try{
-        const user = tg.initDataUnsafe?.user;
-
-        if(user?.photo_url){
-            avatar.src = user.photo_url;
-            avatar2.src = user.photo_url;
-        }
-    }catch(e){}
-}
+// ---------------- UI ----------------
 
 function tab(id, el){
-    const fade = document.getElementById("fade");
-    fade.classList.add("show");
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 
-    setTimeout(()=>{
-        document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-
-        document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-        if(el) el.classList.add("active");
-
-        fade.classList.remove("show");
-    },150);
+    document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+    if(el) el.classList.add("active");
 }
 
-function startTimer(seconds){
-    cooldown = seconds;
-    const btn = claimBtn;
-    btn.disabled = true;
-
-    clearInterval(timerInterval);
-
-    timerInterval = setInterval(()=>{
-        if(cooldown <= 0){
-            btn.innerText = "CLAIM";
-            btn.disabled = false;
-            clearInterval(timerInterval);
-            return;
-        }
-
-        let m = Math.floor(cooldown / 60);
-        let s = cooldown % 60;
-
-        btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
-        cooldown--;
-    },1000);
+function showX3(){
+    const m = document.getElementById("x3modal");
+    m.style.display = "flex";
 }
+
+function closeX3(){
+    document.getElementById("x3modal").style.display = "none";
+}
+
+// ---------------- USER ----------------
+
+function loadUser(){
+    const user = tg.initDataUnsafe?.user;
+
+    if(user?.photo_url){
+        avatar.src = user.photo_url;
+        avatar2.src = user.photo_url;
+    }
+}
+
+// ---------------- BALANCE ----------------
 
 function setBalance(id, value){
     document.getElementById(id).querySelector(".num").innerText = value;
 }
 
-// ================= STATUS =================
+// ---------------- STATUS ----------------
+
 async function loadStatus(){
+
     const r = await fetch("https://dogs-7ntt.onrender.com/status",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -335,21 +320,44 @@ async function loadStatus(){
     setBalance("balance1", d.balance);
     setBalance("balance2", d.balance);
 
+    const btn = claimBtn;
+
     if(d.remaining > 0){
-        startTimer(d.remaining);
-    }else{
-        claimBtn.innerText = "CLAIM";
-        claimBtn.disabled = false;
+        cooldown = d.remaining;
+        btn.disabled = true;
+
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(()=>{
+            if(cooldown <= 0){
+                btn.innerText = "CLAIM";
+                btn.disabled = false;
+                clearInterval(timerInterval);
+                return;
+            }
+
+            let m = Math.floor(cooldown / 60);
+            let s = cooldown % 60;
+
+            btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
+            cooldown--;
+        },1000);
+
+    } else {
+        btn.innerText = "CLAIM";
+        btn.disabled = false;
     }
 }
 
-// ================= CLAIM =================
+// ---------------- CLAIM ----------------
+
 async function claim(){
     const btn = claimBtn;
 
+    btn.disabled = true;
+    btn.innerText = "Loading...";
+
     try{
-        btn.disabled = true;
-        btn.innerText = "Loading...";
 
         const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
             method:"POST",
@@ -363,28 +371,35 @@ async function claim(){
         const d = await r.json();
 
         if(d.ok){
-            alert("+"+d.reward+" DOGS");
-            showX3();
-        }else{
-            alert(d.error);
+
+            tg.showPopup?.({ message: "+"+d.reward+" DOGS" });
+
+            setTimeout(()=>{
+                showX3();
+            }, 300);
+
+        } else {
+            tg.showPopup?.({ message: d.error });
+            btn.disabled = false;
+            btn.innerText = "CLAIM";
         }
 
         loadStatus();
 
     }catch(e){
-        alert("Error");
         btn.disabled = false;
         btn.innerText = "CLAIM";
     }
 }
 
-// ================= X3 =================
+// ---------------- X3 ----------------
+
 async function watchX3(){
     try{
-        const result = await AdController.show();
+        const res = await AdController.show();
 
-        if(result !== "completed"){
-            alert("Ad not completed");
+        if(res !== "completed"){
+            tg.showPopup?.({ message: "Ad not completed" });
             return;
         }
 
@@ -400,21 +415,23 @@ async function watchX3(){
         const d = await r.json();
 
         if(d.ok){
-            alert("+"+d.reward+" DOGS (x3)");
+            tg.showPopup?.({ message: "+"+d.reward+" DOGS (x3)" });
             loadStatus();
-        }else{
-            alert(d.error);
+        } else {
+            tg.showPopup?.({ message: d.error });
         }
 
     }catch(e){
-        alert("Error");
+        tg.showPopup?.({ message: "Error" });
     }
 
     closeX3();
 }
 
-// ================= WITHDRAW =================
+// ---------------- WITHDRAW ----------------
+
 async function withdraw(){
+
     const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -427,14 +444,18 @@ async function withdraw(){
     });
 
     const d = await r.json();
-    alert(d.ok ? "Sent" : d.error);
+
+    tg.showPopup?.({
+        message: d.ok ? "Sent" : d.error
+    });
 }
 
-// ================= INIT =================
+// ---------------- INIT ----------------
+
 loadUser();
 loadStatus();
 
 </script>
-    
+
 </body>
 </html>
