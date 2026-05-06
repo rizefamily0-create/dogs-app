@@ -395,15 +395,26 @@ async function claim(){
 // ---------------- X3 ----------------
 
 async function watchX3(){
-    await AdController.show();
 
-    await fetch("https://dogs-7ntt.onrender.com/claim_x3", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            init_data: tg.initData
-        })
-    });
+    try{
+
+        await AdController.show();
+
+        tg.showPopup?.({
+            message: "Reward activated"
+        });
+
+        // ждём callback от AdsGram
+        setTimeout(loadStatus, 1500);
+        setTimeout(loadStatus, 3000);
+
+    }catch(e){
+
+        tg.showPopup?.({
+            message: "Ad failed"
+        });
+
+    }
 
     closeX3();
 }
