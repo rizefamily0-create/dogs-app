@@ -62,8 +62,15 @@ body{
 
 /* ---------- BALANCE ---------- */
 .balance{
-    text-align:center;
+    display:flex; /* ДОБАВЛЕНО */
+    justify-content:space-between; /* ДОБАВЛЕНО */
+    align-items:center; /* ДОБАВЛЕНО */
     font-weight:700;
+}
+
+.balance-left{
+    display:flex;
+    align-items:baseline;
 }
 
 .balance .num{
@@ -74,6 +81,19 @@ body{
     font-size:14px;
     opacity:0.7;
     margin-left:6px;
+}
+
+/* ---------- USER AVATAR ---------- */
+.user{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.user img{
+    width:36px;
+    height:36px;
+    border-radius:50%;
 }
 
 /* ---------- CENTER ---------- */
@@ -178,13 +198,21 @@ input{
 
     <div class="card">
         <div id="balance1" class="balance">
-            <span class="num">0</span>
-            <span class="unit">DOGS</span>
+
+            <div class="balance-left">
+                <span class="num">0</span>
+                <span class="unit">DOGS</span>
+            </div>
+
+            <!-- ДОБАВЛЕН АВАТАР -->
+            <div class="user">
+                <img id="avatar" src="">
+            </div>
+
         </div>
     </div>
 
     <div class="center">
-        <!-- ВСТАВЬ СЮДА СВОЮ КАРТИНКУ -->
         <img src="dog.png">
     </div>
 
@@ -197,8 +225,16 @@ input{
 
     <div class="card">
         <div id="balance2" class="balance">
-            <span class="num">0</span>
-            <span class="unit">DOGS</span>
+
+            <div class="balance-left">
+                <span class="num">0</span>
+                <span class="unit">DOGS</span>
+            </div>
+
+            <div class="user">
+                <img id="avatar2" src="">
+            </div>
+
         </div>
     </div>
 
@@ -253,7 +289,7 @@ input{
 
 // 🔥 Adsgram
 const AdController = window.Adsgram.init({
-    blockId: "29572" // вставь свой
+    blockId: "29572"
 });    
     
 const tg = window.Telegram.WebApp;
@@ -267,7 +303,18 @@ function getUserId(){
     catch { return 1; }
 }
 
-// ---------- NAV WITH FADE ----------
+// ---------- ДОБАВЛЕНА АВАТАРКА ----------
+function loadUser(){
+    try{
+        const user = tg.initDataUnsafe?.user;
+        if(user?.photo_url){
+            document.getElementById("avatar").src = user.photo_url;
+            document.getElementById("avatar2").src = user.photo_url;
+        }
+    }catch(e){}
+}
+
+// ---------- NAV ----------
 function tab(id, el){
     const fade = document.getElementById("fade");
     fade.classList.add("show");
@@ -307,7 +354,7 @@ function startTimer(seconds){
     }, 1000);
 }
 
-// ---------- BALANCE SET ----------
+// ---------- BALANCE ----------
 function setBalance(id, value){
     const el = document.getElementById(id);
     el.querySelector(".num").innerText = value;
@@ -343,14 +390,12 @@ async function claim(){
         btn.disabled = true;
         btn.innerText = "Loading...";
 
-        // 🔥 ПОКАЗ РЕКЛАМЫ
         const result = await AdController.show();
 
         if(result !== "completed"){
             throw new Error("Ad skipped");
         }
 
-        // 👉 НАГРАДА ТОЛЬКО ПОСЛЕ ПРОСМОТРА
         const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
@@ -367,8 +412,6 @@ async function claim(){
         loadStatus();
 
     }catch(e){
-        console.log(e);
-
         alert("Watch ad to claim reward");
 
         btn.innerText = "CLAIM";
@@ -394,7 +437,9 @@ async function withdraw(){
     if(d.ok) loadStatus();
 }
 
+loadUser(); // 🔥 ВАЖНО
 loadStatus();
+
 </script>
 
 </body>
