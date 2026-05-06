@@ -292,6 +292,33 @@ input{
     </div>
 </div>
 
+    <div id="x3modal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.8);
+z-index:9999;
+justify-content:center;
+align-items:center;
+">
+
+    <div style="background:#111;padding:20px;border-radius:16px;text-align:center;width:80%;">
+        <div style="margin-bottom:15px;font-size:18px;">
+            Multiply reward x3?
+        </div>
+
+        <button onclick="watchX3()" style="margin-bottom:10px;width:100%;">
+            Watch ad x3
+        </button>
+
+        <button onclick="closeX3()" style="width:100%;background:#333;">
+            No thanks
+        </button>
+    </div>
+
+</div>
+    
+
 <script>
 
 // 🔥 Adsgram
@@ -417,6 +444,7 @@ async function claim(){
 
         alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
         loadStatus();
+        showX3();
 
     }catch(e){
         alert("Watch ad to claim reward");
@@ -453,6 +481,14 @@ function resumeVideo(){
         v.play().catch(()=>{});
     }, 300);
 }    
+
+function showX3(){
+    document.getElementById("x3modal").style.display = "flex";
+}
+
+function closeX3(){
+    document.getElementById("x3modal").style.display = "none";
+}
 
 loadUser(); // 🔥 ВАЖНО
 loadStatus();
