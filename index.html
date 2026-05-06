@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -250,6 +250,12 @@ input{
 </div>
 
 <script>
+
+// 🔥 Adsgram
+const AdController = window.Adsgram.init({
+    blockId: "29572" // вставь свой
+});    
+    
 const tg = window.Telegram.WebApp;
 tg.expand();
 
@@ -331,19 +337,43 @@ async function loadStatus(){
 
 // ---------- CLAIM ----------
 async function claim(){
-    const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            user_id:getUserId(),
-            device:navigator.userAgent,
-            ip:"tg"
-        })
-    });
+    const btn = document.getElementById("claimBtn");
 
-    const d = await r.json();
-    alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
-    loadStatus();
+    try{
+        btn.disabled = true;
+        btn.innerText = "Loading...";
+
+        // 🔥 ПОКАЗ РЕКЛАМЫ
+        const result = await AdController.show();
+
+        if(result !== "completed"){
+            throw new Error("Ad skipped");
+        }
+
+        // 👉 НАГРАДА ТОЛЬКО ПОСЛЕ ПРОСМОТРА
+        const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                user_id:getUserId(),
+                device:navigator.userAgent,
+                ip:"tg"
+            })
+        });
+
+        const d = await r.json();
+
+        alert(d.ok ? "+"+d.reward+" DOGS" : d.error);
+        loadStatus();
+
+    }catch(e){
+        console.log(e);
+
+        alert("Watch ad to claim reward");
+
+        btn.innerText = "CLAIM";
+        btn.disabled = false;
+    }
 }
 
 // ---------- WITHDRAW ----------
