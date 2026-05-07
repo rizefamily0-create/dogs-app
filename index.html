@@ -1,6 +1,7 @@
+
 <!DOCTYPE html>
 <html>
-<head> 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -17,7 +18,9 @@ body{
     overflow:hidden;
 }
 
-*{ box-sizing:border-box; }
+*{
+    box-sizing:border-box;
+}
 
 .app{
     height:100vh;
@@ -187,6 +190,21 @@ input{
 .rejected{
     color:#ff1744;
 }
+
+.withdraw-info{
+    margin-top:12px;
+    background:#111;
+    border-radius:12px;
+    padding:12px;
+    font-size:14px;
+    line-height:1.7;
+}
+
+.info-title{
+    font-size:13px;
+    opacity:0.7;
+    margin-bottom:8px;
+}
 </style>
 </head>
 
@@ -243,20 +261,52 @@ input{
     </div>
 
     <div class="card">
+
+        <div class="info-title">
+            Minimum withdraw: 1000 DOGS<br>
+            Network fee: 250 DOGS
+        </div>
+
         <input id="wallet" placeholder="TON wallet">
         <input id="memo" placeholder="Memo (optional)">
-        <input id="amount" type="number" placeholder="Amount">
+        <input 
+            id="amount" 
+            type="number" 
+            placeholder="Amount"
+            oninput="updateWithdrawInfo()"
+        >
+
+        <div class="withdraw-info">
+            <div>
+                Withdraw: <span id="withdrawAmount">0</span>
+            </div>
+
+            <div>
+                Receive: <span id="receiveAmount">0</span>
+            </div>
+
+            <div>
+                Fee: <span id="feeAmount">250</span>
+            </div>
+        </div>
+
     </div>
 
-    <button onclick="withdraw()">WITHDRAW</button>
+    <button onclick="withdraw()">
+        WITHDRAW
+    </button>
 
     <!-- HISTORY -->
     <div class="card">
-        <h3 style="margin-top:0;">📜 Withdraw history</h3>
+
+        <h3 style="margin-top:0;">
+            📜 Withdraw history
+        </h3>
 
         <div id="withdrawHistory">
             No withdraws
         </div>
+
     </div>
 
 </div>
@@ -334,6 +384,9 @@ tg.expand();
 
 const API = "https://dogs-7ntt.onrender.com";
 
+const MIN_WITHDRAW = 1000;
+const WITHDRAW_FEE = 250;
+
 const AdController = window.Adsgram.init({
     blockId: "29657"
 });
@@ -390,6 +443,30 @@ function setBalance(id, value){
     document.getElementById(id)
         .querySelector(".num")
         .innerText = value;
+}
+
+// ---------------- WITHDRAW INFO ----------------
+
+function updateWithdrawInfo(){
+
+    const amount = Number(
+        document.getElementById("amount").value || 0
+    );
+
+    let receive = amount - WITHDRAW_FEE;
+
+    if(receive < 0){
+        receive = 0;
+    }
+
+    document.getElementById("withdrawAmount")
+        .innerText = amount;
+
+    document.getElementById("receiveAmount")
+        .innerText = receive;
+
+    document.getElementById("feeAmount")
+        .innerText = WITHDRAW_FEE;
 }
 
 // ---------------- STATUS ----------------
@@ -534,9 +611,10 @@ async function withdraw(){
 
     const wallet = document.getElementById("wallet").value.trim();
     const memo = document.getElementById("memo").value.trim();
-    const amount = document.getElementById("amount").value.trim();
+    const amount = Number(
+        document.getElementById("amount").value.trim()
+    );
 
-    // wallet validation
     if(wallet.length < 20){
 
         tg.showPopup?.({
@@ -546,11 +624,28 @@ async function withdraw(){
         return;
     }
 
-    // amount validation
-    if(!amount || Number(amount) <= 0){
+    if(!amount || amount <= 0){
 
         tg.showPopup?.({
             message:"Enter amount"
+        });
+
+        return;
+    }
+
+    if(amount < MIN_WITHDRAW){
+
+        tg.showPopup?.({
+            message:`Minimum withdraw ${MIN_WITHDRAW}`
+        });
+
+        return;
+    }
+
+    if(amount <= WITHDRAW_FEE){
+
+        tg.showPopup?.({
+            message:"Amount too small"
         });
 
         return;
@@ -574,15 +669,15 @@ async function withdraw(){
     if(d.ok){
 
         tg.showPopup?.({
-            message:"Withdraw request created"
+            message:`You will receive ${d.receive} DOGS`
         });
 
-        // clear inputs
         document.getElementById("wallet").value = "";
         document.getElementById("memo").value = "";
         document.getElementById("amount").value = "";
 
-        // update ui
+        updateWithdrawInfo();
+
         loadStatus();
         loadWithdrawHistory();
 
@@ -638,7 +733,17 @@ async function loadWithdrawHistory(){
             box.innerHTML += `
                 <div class="history-item">
 
-                    <div><b>Amount:</b> ${w.amount}</div>
+                    <div>
+                        <b>Withdraw:</b> ${w.amount}
+                    </div>
+
+                    <div>
+                        <b>Receive:</b> ${w.receive_amount}
+                    </div>
+
+                    <div>
+                        <b>Fee:</b> ${w.fee}
+                    </div>
 
                     <div style="margin-top:6px;">
                         <b>Wallet:</b><br>
@@ -674,6 +779,7 @@ async function loadWithdrawHistory(){
 loadUser();
 loadStatus();
 loadWithdrawHistory();
+updateWithdrawInfo();
 
 setInterval(()=>{
     loadWithdrawHistory();
