@@ -586,16 +586,40 @@ async function watchX3(){
 
     try{
 
+        // показываем рекламу
         await AdController.show();
 
-        tg.showPopup?.({
-            message:"Reward activated"
+        // отправляем запрос на x3 reward
+        const r = await fetch(API + "/claim_x3", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                init_data: tg.initData
+            })
         });
 
-        setTimeout(loadStatus, 1500);
-        setTimeout(loadStatus, 3000);
+        const d = await r.json();
+
+        if(d.ok){
+
+            tg.showPopup?.({
+                message: "+" + d.reward + " DOGS"
+            });
+
+            loadStatus();
+
+        }else{
+
+            tg.showPopup?.({
+                message:"Reward failed"
+            });
+        }
 
     }catch(e){
+
+        console.log(e);
 
         tg.showPopup?.({
             message:"Ad failed"
