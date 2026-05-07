@@ -75,7 +75,10 @@ th, td{
 <!-- USERS -->
 <div class="card">
     <h3>👤 Users</h3>
-    <button onclick="loadUsers()">Refresh users</button>
+
+    <button onclick="loadUsers()">
+        Refresh users
+    </button>
 
     <table>
         <thead>
@@ -85,18 +88,24 @@ th, td{
                 <th>Last Claim</th>
             </tr>
         </thead>
+
         <tbody id="users"></tbody>
     </table>
 </div>
 
 <!-- WITHDRAW -->
 <div class="card">
+
     <h3>💸 Withdraw requests</h3>
-    <button onclick="loadWithdraws()">Refresh withdraws</button>
+
+    <button onclick="loadWithdraws()">
+        Refresh withdraws
+    </button>
 
     <table>
         <thead>
             <tr>
+                <th>ID</th>
                 <th>User</th>
                 <th>Amount</th>
                 <th>Wallet</th>
@@ -105,8 +114,10 @@ th, td{
                 <th>Actions</th>
             </tr>
         </thead>
+
         <tbody id="withdraws"></tbody>
     </table>
+
 </div>
 
 </div>
@@ -118,104 +129,166 @@ tg.expand();
 
 const API = "https://dogs-7ntt.onrender.com";
 
-let initData = tg.initData;
+const initData = tg.initData;
+
 
 // ---------------- USERS ----------------
 async function loadUsers(){
 
-    const r = await fetch(API + "/admin/users", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ init_data: initData })
-    });
+    try{
 
-    const d = await r.json();
+        const r = await fetch(API + "/admin/users", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                init_data: initData
+            })
+        });
 
-    if(!d.ok){
-        document.getElementById("status").innerText = "❌ Not admin";
-        return;
+        const d = await r.json();
+
+        if(!d.ok){
+            document.getElementById("status").innerText =
+                "❌ Not admin";
+
+            return;
+        }
+
+        const tbody = document.getElementById("users");
+
+        tbody.innerHTML = "";
+
+        d.users.forEach(u => {
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${u[0]}</td>
+                    <td>${u[1]}</td>
+                    <td>${u[2]}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("status").innerText =
+            "✅ Users loaded: " + d.users.length;
+
+    }catch(e){
+
+        document.getElementById("status").innerText =
+            "❌ Users error";
     }
-
-    const tbody = document.getElementById("users");
-    tbody.innerHTML = "";
-
-    d.users.forEach(u => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${u[0]}</td>
-                <td>${u[1]}</td>
-                <td>${u[2]}</td>
-            </tr>
-        `;
-    });
-
-    document.getElementById("status").innerText =
-        "✅ Users loaded: " + d.users.length;
 }
 
 
-// ---------------- WITHDRAW ----------------
+// ---------------- WITHDRAWS ----------------
 async function loadWithdraws(){
 
-    const r = await fetch(API + "/admin/withdraws", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ init_data: initData })
-    });
+    try{
 
-    const d = await r.json();
+        const r = await fetch(API + "/admin/withdraws", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                init_data: initData
+            })
+        });
 
-    if(!d.ok){
-        document.getElementById("status").innerText = "❌ Not admin";
-        return;
+        const d = await r.json();
+
+        if(!d.ok){
+
+            document.getElementById("status").innerText =
+                "❌ Withdraw access denied";
+
+            return;
+        }
+
+        const tbody = document.getElementById("withdraws");
+
+        tbody.innerHTML = "";
+
+        d.withdraws.forEach(w => {
+
+            const id = w[0];
+            const user_id = w[1];
+            const amount = w[2];
+            const wallet = w[3];
+            const memo = w[4];
+            const status = w[5];
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${id}</td>
+                    <td>${user_id}</td>
+                    <td>${amount}</td>
+                    <td>${wallet}</td>
+                    <td>${memo}</td>
+                    <td>${status}</td>
+                    <td>
+                        <button 
+                            class="approve"
+                            onclick="approve(${id})"
+                        >
+                            ✔
+                        </button>
+
+                        <button 
+                            class="reject"
+                            onclick="rejectWithdraw(${id})"
+                        >
+                            ✖
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("status").innerText =
+            "💸 Withdraws loaded: " + d.withdraws.length;
+
+    }catch(e){
+
+        console.log(e);
+
+        document.getElementById("status").innerText =
+            "❌ Withdraw error";
     }
-
-    const tbody = document.getElementById("withdraws");
-    tbody.innerHTML = "";
-
-    d.withdraws.forEach(w => {
-
-        tbody.innerHTML += `
-            <tr>
-                <td>${w.user_id}</td>
-                <td>${w.amount}</td>
-                <td>${w.wallet}</td>
-                <td>${w.memo}</td>
-                <td>${w.status}</td>
-                <td>
-                    <button class="approve" onclick="approve(${w.id})">✔</button>
-                    <button class="reject" onclick="reject(${w.id})">✖</button>
-                </td>
-            </tr>
-        `;
-    });
-
-    document.getElementById("status").innerText =
-        "💸 Withdraws: " + d.withdraws.length;
 }
 
 
-// ---------------- ACTIONS ----------------
+// ---------------- APPROVE ----------------
 async function approve(id){
-    await fetch(API + "/admin/withdraw/approve", {
+
+    await fetch(API + "/admin/withdraw/paid", {
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{
+            "Content-Type":"application/json"
+        },
         body: JSON.stringify({
             init_data: initData,
-            id
+            id: id
         })
     });
 
     loadWithdraws();
 }
 
-async function reject(id){
+
+// ---------------- REJECT ----------------
+async function rejectWithdraw(id){
+
     await fetch(API + "/admin/withdraw/reject", {
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{
+            "Content-Type":"application/json"
+        },
         body: JSON.stringify({
             init_data: initData,
-            id
+            id: id
         })
     });
 
