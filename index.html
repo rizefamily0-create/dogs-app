@@ -33,18 +33,10 @@ body{
     height:100%;
     overflow-y:auto;
 }
-.page.active{ display:flex; }
 
-.fade{
-    position:fixed;
-    inset:0;
-    background:#000;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .25s;
-    z-index:999;
+.page.active{
+    display:flex;
 }
-.fade.show{ opacity:0.5; }
 
 .card{
     background:#0b0b0c;
@@ -60,12 +52,26 @@ body{
     font-weight:700;
 }
 
-.balance-left{ display:flex; align-items:baseline; }
+.balance-left{
+    display:flex;
+    align-items:baseline;
+}
 
-.balance .num{ font-size:30px; }
-.balance .unit{ font-size:14px; opacity:0.7; margin-left:6px; }
+.balance .num{
+    font-size:30px;
+}
 
-.user{ display:flex; align-items:center; gap:8px; }
+.balance .unit{
+    font-size:14px;
+    opacity:0.7;
+    margin-left:6px;
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
 
 .user img{
     width:36px;
@@ -139,7 +145,6 @@ input{
     color:#008cff;
 }
 
-/* X3 MODAL */
 #x3modal{
     display:none;
     position:fixed;
@@ -157,12 +162,35 @@ input{
     text-align:center;
     width:80%;
 }
+
+.history-item{
+    background:#111;
+    border-radius:12px;
+    padding:12px;
+    margin-top:10px;
+    font-size:14px;
+}
+
+.status{
+    margin-top:8px;
+    font-weight:700;
+}
+
+.pending{
+    color:#ff9800;
+}
+
+.paid{
+    color:#00e676;
+}
+
+.rejected{
+    color:#ff1744;
+}
 </style>
 </head>
 
 <body>
-
-<div class="fade" id="fade"></div>
 
 <div class="app">
 
@@ -175,6 +203,7 @@ input{
                 <span class="num">0</span>
                 <span class="unit">DOGS</span>
             </div>
+
             <div class="user">
                 <img id="avatar">
             </div>
@@ -182,10 +211,19 @@ input{
     </div>
 
     <div class="center">
-        <video src="dog.mp4" autoplay loop muted playsinline style="width:400px;border-radius:12px;"></video>
+        <video
+            src="dog.mp4"
+            autoplay
+            loop
+            muted
+            playsinline
+            style="width:400px;border-radius:12px;"
+        ></video>
     </div>
 
-    <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
+    <button id="claimBtn" class="claim-btn" onclick="claim()">
+        Loading...
+    </button>
 </div>
 
 <!-- WITHDRAW -->
@@ -197,6 +235,7 @@ input{
                 <span class="num">0</span>
                 <span class="unit">DOGS</span>
             </div>
+
             <div class="user">
                 <img id="avatar2">
             </div>
@@ -205,44 +244,73 @@ input{
 
     <div class="card">
         <input id="wallet" placeholder="TON wallet">
-        <input id="memo" placeholder="Memo">
-        <input id="amount" placeholder="Amount (TON)">
+        <input id="memo" placeholder="Memo (optional)">
+        <input id="amount" type="number" placeholder="Amount">
     </div>
 
     <button onclick="withdraw()">WITHDRAW</button>
+
+    <!-- HISTORY -->
+    <div class="card">
+        <h3 style="margin-top:0;">📜 Withdraw history</h3>
+
+        <div id="withdrawHistory">
+            No withdraws
+        </div>
+    </div>
+
 </div>
 
 <!-- TASKS -->
 <div id="tasks" class="page">
-    <div class="card"><div class="balance"><span class="num">SOON</span></div></div>
+    <div class="card">
+        <div class="balance">
+            <span class="num">SOON</span>
+        </div>
+    </div>
 </div>
 
 <!-- REF -->
 <div id="ref" class="page">
-    <div class="card"><div class="balance"><span class="num">SOON</span></div></div>
+    <div class="card">
+        <div class="balance">
+            <span class="num">SOON</span>
+        </div>
+    </div>
 </div>
 
 </div>
 
 <!-- NAV -->
 <div class="nav">
+
     <div class="nav-item active" onclick="tab('faucet', this)">
-        <span>🐶</span>Claim
+        <span>🐶</span>
+        Claim
     </div>
+
     <div class="nav-item" onclick="tab('withdraw', this)">
-        <span>💸</span>Withdraw
+        <span>💸</span>
+        Withdraw
     </div>
+
     <div class="nav-item" onclick="tab('tasks', this)">
-        <span>📋</span>Tasks
+        <span>📋</span>
+        Tasks
     </div>
+
     <div class="nav-item" onclick="tab('ref', this)">
-        <span>👥</span>Ref
+        <span>👥</span>
+        Ref
     </div>
+
 </div>
 
-<!-- X3 MODAL -->
+<!-- X3 -->
 <div id="x3modal">
+
     <div class="x3box">
+
         <div style="margin-bottom:15px;font-size:18px;">
             Multiply reward x3?
         </div>
@@ -254,7 +322,9 @@ input{
         <button onclick="closeX3()" style="background:#333;">
             No thanks
         </button>
+
     </div>
+
 </div>
 
 <script>
@@ -262,24 +332,39 @@ input{
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const AdController = window.Adsgram.init({ blockId: "29588" });
+const API = "https://dogs-7ntt.onrender.com";
+
+const AdController = window.Adsgram.init({
+    blockId: "29588"
+});
 
 let cooldown = 0;
 let timerInterval = null;
 
-// ---------------- UI ----------------
+// ---------------- TABS ----------------
 
 function tab(id, el){
-    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
 
-    document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-    if(el) el.classList.add("active");
+    document.querySelectorAll(".page")
+        .forEach(p => p.classList.remove("active"));
+
+    document.getElementById(id)
+        .classList.add("active");
+
+    document.querySelectorAll(".nav-item")
+        .forEach(n => n.classList.remove("active"));
+
+    el.classList.add("active");
+
+    if(id === "withdraw"){
+        loadWithdrawHistory();
+    }
 }
 
+// ---------------- X3 ----------------
+
 function showX3(){
-    const m = document.getElementById("x3modal");
-    m.style.display = "flex";
+    document.getElementById("x3modal").style.display = "flex";
 }
 
 function closeX3(){
@@ -289,6 +374,7 @@ function closeX3(){
 // ---------------- USER ----------------
 
 function loadUser(){
+
     const user = tg.initDataUnsafe?.user;
 
     if(user?.photo_url){
@@ -300,16 +386,21 @@ function loadUser(){
 // ---------------- BALANCE ----------------
 
 function setBalance(id, value){
-    document.getElementById(id).querySelector(".num").innerText = value;
+
+    document.getElementById(id)
+        .querySelector(".num")
+        .innerText = value;
 }
 
 // ---------------- STATUS ----------------
 
 async function loadStatus(){
 
-    const r = await fetch("https://dogs-7ntt.onrender.com/status",{
+    const r = await fetch(API + "/status", {
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{
+            "Content-Type":"application/json"
+        },
         body:JSON.stringify({
             init_data: tg.initData
         })
@@ -323,27 +414,37 @@ async function loadStatus(){
     const btn = claimBtn;
 
     if(d.remaining > 0){
+
         cooldown = d.remaining;
+
         btn.disabled = true;
 
         clearInterval(timerInterval);
 
         timerInterval = setInterval(()=>{
+
             if(cooldown <= 0){
+
                 btn.innerText = "CLAIM";
                 btn.disabled = false;
+
                 clearInterval(timerInterval);
+
                 return;
             }
 
             let m = Math.floor(cooldown / 60);
             let s = cooldown % 60;
 
-            btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
+            btn.innerText =
+                `${m}:${s.toString().padStart(2,"0")}`;
+
             cooldown--;
+
         },1000);
 
-    } else {
+    }else{
+
         btn.innerText = "CLAIM";
         btn.disabled = false;
     }
@@ -352,6 +453,7 @@ async function loadStatus(){
 // ---------------- CLAIM ----------------
 
 async function claim(){
+
     const btn = claimBtn;
 
     btn.disabled = true;
@@ -359,9 +461,11 @@ async function claim(){
 
     try{
 
-        const r = await fetch("https://dogs-7ntt.onrender.com/claim",{
+        const r = await fetch(API + "/claim", {
             method:"POST",
-            headers:{"Content-Type":"application/json"},
+            headers:{
+                "Content-Type":"application/json"
+            },
             body:JSON.stringify({
                 init_data: tg.initData,
                 device: navigator.userAgent
@@ -372,21 +476,28 @@ async function claim(){
 
         if(d.ok){
 
-            tg.showPopup?.({ message: "+"+d.reward+" DOGS" });
+            tg.showPopup?.({
+                message: "+" + d.reward + " DOGS"
+            });
+
+            loadStatus();
 
             setTimeout(()=>{
                 showX3();
-            }, 300);
+            },300);
 
-        } else {
-            tg.showPopup?.({ message: d.error });
+        }else{
+
+            tg.showPopup?.({
+                message: d.error
+            });
+
             btn.disabled = false;
             btn.innerText = "CLAIM";
         }
 
-        loadStatus();
-
     }catch(e){
+
         btn.disabled = false;
         btn.innerText = "CLAIM";
     }
@@ -401,19 +512,17 @@ async function watchX3(){
         await AdController.show();
 
         tg.showPopup?.({
-            message: "Reward activated"
+            message:"Reward activated"
         });
 
-        // ждём callback от AdsGram
         setTimeout(loadStatus, 1500);
         setTimeout(loadStatus, 3000);
 
     }catch(e){
 
         tg.showPopup?.({
-            message: "Ad failed"
+            message:"Ad failed"
         });
-
     }
 
     closeX3();
@@ -423,28 +532,148 @@ async function watchX3(){
 
 async function withdraw(){
 
-    const r = await fetch("https://dogs-7ntt.onrender.com/withdraw",{
+    const wallet = document.getElementById("wallet").value.trim();
+    const memo = document.getElementById("memo").value.trim();
+    const amount = document.getElementById("amount").value.trim();
+
+    // wallet validation
+    if(wallet.length < 20){
+
+        tg.showPopup?.({
+            message:"Enter valid TON wallet"
+        });
+
+        return;
+    }
+
+    // amount validation
+    if(!amount || Number(amount) <= 0){
+
+        tg.showPopup?.({
+            message:"Enter amount"
+        });
+
+        return;
+    }
+
+    const r = await fetch(API + "/withdraw", {
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{
+            "Content-Type":"application/json"
+        },
         body:JSON.stringify({
             init_data: tg.initData,
-            wallet: wallet.value,
-            memo: memo.value,
-            amount: amount.value
+            wallet,
+            memo,
+            amount
         })
     });
 
     const d = await r.json();
 
-    tg.showPopup?.({
-        message: d.ok ? "Sent" : d.error
-    });
+    if(d.ok){
+
+        tg.showPopup?.({
+            message:"Withdraw request created"
+        });
+
+        // clear inputs
+        document.getElementById("wallet").value = "";
+        document.getElementById("memo").value = "";
+        document.getElementById("amount").value = "";
+
+        // update ui
+        loadStatus();
+        loadWithdrawHistory();
+
+    }else{
+
+        tg.showPopup?.({
+            message:d.error
+        });
+    }
+}
+
+// ---------------- HISTORY ----------------
+
+async function loadWithdrawHistory(){
+
+    try{
+
+        const r = await fetch(API + "/withdraw/history", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        const box = document.getElementById("withdrawHistory");
+
+        box.innerHTML = "";
+
+        if(!d.history || d.history.length === 0){
+
+            box.innerHTML = "No withdraws";
+
+            return;
+        }
+
+        d.history.forEach(w => {
+
+            let statusClass = "pending";
+
+            if(w.status === "paid"){
+                statusClass = "paid";
+            }
+
+            if(w.status === "rejected"){
+                statusClass = "rejected";
+            }
+
+            box.innerHTML += `
+                <div class="history-item">
+
+                    <div><b>Amount:</b> ${w.amount}</div>
+
+                    <div style="margin-top:6px;">
+                        <b>Wallet:</b><br>
+                        ${w.wallet}
+                    </div>
+
+                    ${
+                        w.memo
+                        ?
+                        `<div style="margin-top:6px;">
+                            <b>Memo:</b> ${w.memo}
+                        </div>`
+                        :
+                        ""
+                    }
+
+                    <div class="status ${statusClass}">
+                        ${w.status}
+                    </div>
+
+                </div>
+            `;
+        });
+
+    }catch(e){
+
+        console.log(e);
+    }
 }
 
 // ---------------- INIT ----------------
 
 loadUser();
 loadStatus();
+loadWithdrawHistory();
 
 </script>
 
