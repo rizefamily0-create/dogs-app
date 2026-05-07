@@ -36,6 +36,7 @@ button{
     border:none;
     font-weight:700;
     margin-top:5px;
+    cursor:pointer;
 }
 
 .approve{
@@ -59,6 +60,19 @@ th, td{
     border-bottom:1px solid #222;
     text-align:left;
 }
+
+.status{
+    font-weight:700;
+}
+
+.pending{ color:#ffb300; }
+.paid{ color:#00e676; }
+.rejected{ color:#ff5252; }
+
+.small{
+    opacity:0.7;
+    font-size:12px;
+}
 </style>
 </head>
 
@@ -72,13 +86,18 @@ th, td{
     <div id="status">Loading...</div>
 </div>
 
+<!-- DASHBOARD -->
+<div class="card">
+    <h3>📊 Dashboard</h3>
+    <div id="dashboard">Loading...</div>
+    <button onclick="loadDashboard()">Refresh dashboard</button>
+</div>
+
 <!-- USERS -->
 <div class="card">
     <h3>👤 Users</h3>
 
-    <button onclick="loadUsers()">
-        Refresh users
-    </button>
+    <button onclick="loadUsers()">Refresh users</button>
 
     <table>
         <thead>
@@ -98,9 +117,7 @@ th, td{
 
     <h3>💸 Withdraw requests</h3>
 
-    <button onclick="loadWithdraws()">
-        Refresh withdraws
-    </button>
+    <button onclick="loadWithdraws()">Refresh withdraws</button>
 
     <table>
         <thead>
@@ -128,8 +145,38 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 const API = "https://dogs-7ntt.onrender.com";
-
 const initData = tg.initData;
+
+
+// ---------------- DASHBOARD ----------------
+async function loadDashboard(){
+
+    try{
+
+        const r = await fetch(API + "/admin/dashboard", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ init_data: initData })
+        });
+
+        const d = await r.json();
+
+        if(!d.ok){
+            document.getElementById("status").innerText = "❌ Not admin";
+            return;
+        }
+
+        document.getElementById("dashboard").innerHTML = `
+            👤 Users: <b>${d.users}</b><br>
+            💰 Total balance: <b>${d.balance}</b><br>
+            ⏳ Pending withdraws: <b>${d.pending}</b><br>
+            ✅ Paid today: <b>${d.paid_today}</b>
+        `;
+
+    }catch(e){
+        console.log(e);
+    }
+}
 
 
 // ---------------- USERS ----------------
@@ -139,34 +186,31 @@ async function loadUsers(){
 
         const r = await fetch(API + "/admin/users", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                init_data: initData
-            })
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ init_data: initData })
         });
 
         const d = await r.json();
 
         if(!d.ok){
-            document.getElementById("status").innerText =
-                "❌ Not admin";
-
+            document.getElementById("status").innerText = "❌ Not admin";
             return;
         }
 
         const tbody = document.getElementById("users");
-
         tbody.innerHTML = "";
 
         d.users.forEach(u => {
 
+            const user_id = u[0] ?? "-";
+            const balance = u[1] ?? 0;
+            const last = u[2] ?? "-";
+
             tbody.innerHTML += `
                 <tr>
-                    <td>${u[0]}</td>
-                    <td>${u[1]}</td>
-                    <td>${u[2]}</td>
+                    <td>${user_id}</td>
+                    <td>${balance}</td>
+                    <td>${last}</td>
                 </tr>
             `;
         });
@@ -175,9 +219,7 @@ async function loadUsers(){
             "✅ Users loaded: " + d.users.length;
 
     }catch(e){
-
-        document.getElementById("status").innerText =
-            "❌ Users error";
+        console.log(e);
     }
 }
 
@@ -187,61 +229,41 @@ async function loadWithdraws(){
 
     try{
 
-        const r = await fetch(API + "/admin/withdraws", {
+        const r = await fetch(API + "/admin/withdraw/list", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                init_data: initData
-            })
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ init_data: initData })
         });
 
         const d = await r.json();
 
         if(!d.ok){
-
-            document.getElementById("status").innerText =
-                "❌ Withdraw access denied";
-
+            document.getElementById("status").innerText = "❌ Access denied";
             return;
         }
 
         const tbody = document.getElementById("withdraws");
-
         tbody.innerHTML = "";
 
         d.withdraws.forEach(w => {
 
-            const id = w[0];
-            const user_id = w[1];
-            const amount = w[2];
-            const wallet = w[3];
-            const memo = w[4];
-            const status = w[5];
+            const statusClass =
+                w.status === "paid" ? "paid" :
+                w.status === "rejected" ? "rejected" : "pending";
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${id}</td>
-                    <td>${user_id}</td>
-                    <td>${amount}</td>
-                    <td>${wallet}</td>
-                    <td>${memo}</td>
-                    <td>${status}</td>
+                    <td>${w.id}</td>
+                    <td>${w.user_id}</td>
+                    <td>${w.amount}</td>
+                    <td>${w.wallet}</td>
+                    <td>${w.memo || ""}</td>
+                    <td class="status ${statusClass}">
+                        ${w.status}
+                    </td>
                     <td>
-                        <button 
-                            class="approve"
-                            onclick="approve(${id})"
-                        >
-                            ✔
-                        </button>
-
-                        <button 
-                            class="reject"
-                            onclick="rejectWithdraw(${id})"
-                        >
-                            ✖
-                        </button>
+                        <button class="approve" onclick="approve(${w.id})">✔</button>
+                        <button class="reject" onclick="rejectWithdraw(${w.id})">✖</button>
                     </td>
                 </tr>
             `;
@@ -251,11 +273,7 @@ async function loadWithdraws(){
             "💸 Withdraws loaded: " + d.withdraws.length;
 
     }catch(e){
-
         console.log(e);
-
-        document.getElementById("status").innerText =
-            "❌ Withdraw error";
     }
 }
 
@@ -263,11 +281,9 @@ async function loadWithdraws(){
 // ---------------- APPROVE ----------------
 async function approve(id){
 
-    await fetch(API + "/admin/withdraw/paid", {
+    await fetch(API + "/admin/withdraw/approve", {
         method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
+        headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
             init_data: initData,
             id: id
@@ -275,6 +291,7 @@ async function approve(id){
     });
 
     loadWithdraws();
+    loadDashboard();
 }
 
 
@@ -283,9 +300,7 @@ async function rejectWithdraw(id){
 
     await fetch(API + "/admin/withdraw/reject", {
         method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
+        headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
             init_data: initData,
             id: id
@@ -293,12 +308,20 @@ async function rejectWithdraw(id){
     });
 
     loadWithdraws();
+    loadDashboard();
 }
 
 
-// auto load
-loadUsers();
-loadWithdraws();
+// ---------------- AUTO REALTIME ----------------
+function autoRefresh(){
+
+    loadDashboard();
+    loadUsers();
+    loadWithdraws();
+}
+
+autoRefresh();
+setInterval(autoRefresh, 15000); // каждые 15 сек
 
 </script>
 
