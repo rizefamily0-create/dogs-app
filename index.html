@@ -675,6 +675,11 @@ loadUser();
 loadStatus();
 loadWithdrawHistory();
 
+setInterval(()=>{
+    loadWithdrawHistory();
+    loadStatus();
+}, 4000);
+
 </script>
 
 </body>
