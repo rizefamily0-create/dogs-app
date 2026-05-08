@@ -7,6 +7,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
+
 body{
     margin:0;
     background:#000;
@@ -16,9 +17,10 @@ body{
 
 .container{
     padding:16px;
+    padding-bottom:90px;
 }
 
-h2{
+h2,h3{
     margin:0 0 10px 0;
 }
 
@@ -39,6 +41,17 @@ button{
     cursor:pointer;
 }
 
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#1a1a1a;
+    color:#fff;
+    margin-top:8px;
+    box-sizing:border-box;
+}
+
 .approve{
     background:#00c853;
     color:#000;
@@ -46,6 +59,11 @@ button{
 
 .reject{
     background:#ff1744;
+    color:#fff;
+}
+
+.blue{
+    background:#008cff;
     color:#fff;
 }
 
@@ -73,6 +91,64 @@ th, td{
     opacity:0.7;
     font-size:12px;
 }
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    display:flex;
+    background:#0a0a0a;
+    border-top:1px solid #111;
+    padding:10px;
+}
+
+.nav-item{
+    flex:1;
+    text-align:center;
+    color:#666;
+    font-size:11px;
+    cursor:pointer;
+}
+
+.nav-item span{
+    display:block;
+    font-size:20px;
+}
+
+.nav-item.active{
+    color:#008cff;
+}
+
+.task-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:10px;
+    background:#1a1a1a;
+    padding:10px;
+    border-radius:10px;
+}
+
+.task-row img{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+}
+
+.delete-btn{
+    background:#ff1744;
+    color:#fff;
+}
+
 </style>
 </head>
 
@@ -86,56 +162,169 @@ th, td{
     <div id="status">Loading...</div>
 </div>
 
-<!-- DASHBOARD -->
-<div class="card">
-    <h3>📊 Dashboard</h3>
-    <div id="dashboard">Loading...</div>
-    <button onclick="loadDashboard()">Refresh dashboard</button>
-</div>
+<!-- ================= DASHBOARD PAGE ================= -->
+<div id="dashboardPage" class="page active">
 
-<!-- USERS -->
-<div class="card">
-    <h3>👤 Users</h3>
+    <!-- DASHBOARD -->
+    <div class="card">
+        <h3>📊 Dashboard</h3>
 
-    <button onclick="loadUsers()">Refresh users</button>
+        <div id="dashboard">Loading...</div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>User ID</th>
-                <th>Balance</th>
-                <th>Last Claim</th>
-            </tr>
-        </thead>
+        <button onclick="loadDashboard()">
+            Refresh dashboard
+        </button>
+    </div>
 
-        <tbody id="users"></tbody>
-    </table>
-</div>
+    <!-- USERS -->
+    <div class="card">
 
-<!-- WITHDRAW -->
-<div class="card">
+        <h3>👤 Users</h3>
 
-    <h3>💸 Withdraw requests</h3>
+        <button onclick="loadUsers()">
+            Refresh users
+        </button>
 
-    <button onclick="loadWithdraws()">Refresh withdraws</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Balance</th>
+                    <th>Last Claim</th>
+                </tr>
+            </thead>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Amount</th>
-                <th>Wallet</th>
-                <th>Memo</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-
-        <tbody id="withdraws"></tbody>
-    </table>
+            <tbody id="users"></tbody>
+        </table>
+    </div>
 
 </div>
+
+<!-- ================= WITHDRAW PAGE ================= -->
+<div id="withdrawPage" class="page">
+
+    <div class="card">
+
+        <h3>💸 Withdraw requests</h3>
+
+        <button onclick="loadWithdraws()">
+            Refresh withdraws
+        </button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Receive</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="withdraws"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ================= PROMO PAGE ================= -->
+<div id="promoPage" class="page">
+
+    <!-- CREATE PROMO -->
+    <div class="card">
+
+        <h3>🎁 Create Promo Code</h3>
+
+        <input id="promoCode" placeholder="Promo code">
+
+        <input id="promoReward" type="number" placeholder="Reward">
+
+        <input id="promoActivations" type="number" placeholder="Activations">
+
+        <button class="blue" onclick="createPromo()">
+            Create promo
+        </button>
+
+    </div>
+
+    <!-- ACTIVE PROMOS -->
+    <div class="card">
+
+        <h3>🎟 Active Promo Codes</h3>
+
+        <div id="promoList">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= TASK PAGE ================= -->
+<div id="taskPage" class="page">
+
+    <!-- CREATE TASK -->
+    <div class="card">
+
+        <h3>📋 Create Task</h3>
+
+        <input id="taskTitle" placeholder="Channel name">
+
+        <input id="taskLink" placeholder="https://t.me/...">
+
+        <input id="taskAvatar" placeholder="Avatar URL">
+
+        <input id="taskReward" type="number" placeholder="Reward">
+
+        <input id="taskMax" type="number" placeholder="Max completions">
+
+        <button class="blue" onclick="createTask()">
+            Create task
+        </button>
+
+    </div>
+
+    <!-- ACTIVE TASKS -->
+    <div class="card">
+
+        <h3>✅ Active Tasks</h3>
+
+        <div id="taskList">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- ================= NAVIGATION ================= -->
+
+<div class="nav">
+
+    <div class="nav-item active" onclick="openPage('dashboardPage', this)">
+        <span>📊</span>
+        Dashboard
+    </div>
+
+    <div class="nav-item" onclick="openPage('withdrawPage', this)">
+        <span>💸</span>
+        Withdraws
+    </div>
+
+    <div class="nav-item" onclick="openPage('promoPage', this)">
+        <span>🎁</span>
+        Promo
+    </div>
+
+    <div class="nav-item" onclick="openPage('taskPage', this)">
+        <span>📋</span>
+        Tasks
+    </div>
 
 </div>
 
@@ -148,7 +337,25 @@ const API = "https://dogs-7ntt.onrender.com";
 const initData = tg.initData;
 
 
-// ---------------- DASHBOARD ----------------
+// ================= NAVIGATION =================
+
+function openPage(id, el){
+
+    document.querySelectorAll(".page")
+        .forEach(p => p.classList.remove("active"));
+
+    document.getElementById(id)
+        .classList.add("active");
+
+    document.querySelectorAll(".nav-item")
+        .forEach(n => n.classList.remove("active"));
+
+    el.classList.add("active");
+}
+
+
+// ================= DASHBOARD =================
+
 async function loadDashboard(){
 
     try{
@@ -179,7 +386,8 @@ async function loadDashboard(){
 }
 
 
-// ---------------- USERS ----------------
+// ================= USERS =================
+
 async function loadUsers(){
 
     try{
@@ -192,31 +400,19 @@ async function loadUsers(){
 
         const d = await r.json();
 
-        if(!d.ok){
-            document.getElementById("status").innerText = "❌ Not admin";
-            return;
-        }
-
         const tbody = document.getElementById("users");
         tbody.innerHTML = "";
 
         d.users.forEach(u => {
 
-            const user_id = u[0] ?? "-";
-            const balance = u[1] ?? 0;
-            const last = u[2] ?? "-";
-
             tbody.innerHTML += `
                 <tr>
-                    <td>${user_id}</td>
-                    <td>${balance}</td>
-                    <td>${last}</td>
+                    <td>${u[0]}</td>
+                    <td>${u[1]}</td>
+                    <td>${u[2]}</td>
                 </tr>
             `;
         });
-
-        document.getElementById("status").innerText =
-            "✅ Users loaded: " + d.users.length;
 
     }catch(e){
         console.log(e);
@@ -224,7 +420,8 @@ async function loadUsers(){
 }
 
 
-// ---------------- WITHDRAWS ----------------
+// ================= WITHDRAWS =================
+
 async function loadWithdraws(){
 
     try{
@@ -237,12 +434,8 @@ async function loadWithdraws(){
 
         const d = await r.json();
 
-        if(!d.ok){
-            document.getElementById("status").innerText = "❌ Access denied";
-            return;
-        }
-
         const tbody = document.getElementById("withdraws");
+
         tbody.innerHTML = "";
 
         d.withdraws.forEach(w => {
@@ -256,8 +449,7 @@ async function loadWithdraws(){
                     <td>${w.id}</td>
                     <td>${w.user_id}</td>
                     <td>${w.amount}</td>
-                    <td>${w.wallet}</td>
-                    <td>${w.memo || ""}</td>
+                    <td>${w.receive_amount}</td>
                     <td class="status ${statusClass}">
                         ${w.status}
                     </td>
@@ -269,16 +461,14 @@ async function loadWithdraws(){
             `;
         });
 
-        document.getElementById("status").innerText =
-            "💸 Withdraws loaded: " + d.withdraws.length;
-
     }catch(e){
         console.log(e);
     }
 }
 
 
-// ---------------- APPROVE ----------------
+// ================= APPROVE =================
+
 async function approve(id){
 
     await fetch(API + "/admin/withdraw/approve", {
@@ -286,7 +476,7 @@ async function approve(id){
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
             init_data: initData,
-            id: id
+            id
         })
     });
 
@@ -295,7 +485,8 @@ async function approve(id){
 }
 
 
-// ---------------- REJECT ----------------
+// ================= REJECT =================
+
 async function rejectWithdraw(id){
 
     await fetch(API + "/admin/withdraw/reject", {
@@ -303,7 +494,7 @@ async function rejectWithdraw(id){
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
             init_data: initData,
-            id: id
+            id
         })
     });
 
@@ -312,16 +503,241 @@ async function rejectWithdraw(id){
 }
 
 
-// ---------------- AUTO REALTIME ----------------
+// ================= CREATE PROMO =================
+
+async function createPromo(){
+
+    const code = document.getElementById("promoCode").value.trim();
+    const reward = document.getElementById("promoReward").value;
+    const activations = document.getElementById("promoActivations").value;
+
+    const r = await fetch(API + "/admin/promo/create", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            init_data: initData,
+            code,
+            reward,
+            activations
+        })
+    });
+
+    const d = await r.json();
+
+    if(d.ok){
+
+        tg.showPopup({
+            message:"Promo created"
+        });
+
+        document.getElementById("promoCode").value = "";
+        document.getElementById("promoReward").value = "";
+        document.getElementById("promoActivations").value = "";
+
+        loadPromos();
+    }
+}
+
+
+// ================= LOAD PROMOS =================
+
+async function loadPromos(){
+
+    const r = await fetch(API + "/admin/promo/list", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            init_data:initData
+        })
+    });
+
+    const d = await r.json();
+
+    const box = document.getElementById("promoList");
+
+    box.innerHTML = "";
+
+    d.promos.forEach(p => {
+
+        box.innerHTML += `
+            <div class="task-row">
+
+                <div style="flex:1;">
+                    <b>${p.code}</b><br>
+
+                    Reward: ${p.reward}<br>
+
+                    Remaining: ${p.activations}
+                </div>
+
+                <button
+                    class="delete-btn"
+                    onclick="deletePromo(${p.id})"
+                >
+                    Delete
+                </button>
+
+            </div>
+        `;
+    });
+}
+
+
+// ================= DELETE PROMO =================
+
+async function deletePromo(id){
+
+    await fetch(API + "/admin/promo/delete", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            init_data:initData,
+            id
+        })
+    });
+
+    loadPromos();
+}
+
+
+// ================= CREATE TASK =================
+
+async function createTask(){
+
+    const title = document.getElementById("taskTitle").value.trim();
+
+    const link = document.getElementById("taskLink").value.trim();
+
+    const avatar = document.getElementById("taskAvatar").value.trim();
+
+    const reward = document.getElementById("taskReward").value;
+
+    const maxCompletions =
+        document.getElementById("taskMax").value;
+
+    const r = await fetch(API + "/admin/task/create", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            init_data:initData,
+            title,
+            link,
+            avatar,
+            reward,
+            max_completions:maxCompletions
+        })
+    });
+
+    const d = await r.json();
+
+    if(d.ok){
+
+        tg.showPopup({
+            message:"Task created"
+        });
+
+        document.getElementById("taskTitle").value = "";
+        document.getElementById("taskLink").value = "";
+        document.getElementById("taskAvatar").value = "";
+        document.getElementById("taskReward").value = "";
+        document.getElementById("taskMax").value = "";
+
+        loadTasks();
+    }
+}
+
+
+// ================= LOAD TASKS =================
+
+async function loadTasks(){
+
+    const r = await fetch(API + "/admin/task/list", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            init_data:initData
+        })
+    });
+
+    const d = await r.json();
+
+    const box = document.getElementById("taskList");
+
+    box.innerHTML = "";
+
+    d.tasks.forEach(t => {
+
+        box.innerHTML += `
+            <div class="task-row">
+
+                <img src="${t.avatar}">
+
+                <div style="flex:1;">
+
+                    <b>${t.title}</b><br>
+
+                    Reward: ${t.reward}<br>
+
+                    ${t.completed_count}/${t.max_completions}
+
+                </div>
+
+                <button
+                    class="delete-btn"
+                    onclick="deleteTask(${t.id})"
+                >
+                    Delete
+                </button>
+
+            </div>
+        `;
+    });
+}
+
+
+// ================= DELETE TASK =================
+
+async function deleteTask(id){
+
+    await fetch(API + "/admin/task/delete", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            init_data:initData,
+            id
+        })
+    });
+
+    loadTasks();
+}
+
+
+// ================= AUTO REFRESH =================
+
 function autoRefresh(){
 
     loadDashboard();
     loadUsers();
     loadWithdraws();
+    loadPromos();
+    loadTasks();
 }
 
 autoRefresh();
-setInterval(autoRefresh, 15000); // каждые 15 сек
+
+setInterval(autoRefresh, 15000);
 
 </script>
 
