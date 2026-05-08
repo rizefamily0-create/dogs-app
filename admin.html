@@ -271,11 +271,7 @@ th, td{
 
         <h3>📋 Create Task</h3>
 
-        <input id="taskTitle" placeholder="Channel name">
-
         <input id="taskLink" placeholder="https://t.me/...">
-
-        <input id="taskAvatar" placeholder="Avatar URL">
 
         <input id="taskReward" type="number" placeholder="Reward">
 
@@ -610,16 +606,16 @@ async function deletePromo(id){
 
 async function createTask(){
 
-    const title = document.getElementById("taskTitle").value.trim();
-
     const link = document.getElementById("taskLink").value.trim();
-
-    const avatar = document.getElementById("taskAvatar").value.trim();
 
     const reward = document.getElementById("taskReward").value;
 
     const maxCompletions =
         document.getElementById("taskMax").value;
+
+    if(!link){
+        return;
+    }
 
     const r = await fetch(API + "/admin/task/create", {
         method:"POST",
@@ -628,9 +624,7 @@ async function createTask(){
         },
         body: JSON.stringify({
             init_data:initData,
-            title,
             link,
-            avatar,
             reward,
             max_completions:maxCompletions
         })
@@ -644,16 +638,19 @@ async function createTask(){
             message:"Task created"
         });
 
-        document.getElementById("taskTitle").value = "";
         document.getElementById("taskLink").value = "";
-        document.getElementById("taskAvatar").value = "";
         document.getElementById("taskReward").value = "";
         document.getElementById("taskMax").value = "";
 
         loadTasks();
+
+    }else{
+
+        tg.showPopup({
+            message:d.error || "Error"
+        });
     }
 }
-
 
 // ================= LOAD TASKS =================
 
