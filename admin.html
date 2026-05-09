@@ -218,6 +218,7 @@ th, td{
                     <th>User</th>
                     <th>Amount</th>
                     <th>Receive</th>
+                    <th>Wallet</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -365,9 +366,16 @@ async function loadDashboard(){
         const d = await r.json();
 
         if(!d.ok){
-            document.getElementById("status").innerText = "❌ Not admin";
+
+            document.getElementById("status").innerText =
+                "❌ Not admin";
+
             return;
         }
+
+        // ВОТ ЭТО ДОБАВЬ
+        document.getElementById("status").innerText =
+            "🟢 Admin authorized";
 
         document.getElementById("dashboard").innerHTML = `
             👤 Users: <b>${d.users}</b><br>
@@ -377,7 +385,11 @@ async function loadDashboard(){
         `;
 
     }catch(e){
+
         console.log(e);
+
+        document.getElementById("status").innerText =
+            "❌ Connection error";
     }
 }
 
@@ -442,17 +454,61 @@ async function loadWithdraws(){
 
             tbody.innerHTML += `
                 <tr>
+
                     <td>${w.id}</td>
+
                     <td>${w.user_id}</td>
+
                     <td>${w.amount}</td>
+
                     <td>${w.receive_amount}</td>
+
+                    <td>
+
+                        <div style="max-width:220px;word-break:break-all;">
+
+                            <b>Wallet:</b><br>
+                            ${w.wallet || "-"}
+
+                            ${
+                                w.memo
+                                ?
+                                `
+                                <div style="margin-top:6px;">
+                                    <b>Memo:</b><br>
+                                    ${w.memo}
+                                </div>
+                                `
+                                :
+                                ""
+                            }
+
+                        </div>
+
+                    </td>
+
                     <td class="status ${statusClass}">
                         ${w.status}
                     </td>
+
                     <td>
-                        <button class="approve" onclick="approve(${w.id})">✔</button>
-                        <button class="reject" onclick="rejectWithdraw(${w.id})">✖</button>
+
+                        <button
+                            class="approve"
+                            onclick="approve(${w.id})"
+                        >
+                            ✔
+                        </button>
+
+                        <button
+                            class="reject"
+                            onclick="rejectWithdraw(${w.id})"
+                        >
+                            ✖
+                        </button>
+
                     </td>
+
                 </tr>
             `;
         });
