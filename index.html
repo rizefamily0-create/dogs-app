@@ -684,9 +684,18 @@ async function claim(){
 
 // ---------------- DAILY BONUS ----------------
 
+// ---------------- DAILY BONUS ----------------
+
+let dailyTimerInterval = null;
+
 async function dailyBonus(){
 
     const btn = document.getElementById("dailyBtn");
+
+    // если уже идет таймер — не даем нажимать
+    if(btn.dataset.locked === "1"){
+        return;
+    }
 
     btn.disabled = true;
     btn.innerText = "Loading...";
@@ -715,7 +724,7 @@ async function dailyBonus(){
 
             loadStatus();
 
-            btn.innerText = "CLAIMED";
+            startDailyCooldown(86400);
 
         }else{
 
@@ -723,8 +732,16 @@ async function dailyBonus(){
                 message:d.error || "Already claimed"
             });
 
-            btn.disabled = false;
-            btn.innerText = "CLAIM DAILY BONUS";
+            // если уже забрал — тоже запускаем таймер
+            if(d.error === "already_claimed"){
+
+                startDailyCooldown(86400);
+
+            }else{
+
+                btn.disabled = false;
+                btn.innerText = "CLAIM DAILY BONUS";
+            }
         }
 
     }catch(e){
@@ -737,6 +754,80 @@ async function dailyBonus(){
         btn.innerText = "CLAIM DAILY BONUS";
     }
 }
+
+
+// ---------------- DAILY TIMER ----------------
+
+function startDailyCooldown(seconds){
+
+    const btn = document.getElementById("dailyBtn");
+
+    btn.dataset.locked = "1";
+
+    clearInterval(dailyTimerInterval);
+
+    let timeLeft = seconds;
+
+    function update(){
+
+        if(timeLeft <= 0){
+
+            clearInterval(dailyTimerInterval);
+
+            btn.disabled = false;
+            btn.dataset.locked = "0";
+            btn.innerText = "CLAIM DAILY BONUS";
+
+            return;
+        }
+
+        const h = Math.floor(timeLeft / 3600);
+        const m = Math.floor((timeLeft % 3600) / 60);
+        const s = timeLeft % 60;
+
+        btn.disabled = true;
+
+        btn.innerText =
+            `${h}h ${m}m ${s}s`;
+
+        timeLeft--;
+    }
+
+    update();
+
+    dailyTimerInterval = setInterval(update, 1000);
+}
+
+// ---------------- LOAD DAILY STATUS ----------------
+
+async function loadDailyStatus(){
+
+    try{
+
+        const r = await fetch(API + "/daily_bonus", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData,
+                check: true
+            })
+        });
+
+        const d = await r.json();
+
+        if(d.remaining > 0){
+
+            startDailyCooldown(d.remaining);
+        }
+
+    }catch(e){
+
+        console.log(e);
+    }
+}
+
 
 // ---------------- PROMO ----------------
 
@@ -1163,6 +1254,7 @@ loadUser();
 loadStatus();
 loadWithdrawHistory();
 loadTasks();
+loadDailyStatus();
 updateWithdrawInfo();
 
 setInterval(()=>{
