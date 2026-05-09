@@ -98,6 +98,7 @@ button{
     color:white;
     font-weight:700;
     font-size:16px;
+    cursor:pointer;
 }
 
 button:disabled{
@@ -205,6 +206,45 @@ input{
     opacity:0.7;
     margin-bottom:8px;
 }
+
+.task-item{
+    background:#111;
+    border-radius:14px;
+    padding:12px;
+    margin-top:12px;
+}
+
+.task-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.task-avatar{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.task-title{
+    font-size:15px;
+    font-weight:700;
+}
+
+.task-reward{
+    opacity:0.7;
+    font-size:13px;
+    margin-top:4px;
+}
+
+.daily-box{
+    margin-top:14px;
+}
+
+.promo-btn{
+    margin-top:10px;
+}
 </style>
 </head>
 
@@ -226,6 +266,48 @@ input{
                 <img id="avatar">
             </div>
         </div>
+    </div>
+
+    <!-- DAILY BONUS -->
+    <div class="card daily-box">
+
+        <div style="font-size:18px;font-weight:700;">
+            🎁 Daily Bonus
+        </div>
+
+        <div style="opacity:0.7;margin-top:6px;">
+            Watch ad and get 100 DOGS every 24h
+        </div>
+
+        <button
+            id="dailyBtn"
+            style="margin-top:12px;"
+            onclick="dailyBonus()"
+        >
+            CLAIM DAILY BONUS
+        </button>
+
+    </div>
+
+    <!-- PROMO -->
+    <div class="card">
+
+        <div style="font-size:18px;font-weight:700;">
+            🎟 Promo Code
+        </div>
+
+        <input
+            id="promoInput"
+            placeholder="Enter promo code"
+        >
+
+        <button
+            class="promo-btn"
+            onclick="activatePromo()"
+        >
+            ACTIVATE
+        </button>
+
     </div>
 
     <div class="center">
@@ -263,15 +345,15 @@ input{
     <div class="card">
 
         <div class="info-title">
-            Minimum withdraw: 10000 DOGS<br>
+            Minimum withdraw: 1000 DOGS<br>
             Network fee: 250 DOGS
         </div>
 
         <input id="wallet" placeholder="TON wallet">
         <input id="memo" placeholder="Memo (optional)">
-        <input 
-            id="amount" 
-            type="number" 
+        <input
+            id="amount"
+            type="number"
             placeholder="Amount"
             oninput="updateWithdrawInfo()"
         >
@@ -296,7 +378,6 @@ input{
         WITHDRAW
     </button>
 
-    <!-- HISTORY -->
     <div class="card">
 
         <h3 style="margin-top:0;">
@@ -313,11 +394,19 @@ input{
 
 <!-- TASKS -->
 <div id="tasks" class="page">
+
     <div class="card">
-        <div class="balance">
-            <span class="num">SOON</span>
+        <div style="font-size:20px;font-weight:700;">
+            📋 Tasks
+        </div>
+
+        <div style="opacity:0.7;margin-top:5px;">
+            Subscribe and earn DOGS
         </div>
     </div>
+
+    <div id="tasksList"></div>
+
 </div>
 
 <!-- REF -->
@@ -411,6 +500,10 @@ function tab(id, el){
 
     if(id === "withdraw"){
         loadWithdrawHistory();
+    }
+
+    if(id === "tasks"){
+        loadTasks();
     }
 }
 
@@ -580,16 +673,251 @@ async function claim(){
     }
 }
 
+// ---------------- DAILY BONUS ----------------
+
+async function dailyBonus(){
+
+    const btn = document.getElementById("dailyBtn");
+
+    btn.disabled = true;
+    btn.innerText = "Loading...";
+
+    try{
+
+        await AdController.show();
+
+        const r = await fetch(API + "/daily_bonus", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        if(d.ok){
+
+            tg.showPopup?.({
+                message:`+${d.reward} DOGS`
+            });
+
+            loadStatus();
+
+            btn.innerText = "CLAIMED";
+
+        }else{
+
+            tg.showPopup?.({
+                message:d.error || "Already claimed"
+            });
+
+            btn.disabled = false;
+            btn.innerText = "CLAIM DAILY BONUS";
+        }
+
+    }catch(e){
+
+        tg.showPopup?.({
+            message:"Ad failed"
+        });
+
+        btn.disabled = false;
+        btn.innerText = "CLAIM DAILY BONUS";
+    }
+}
+
+// ---------------- PROMO ----------------
+
+async function activatePromo(){
+
+    const code = document
+        .getElementById("promoInput")
+        .value
+        .trim();
+
+    if(!code){
+
+        tg.showPopup?.({
+            message:"Enter promo code"
+        });
+
+        return;
+    }
+
+    const r = await fetch(API + "/promo/activate", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            init_data: tg.initData,
+            code
+        })
+    });
+
+    const d = await r.json();
+
+    if(d.ok){
+
+        tg.showPopup?.({
+            message:`Promo activated +${d.reward} DOGS`
+        });
+
+        document.getElementById("promoInput").value = "";
+
+        loadStatus();
+
+    }else{
+
+        tg.showPopup?.({
+            message:d.error || "Promo failed"
+        });
+    }
+}
+
+// ---------------- TASKS ----------------
+
+async function loadTasks(){
+
+    try{
+
+        const r = await fetch(API + "/tasks", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        const box = document.getElementById("tasksList");
+
+        box.innerHTML = "";
+
+        if(!d.tasks || d.tasks.length === 0){
+
+            box.innerHTML = `
+                <div class="card">
+                    No available tasks
+                </div>
+            `;
+
+            return;
+        }
+
+        d.tasks.forEach(task => {
+
+            box.innerHTML += `
+
+                <div class="task-item">
+
+                    <div class="task-top">
+
+                        <img
+                            class="task-avatar"
+                            src="${task.image || 'https://via.placeholder.com/50'}"
+                        >
+
+                        <div>
+                            <div class="task-title">
+                                ${task.title}
+                            </div>
+
+                            <div class="task-reward">
+                                Reward: ${task.reward} DOGS
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button
+                        style="margin-top:12px;"
+                        onclick="completeTask(${task.id}, '${task.link}')"
+                    >
+                        SUBSCRIBE
+                    </button>
+
+                </div>
+
+            `;
+        });
+
+    }catch(e){
+        console.log(e);
+    }
+}
+
+// ---------------- COMPLETE TASK ----------------
+
+async function completeTask(taskId, link){
+
+    try{
+
+        tg.openTelegramLink(link);
+
+        setTimeout(async ()=>{
+
+            try{
+
+                await AdController.show();
+
+                const r = await fetch(API + "/task/complete", {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+                        init_data: tg.initData,
+                        task_id: taskId
+                    })
+                });
+
+                const d = await r.json();
+
+                if(d.ok){
+
+                    tg.showPopup?.({
+                        message:`+${d.reward} DOGS`
+                    });
+
+                    loadStatus();
+                    loadTasks();
+
+                }else{
+
+                    tg.showPopup?.({
+                        message:d.error || "Task failed"
+                    });
+                }
+
+            }catch(e){
+
+                tg.showPopup?.({
+                    message:"Ad failed"
+                });
+            }
+
+        }, 3000);
+
+    }catch(e){
+        console.log(e);
+    }
+}
+
 // ---------------- X3 ----------------
 
 async function watchX3(){
 
     try{
 
-        // показываем рекламу
         await AdController.show();
 
-        // отправляем запрос на x3 reward
         const r = await fetch(API + "/claim_x3", {
             method:"POST",
             headers:{
@@ -803,6 +1131,7 @@ async function loadWithdrawHistory(){
 loadUser();
 loadStatus();
 loadWithdrawHistory();
+loadTasks();
 updateWithdrawInfo();
 
 setInterval(()=>{
