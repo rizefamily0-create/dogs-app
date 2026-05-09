@@ -735,7 +735,7 @@ async function dailyBonus(){
             // если уже забрал — тоже запускаем таймер
             if(d.error === "already_claimed"){
 
-                startDailyCooldown(86400);
+                loadDailyStatus();
 
             }else{
 
@@ -804,22 +804,29 @@ async function loadDailyStatus(){
 
     try{
 
-        const r = await fetch(API + "/daily_bonus", {
+        const r = await fetch(API + "/daily_bonus/status", {
             method:"POST",
             headers:{
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData,
-                check: true
+                init_data: tg.initData
             })
         });
 
         const d = await r.json();
 
-        if(d.remaining > 0){
+        if(d.ok && d.remaining > 0){
 
             startDailyCooldown(d.remaining);
+
+        }else{
+
+            const btn = document.getElementById("dailyBtn");
+
+            btn.disabled = false;
+            btn.dataset.locked = "0";
+            btn.innerText = "CLAIM DAILY BONUS";
         }
 
     }catch(e){
