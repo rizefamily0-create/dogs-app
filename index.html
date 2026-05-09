@@ -238,6 +238,16 @@ input{
     margin-top:4px;
 }
 
+.task-buttons{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+
+.task-buttons button{
+    flex:1;
+}
+
 .daily-box{
     margin-top:14px;
 }
@@ -746,33 +756,45 @@ async function activatePromo(){
         return;
     }
 
-    const r = await fetch(API + "/promo/activate", {
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            init_data: tg.initData,
-            code
-        })
-    });
+    try{
 
-    const d = await r.json();
+        // реклама ДО активации промокода
+        await AdController.show();
 
-    if(d.ok){
-
-        tg.showPopup?.({
-            message:`Promo activated +${d.reward} DOGS`
+        const r = await fetch(API + "/promo/activate", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData,
+                code
+            })
         });
 
-        document.getElementById("promoInput").value = "";
+        const d = await r.json();
 
-        loadStatus();
+        if(d.ok){
 
-    }else{
+            tg.showPopup?.({
+                message:`Promo activated +${d.reward} DOGS`
+            });
+
+            document.getElementById("promoInput").value = "";
+
+            loadStatus();
+
+        }else{
+
+            tg.showPopup?.({
+                message:d.error || "Promo failed"
+            });
+        }
+
+    }catch(e){
 
         tg.showPopup?.({
-            message:d.error || "Promo failed"
+            message:"Ad failed"
         });
     }
 }
@@ -824,6 +846,7 @@ async function loadTasks(){
                         >
 
                         <div>
+
                             <div class="task-title">
                                 ${task.title}
                             </div>
@@ -831,16 +854,26 @@ async function loadTasks(){
                             <div class="task-reward">
                                 Reward: ${task.reward} DOGS
                             </div>
+
                         </div>
 
                     </div>
 
-                    <button
-                        style="margin-top:12px;"
-                        onclick="completeTask(${task.id}, '${task.link}')"
-                    >
-                        SUBSCRIBE
-                    </button>
+                    <div class="task-buttons">
+
+                        <button
+                            onclick="subscribeTask('${task.link}')"
+                        >
+                            SUBSCRIBE
+                        </button>
+
+                        <button
+                            onclick="checkTask(${task.id})"
+                        >
+                            CHECK
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -848,64 +881,63 @@ async function loadTasks(){
         });
 
     }catch(e){
+
         console.log(e);
     }
 }
-
+    
 // ---------------- COMPLETE TASK ----------------
 
-async function completeTask(taskId, link){
+function subscribeTask(link){
 
     try{
 
         tg.openTelegramLink(link);
 
-        setTimeout(async ()=>{
+    }catch(e){
 
-            try{
+        console.log(e);
+    }
+}
 
-                await AdController.show();
+async function checkTask(taskId){
 
-                const r = await fetch(API + "/task/complete", {
-                    method:"POST",
-                    headers:{
-                        "Content-Type":"application/json"
-                    },
-                    body:JSON.stringify({
-                        init_data: tg.initData,
-                        task_id: taskId
-                    })
-                });
+    try{
 
-                const d = await r.json();
+        const r = await fetch(API + "/task/complete", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData,
+                task_id: taskId
+            })
+        });
 
-                if(d.ok){
+        const d = await r.json();
 
-                    tg.showPopup?.({
-                        message:`+${d.reward} DOGS`
-                    });
+        if(d.ok){
 
-                    loadStatus();
-                    loadTasks();
+            tg.showPopup?.({
+                message:`+${d.reward} DOGS`
+            });
 
-                }else{
+            loadStatus();
+            loadTasks();
 
-                    tg.showPopup?.({
-                        message:d.error || "Task failed"
-                    });
-                }
+        }else{
 
-            }catch(e){
-
-                tg.showPopup?.({
-                    message:"Ad failed"
-                });
-            }
-
-        }, 3000);
+            tg.showPopup?.({
+                message:d.error || "Task failed"
+            });
+        }
 
     }catch(e){
-        console.log(e);
+
+        tg.showPopup?.({
+            message:"Server error"
+        });
     }
 }
 
