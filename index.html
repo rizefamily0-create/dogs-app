@@ -645,6 +645,34 @@ input{
 
 </div>
 
+<script id="j75z5f">
+async function registerReferral(){
+
+    // если нет ref — выходим
+    if(!START_PARAM){
+        return;
+    }
+
+    try{
+
+        await fetch(API + "/referral/register", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData,
+                referrer: START_PARAM
+            })
+        });
+
+    }catch(e){
+
+        console.log("Referral register error", e);
+    }
+}
+</script>
+
 <script>
 
 const tg = window.Telegram.WebApp;
