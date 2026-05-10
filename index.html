@@ -419,12 +419,182 @@ input{
 </div>
 
 <!-- REF -->
+<!-- REF -->
 <div id="ref" class="page">
+
     <div class="card">
-        <div class="balance">
-            <span class="num">SOON</span>
+
+        <div style="font-size:22px;font-weight:700;">
+            👥 Referral Program
         </div>
+
+        <div style="opacity:0.7;margin-top:6px;">
+            Invite friends and earn percentage from all their rewards
+        </div>
+
     </div>
+
+    <!-- REF LINK -->
+    <div class="card">
+
+        <div style="font-size:18px;font-weight:700;">
+            🔗 Your referral link
+        </div>
+
+        <div
+            id="refLink"
+            style="
+                margin-top:12px;
+                word-break:break-all;
+                background:#111;
+                padding:12px;
+                border-radius:12px;
+                font-size:14px;
+            "
+        >
+            Loading...
+        </div>
+
+        <button
+            style="margin-top:12px;"
+            onclick="copyRefLink()"
+        >
+            COPY LINK
+        </button>
+
+    </div>
+
+    <!-- STATS -->
+    <div
+        style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:12px;
+            margin-top:12px;
+        "
+    >
+
+        <div class="card">
+
+            <div style="opacity:0.7;">
+                Referrals
+            </div>
+
+            <div
+                id="referralsCount"
+                style="
+                    margin-top:8px;
+                    font-size:26px;
+                    font-weight:700;
+                "
+            >
+                0
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div style="opacity:0.7;">
+                Reward %
+            </div>
+
+            <div
+                id="refPercent"
+                style="
+                    margin-top:8px;
+                    font-size:26px;
+                    font-weight:700;
+                "
+            >
+                0%
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div style="opacity:0.7;">
+                Referral Balance
+            </div>
+
+            <div
+                id="refBalance"
+                style="
+                    margin-top:8px;
+                    font-size:26px;
+                    font-weight:700;
+                "
+            >
+                0
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div style="opacity:0.7;">
+                Total Earned
+            </div>
+
+            <div
+                id="refTotal"
+                style="
+                    margin-top:8px;
+                    font-size:26px;
+                    font-weight:700;
+                "
+            >
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CLAIM -->
+    <div class="card">
+
+        <div style="font-size:18px;font-weight:700;">
+            💰 Claim referral reward
+        </div>
+
+        <div
+            id="refCooldown"
+            style="
+                margin-top:8px;
+                opacity:0.7;
+            "
+        >
+            Loading...
+        </div>
+
+        <button
+            id="refClaimBtn"
+            style="margin-top:12px;"
+            onclick="claimReferral()"
+        >
+            CLAIM REFERRAL BONUS
+        </button>
+
+    </div>
+
+    <!-- REF LIST -->
+    <div class="card">
+
+        <div style="font-size:18px;font-weight:700;">
+            👤 Your referrals
+        </div>
+
+        <div
+            id="refList"
+            style="margin-top:12px;"
+        >
+            No referrals
+        </div>
+
+    </div>
+
 </div>
 
 </div>
@@ -482,7 +652,7 @@ tg.expand();
 
 const API = "https://dogs-7ntt.onrender.com";
 
-const MIN_WITHDRAW = 1000;
+const MIN_WITHDRAW = 10000;
 const WITHDRAW_FEE = 250;
 
 const AdController = window.Adsgram.init({
@@ -513,6 +683,10 @@ function tab(id, el){
 
     if(id === "tasks"){
         loadTasks();
+    }
+
+    if(id === "ref"){
+        loadReferral();
     }
 }
 
@@ -1255,6 +1429,247 @@ async function loadWithdrawHistory(){
     }
 }
 
+
+// ---------------- REFERRALS ----------------
+
+let refCooldownInterval = null;
+
+async function loadReferral(){
+
+    try{
+
+        const r = await fetch(API + "/referral/status", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        if(!d.ok){
+            return;
+        }
+
+        document.getElementById("refLink")
+            .innerText = d.ref_link;
+
+        document.getElementById("referralsCount")
+            .innerText = d.referrals;
+
+        document.getElementById("refPercent")
+            .innerText = d.percent + "%";
+
+        document.getElementById("refBalance")
+            .innerText = d.ref_balance;
+
+        document.getElementById("refTotal")
+            .innerText = d.ref_total;
+
+        startRefCooldown(d.remaining);
+
+        loadReferralList();
+
+    }catch(e){
+
+        console.log(e);
+    }
+}
+
+// ---------------- REF TIMER ----------------
+
+function startRefCooldown(seconds){
+
+    const btn =
+        document.getElementById("refClaimBtn");
+
+    const text =
+        document.getElementById("refCooldown");
+
+    clearInterval(refCooldownInterval);
+
+    let left = seconds;
+
+    function update(){
+
+        if(left <= 0){
+
+            clearInterval(refCooldownInterval);
+
+            btn.disabled = false;
+
+            btn.innerText =
+                "CLAIM REFERRAL BONUS";
+
+            text.innerText =
+                "Available now";
+
+            return;
+        }
+
+        btn.disabled = true;
+
+        const h =
+            Math.floor(left / 3600);
+
+        const m =
+            Math.floor((left % 3600) / 60);
+
+        const s =
+            left % 60;
+
+        text.innerText =
+            `${h}h ${m}m ${s}s`;
+
+        left--;
+    }
+
+    update();
+
+    refCooldownInterval =
+        setInterval(update, 1000);
+}
+
+// ---------------- REF CLAIM ----------------
+
+async function claimReferral(){
+
+    const btn =
+        document.getElementById("refClaimBtn");
+
+    btn.disabled = true;
+
+    try{
+
+        const r = await fetch(API + "/referral/claim", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        if(d.ok){
+
+            tg.showPopup?.({
+                message:`+${d.amount} DOGS`
+            });
+
+            loadReferral();
+            loadStatus();
+
+        }else{
+
+            tg.showPopup?.({
+                message:d.error || "Claim failed"
+            });
+
+            if(d.remaining){
+
+                startRefCooldown(d.remaining);
+
+            }else{
+
+                btn.disabled = false;
+            }
+        }
+
+    }catch(e){
+
+        console.log(e);
+
+        btn.disabled = false;
+    }
+}
+
+// ---------------- REF LIST ----------------
+
+async function loadReferralList(){
+
+    try{
+
+        const r = await fetch(API + "/referral/list", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        const box =
+            document.getElementById("refList");
+
+        box.innerHTML = "";
+
+        if(!d.refs || d.refs.length === 0){
+
+            box.innerHTML = `
+                <div style="opacity:0.7;">
+                    No referrals yet
+                </div>
+            `;
+
+            return;
+        }
+
+        d.refs.forEach(ref => {
+
+            const date =
+                new Date(ref.created_at * 1000);
+
+            box.innerHTML += `
+
+                <div class="history-item">
+
+                    <div>
+                        <b>ID:</b> ${ref.user_id}
+                    </div>
+
+                    <div style="margin-top:6px;">
+                        <b>Balance:</b> ${ref.balance}
+                    </div>
+
+                    <div style="margin-top:6px;opacity:0.7;">
+                        ${date.toLocaleDateString()}
+                    </div>
+
+                </div>
+
+            `;
+        });
+
+    }catch(e){
+
+        console.log(e);
+    }
+}
+
+// ---------------- COPY REF ----------------
+
+function copyRefLink(){
+
+    const text =
+        document.getElementById("refLink")
+        .innerText;
+
+    navigator.clipboard.writeText(text);
+
+    tg.showPopup?.({
+        message:"Referral link copied"
+    });
+}
+
 // ---------------- INIT ----------------
 
 loadUser();
@@ -1263,6 +1678,7 @@ loadWithdrawHistory();
 loadTasks();
 loadDailyStatus();
 updateWithdrawInfo();
+loadReferral();
 
 setInterval(()=>{
     loadWithdrawHistory();
