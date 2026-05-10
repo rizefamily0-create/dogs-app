@@ -581,8 +581,7 @@ async function loadStatus(){
             "Content-Type":"application/json"
         },
         body:JSON.stringify({
-            init_data: tg.initData,
-            start_param: tg.initDataUnsafe.start_param
+            init_data: tg.initData
         })
     });
 
@@ -648,7 +647,6 @@ async function claim(){
             },
             body:JSON.stringify({
                 init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param,
                 device: navigator.userAgent
             })
         });
@@ -712,8 +710,7 @@ async function dailyBonus(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param
+                init_data: tg.initData
             })
         });
 
@@ -813,8 +810,7 @@ async function loadDailyStatus(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param
+                init_data: tg.initData
             })
         });
 
@@ -870,7 +866,6 @@ async function activatePromo(){
             },
             body:JSON.stringify({
                 init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param,
                 code
             })
         });
@@ -914,8 +909,7 @@ async function loadTasks(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param
+                init_data: tg.initData
             })
         });
 
@@ -1015,7 +1009,6 @@ async function checkTask(taskId){
             },
             body:JSON.stringify({
                 init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param,
                 task_id: taskId
             })
         });
@@ -1060,8 +1053,7 @@ async function watchX3(){
                 "Content-Type":"application/json"
             },
             body: JSON.stringify({
-                init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param
+                init_data: tg.initData
             })
         });
 
@@ -1147,7 +1139,6 @@ async function withdraw(){
         },
         body:JSON.stringify({
             init_data: tg.initData,
-            start_param: tg.initDataUnsafe.start_param,
             wallet,
             memo,
             amount
@@ -1191,8 +1182,7 @@ async function loadWithdrawHistory(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData,
-                start_param: tg.initDataUnsafe.start_param
+                init_data: tg.initData
             })
         });
 
