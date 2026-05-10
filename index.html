@@ -786,7 +786,8 @@ async function loadStatus(){
             "Content-Type":"application/json"
         },
         body:JSON.stringify({
-            init_data: tg.initData
+            init_data: tg.initData,
+            start_param: START_PARAM
         })
     });
 
@@ -852,6 +853,7 @@ async function claim(){
             },
             body:JSON.stringify({
                 init_data: tg.initData,
+                start_param: START_PARAM,
                 device: navigator.userAgent
             })
         });
@@ -915,7 +917,8 @@ async function dailyBonus(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData
+                init_data: tg.initData,
+                start_param: START_PARAM
             })
         });
 
@@ -1015,7 +1018,8 @@ async function loadDailyStatus(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData
+                init_data: tg.initData,
+                start_param: START_PARAM
             })
         });
 
@@ -1114,7 +1118,8 @@ async function loadTasks(){
                 "Content-Type":"application/json"
             },
             body:JSON.stringify({
-                init_data: tg.initData
+                init_data: tg.initData,
+                start_param: START_PARAM
             })
         });
 
@@ -1214,6 +1219,7 @@ async function checkTask(taskId){
             },
             body:JSON.stringify({
                 init_data: tg.initData,
+                start_param: START_PARAM,
                 task_id: taskId
             })
         });
