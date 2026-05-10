@@ -650,6 +650,9 @@ input{
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+const START_PARAM =
+    tg.initDataUnsafe?.start_param || "";
+
 const API = "https://dogs-7ntt.onrender.com";
 
 const MIN_WITHDRAW = 10000;
