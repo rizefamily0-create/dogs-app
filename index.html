@@ -1320,8 +1320,29 @@ function inviteFriend() {
     tg.openTelegramLink(url);
 }
 
+async function auth(){
+
+    try{
+
+        await fetch(API + "/auth", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: initData,
+                start_param: startParam
+            })
+        });
+
+    }catch(e){
+        console.log(e);
+    }
+}
+
 // ---------------- INIT ----------------
 
+auth();
 loadUser();
 loadStatus();
 loadWithdrawHistory();
