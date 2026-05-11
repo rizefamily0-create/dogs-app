@@ -265,6 +265,10 @@ input{
 <!-- FAUCET -->
 <div id="faucet" class="page active">
 
+    <div class="card" id="globalStats">
+        👥 0 users • 🦴 0 DOGS earned
+    </div>
+
     <div class="card">
         <div id="balance1" class="balance">
             <div class="balance-left">
@@ -1456,6 +1460,30 @@ async function auth(){
     }
 }
 
+// ---------------- GLOBAL STATS ----------------
+
+async function loadStats(){
+
+    try{
+
+        const r = await fetch(API + "/stats", {
+            method:"POST"
+        });
+
+        const d = await r.json();
+
+        if(d.ok){
+
+            document.getElementById("globalStats").innerHTML =
+                `👥 ${d.users} users • 🦴 ${Math.floor(d.earned)} DOGS earned`;
+        }
+
+    }catch(e){
+
+        console.log("STATS ERROR", e);
+    }
+}
+
 // ---------------- INIT ----------------
 
 auth();
@@ -1463,12 +1491,14 @@ loadUser();
 loadStatus();
 loadWithdrawHistory();
 loadTasks();
+loadStats();
 loadDailyStatus();
 updateWithdrawInfo();
 
 setInterval(()=>{
     loadWithdrawHistory();
     loadStatus();
+    loadStats();
 }, 4000);
 
 </script>
