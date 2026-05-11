@@ -1292,26 +1292,134 @@ async function loadRefInfo() {
         });
         const d = await r.json();
         if (d.ok) {
-            document.getElementById("refCount").innerText = d.referrals_count;
-            document.getElementById("refBalance").innerText = d.referral_balance.toFixed(2);
+
+            document.getElementById("refCount").innerText =
+                d.referrals_count;
+
+            document.getElementById("refBalance").innerText =
+                d.referral_balance.toFixed(2);
+
             userRefLink = d.ref_link;
+
+            const btn = document.querySelector("#ref button");
+
+    // если cooldown активен
+            if(d.remaining && d.remaining > 0){
+
+                startRefCooldown(d.remaining);
+
+            } else {
+
+                btn.disabled = false;
+
+                if(d.referral_balance <= 0){
+
+                    btn.innerText = "Balance Empty";
+
+                } else {
+
+                    btn.innerText = "Claim Reward";
+                }
+            }
         }
     } catch (e) { console.log("REF INFO ERROR:", e); }
 }
 
+let refTimerInterval = null;
+
 async function claimRef() {
+
+    const btn = document.querySelector("#ref button");
+
+    btn.disabled = true;
+    btn.innerText = "Loading...";
+
     try {
+
+        // сначала реклама
+        await AdController.show();
+
         const r = await fetch(API + "/ref/claim", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ init_data: initData })
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                init_data: initData
+            })
         });
+
         const d = await r.json();
+
         if (d.ok) {
-            loadUser(); // Обновляем основной баланс на главной
-            loadRefInfo(); // Обнуляем цифры во вкладке рефералов
+
+            tg.showPopup?.({
+                message: "Funds successfully transferred to main balance"
+            });
+
+            loadStatus();
+            loadRefInfo();
+
+            // запускаем 24ч таймер
+            startRefCooldown(86400);
+
+        } else {
+
+            tg.showPopup?.({
+                message: d.error || "Referral balance is empty"
+            });
+
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
         }
-    } catch (e) { console.log("REF CLAIM ERROR:", e); }
+
+    } catch(e) {
+
+        console.log(e);
+
+        tg.showPopup?.({
+            message: "Ad failed"
+        });
+
+        btn.disabled = false;
+        btn.innerText = "Claim Reward";
+    }
+}
+
+function startRefCooldown(seconds) {
+
+    const btn = document.querySelector("#ref button");
+
+    clearInterval(refTimerInterval);
+
+    let timeLeft = seconds;
+
+    function update() {
+
+        if(timeLeft <= 0){
+
+            clearInterval(refTimerInterval);
+
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
+
+            return;
+        }
+
+        const h = Math.floor(timeLeft / 3600);
+        const m = Math.floor((timeLeft % 3600) / 60);
+        const s = timeLeft % 60;
+
+        btn.disabled = true;
+
+        btn.innerText = `${h}h ${m}m ${s}s`;
+
+        timeLeft--;
+    }
+
+    update();
+
+    refTimerInterval = setInterval(update, 1000);
 }
 
 function inviteFriend() {
