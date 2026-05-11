@@ -1311,6 +1311,7 @@ async function loadRefInfo() {
             } else {
 
                 btn.disabled = false;
+                btn.dataset.locked = "0";
 
                 if(d.referral_balance <= 0){
 
@@ -1330,6 +1331,10 @@ let refTimerInterval = null;
 async function claimRef() {
 
     const btn = document.querySelector("#ref button");
+
+    if(btn.dataset.locked === "1"){
+        return;
+    }
 
     btn.disabled = true;
     btn.innerText = "Loading...";
@@ -1390,6 +1395,8 @@ function startRefCooldown(seconds) {
 
     const btn = document.querySelector("#ref button");
 
+    btn.dataset.locked = "1";
+
     clearInterval(refTimerInterval);
 
     let timeLeft = seconds;
@@ -1401,6 +1408,7 @@ function startRefCooldown(seconds) {
             clearInterval(refTimerInterval);
 
             btn.disabled = false;
+            btn.dataset.locked = "0";
             btn.innerText = "Claim Reward";
 
             return;
