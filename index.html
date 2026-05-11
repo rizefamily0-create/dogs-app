@@ -255,6 +255,25 @@ input{
 .promo-btn{
     margin-top:10px;
 }
+
+.global-stats{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 16px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.left-stat{
+    opacity:0.9;
+}
+
+.right-stat{
+    opacity:0.9;
+    text-align:right;
+}
+    
 </style>
 </head>
 
@@ -265,9 +284,17 @@ input{
 <!-- FAUCET -->
 <div id="faucet" class="page active">
 
-    <div class="card" id="globalStats">
-        👥 0 users • 🦴 0 DOGS earned
+    <div class="card global-stats">
+
+    <div class="left-stat">
+        👥 <span id="usersCount">0</span> users
     </div>
+
+    <div class="right-stat">
+        🦴 <span id="earnedCount">0</span> DOGS
+    </div>
+
+</div>
 
     <div class="card">
         <div id="balance1" class="balance">
