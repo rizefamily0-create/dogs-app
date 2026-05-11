@@ -420,12 +420,32 @@ input{
 
 <!-- REF -->
 <div id="ref" class="page">
-    <div class="card">
-        <div class="balance">
-            <span class="num">SOON</span>
+        <h2 style="margin:0 0 16px 0">Referral</h2>
+        
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: #8e8e93; font-size: 14px;">Referral Balance</span>
+                    <h2 id="refBalance" style="margin: 5px 0 0 0; font-size: 28px;">0.00</h2>
+                </div>
+                <div style="text-align: right;">
+                    <span style="color: #8e8e93; font-size: 14px;">Total Friends</span>
+                    <h3 id="refCount" style="margin: 5px 0 0 0;">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-primary" onclick="claimRef()">Claim Reward</button>
+            <button class="btn-primary" onclick="inviteFriend()" style="background:#1c1c1e; color:white; border:1px solid #333">Invite Friends</button>
+        </div>
+
+        <div class="card" style="background: #111; margin-top: 20px;">
+            <p style="color:#8e8e93; font-size:14px; margin: 0; line-height: 1.5;">
+                Invite your friends and earn <b>10%</b> of their earnings! Tokens are added to your referral balance immediately after they claim.
+            </p>
         </div>
     </div>
-</div>
 
 </div>
 
@@ -514,6 +534,8 @@ function tab(id, el){
     if(id === "tasks"){
         loadTasks();
     }
+
+    if(id === 'ref') loadRefInfo();
 }
 
 // ---------------- X3 ----------------
@@ -1253,6 +1275,46 @@ async function loadWithdrawHistory(){
 
         console.log(e);
     }
+}
+
+
+let userRefLink = "";
+
+async function loadRefInfo() {
+    try {
+        const r = await fetch(API + "/get_ref_info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ init_data: initData })
+        });
+        const d = await r.json();
+        if (d.ok) {
+            document.getElementById("refCount").innerText = d.referrals_count;
+            document.getElementById("refBalance").innerText = d.referral_balance.toFixed(2);
+            userRefLink = d.ref_link;
+        }
+    } catch (e) { console.log("REF INFO ERROR:", e); }
+}
+
+async function claimRef() {
+    try {
+        const r = await fetch(API + "/ref/claim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ init_data: initData })
+        });
+        const d = await r.json();
+        if (d.ok) {
+            loadUser(); // Обновляем основной баланс на главной
+            loadRefInfo(); // Обнуляем цифры во вкладке рефералов
+        }
+    } catch (e) { console.log("REF CLAIM ERROR:", e); }
+}
+
+function inviteFriend() {
+    if (!userRefLink) return;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(userRefLink)}&text=${encodeURIComponent("Join me and earn free DOGS tokens! 🦴")}`;
+    tg.openTelegramLink(url);
 }
 
 // ---------------- INIT ----------------
