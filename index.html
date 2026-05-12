@@ -209,43 +209,65 @@ input{
 
 .task-item{
     background:#111;
-    border-radius:14px;
-    padding:12px;
+    border-radius:18px;
+    padding:14px;
     margin-top:12px;
 }
 
 .task-top{
     display:flex;
     align-items:center;
+    justify-content:space-between;
     gap:12px;
 }
 
+.task-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex:1;
+}
+
 .task-avatar{
-    width:50px;
-    height:50px;
-    border-radius:50%;
+    width:48px;
+    height:48px;
+    border-radius:14px;
     object-fit:cover;
 }
 
 .task-title{
-    font-size:15px;
+    font-size:14px;
     font-weight:700;
 }
 
 .task-reward{
     opacity:0.7;
-    font-size:13px;
+    font-size:12px;
     margin-top:4px;
 }
 
 .task-buttons{
     display:flex;
-    gap:8px;
-    margin-top:12px;
+    gap:6px;
 }
 
 .task-buttons button{
-    flex:1;
+    width:auto;
+    padding:10px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    margin:0;
+}
+
+.task-buttons button:first-child{
+    background:#1c1c1e;
+    color:#fff;
+    border:1px solid #2c2c2e;
+}
+
+.task-buttons button:last-child{
+    background:#008cff;
 }
 
 .daily-box{
@@ -1025,43 +1047,46 @@ async function loadTasks(){
 
                     <div class="task-top">
 
-                        <img
-                            class="task-avatar"
-                            src="${task.image || 'https://via.placeholder.com/50'}"
-                        >
+                        <div class="task-left">
 
-                        <div>
+                            <img
+                                class="task-avatar"
+                                src="${task.image || 'https://via.placeholder.com/50'}"
+                            >
 
-                            <div class="task-title">
-                                ${task.title}
+                            <div>
+
+                                <div class="task-title">
+                                    ${task.title}
+                                </div>
+
+                                <div class="task-reward">
+                                    +${task.reward} DOGS
+                                </div>
+
                             </div>
 
-                            <div class="task-reward">
-                                Reward: ${task.reward} DOGS
-                            </div>
+                        </div>
+
+                        <div class="task-buttons">
+
+                            <button
+                                onclick="subscribeTask('${task.link}')"
+                            >
+                                Open
+                            </button>
+
+                            <button
+                                onclick="checkTask(${task.id})"
+                            >
+                                Claim
+                            </button>
 
                         </div>
 
                     </div>
 
-                    <div class="task-buttons">
-
-                        <button
-                            onclick="subscribeTask('${task.link}')"
-                        >
-                            SUBSCRIBE
-                        </button>
-
-                        <button
-                            onclick="checkTask(${task.id})"
-                        >
-                            CHECK
-                        </button>
-
-                    </div>
-
                 </div>
-
             `;
         });
 
