@@ -462,16 +462,10 @@ input{
         🚀 Special Offers
     </div>
 
-    <div style="opacity:.7;margin-top:6px;">
-        Complete partner tasks and earn DOGS
-    </div>
-
-    <button
+    <div
+        id="adsgram-task"
         style="margin-top:12px;"
-        onclick="openOfferwall()"
-    >
-        OPEN OFFERS
-    </button>
+    ></div>
 
 </div>
 
@@ -1550,10 +1544,11 @@ async function loadStats(){
     }
 }
 
-function openOfferwall(){
+function loadAdsgramTask(){
 
-    Adsgram.showTaskwall({
-        blockId: "task-30046"
+    window.Adsgram.initTask({
+        blockId: "task-30046",
+        container: "#adsgram-task"
     });
 }
 
@@ -1565,6 +1560,7 @@ loadStatus();
 loadWithdrawHistory();
 loadTasks();
 loadStats();
+loadAdsgramTask();
 loadDailyStatus();
 updateWithdrawInfo();
 
