@@ -1584,49 +1584,26 @@ async function loadStats(){
 
 const adsTask = document.querySelector("adsgram-task");
 
-adsTask.addEventListener("reward", async (event) => {
+adsTask.addEventListener("reward", async () => {
 
-    try {
+    // visual only
+    tg.showPopup({
+        title: "Reward",
+        message: "✅ Your reward will be credited shortly",
+        buttons: [{ type: "ok" }]
+    });
 
-        const rewardData = event.detail;
+    // wait until backend callback finishes
+    setTimeout(async () => {
+        await loadMe();
 
-        const r = await fetch(API + "/adsgram_reward", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                init_data: tg.initData,
-                reward_data: rewardData
-            })
+        tg.showPopup({
+            title: "DOGS",
+            message: "🎉 Balance updated",
+            buttons: [{ type: "ok" }]
         });
 
-        const d = await r.json();
-
-        if(d.ok){
-
-            tg.showPopup?.({
-                message: `+${d.reward} DOGS`
-            });
-
-            loadStatus();
-
-        } else {
-
-            tg.showPopup?.({
-                message: d.error || "Reward failed"
-            });
-        }
-
-    } catch(e){
-
-        console.log(e);
-
-        tg.showPopup?.({
-            message: "Server error"
-        });
-    }
-
+    }, 3000);
 });
 
 // ---------------- INIT ----------------
