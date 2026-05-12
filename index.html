@@ -1580,6 +1580,53 @@ async function loadStats(){
 }
 
 
+// ---------------- ADSGRAM TASK REWARD ----------------
+
+const adsTask = document.querySelector("adsgram-task");
+
+adsTask.addEventListener("reward", async (event) => {
+
+    console.log("TASK COMPLETED", event.detail);
+
+    try{
+
+        const r = await fetch(API + "/adsgram_reward", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                init_data: tg.initData,
+                reward_data: event.detail
+            })
+        });
+
+        const d = await r.json();
+
+        if(d.ok){
+
+            tg.showPopup?.({
+                message:`+${d.reward} DOGS`
+            });
+
+            loadStatus();
+
+        }else{
+
+            tg.showPopup?.({
+                message:d.error || "Reward failed"
+            });
+        }
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
+});
+
+
 // ---------------- INIT ----------------
 
 auth();
