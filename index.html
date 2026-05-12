@@ -458,16 +458,17 @@ input{
 
     <div class="card">
 
-    <div style="font-size:18px;font-weight:700;">
-        🚀 Special Offers
+        <div style="font-size:18px;font-weight:700;">
+            🚀 Special Offers
+        </div>
+
+        <adsgram-task
+            data-block-id="task-30046"
+            class="task"
+            style="margin-top:12px;display:block;"
+        ></adsgram-task>
+
     </div>
-
-    <div
-        id="adsgram-task"
-        style="margin-top:12px;"
-    ></div>
-
-</div>
 
 </div>
 
@@ -1544,13 +1545,6 @@ async function loadStats(){
     }
 }
 
-function loadAdsgramTask(){
-
-    window.Adsgram.initTask({
-        blockId: "task-30046",
-        container: "#adsgram-task"
-    });
-}
 
 // ---------------- INIT ----------------
 
@@ -1560,7 +1554,6 @@ loadStatus();
 loadWithdrawHistory();
 loadTasks();
 loadStats();
-loadAdsgramTask();
 loadDailyStatus();
 updateWithdrawInfo();
 
