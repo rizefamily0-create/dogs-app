@@ -1584,15 +1584,48 @@ async function loadStats(){
 
 const adsTask = document.querySelector("adsgram-task");
 
-adsTask.addEventListener("reward", async () => {
+adsTask.addEventListener("reward", async (event) => {
 
-    tg.showPopup?.({
-        message: "Reward received"
-    });
+    try {
 
-    setTimeout(() => {
-        loadStatus();
-    }, 1500);
+        const rewardData = event.detail;
+
+        const r = await fetch(API + "/adsgram_reward", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                init_data: tg.initData,
+                reward_data: rewardData
+            })
+        });
+
+        const d = await r.json();
+
+        if(d.ok){
+
+            tg.showPopup?.({
+                message: `+${d.reward} DOGS`
+            });
+
+            loadStatus();
+
+        } else {
+
+            tg.showPopup?.({
+                message: d.error || "Reward failed"
+            });
+        }
+
+    } catch(e){
+
+        console.log(e);
+
+        tg.showPopup?.({
+            message: "Server error"
+        });
+    }
 
 });
 
