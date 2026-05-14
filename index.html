@@ -1293,7 +1293,7 @@ async function checkTask(taskId){
 async function watchX3(){
 
     const btn = document.getElementById("x3Btn");
-    
+
     if(btn.dataset.loading === "1"){
         return;
     }
@@ -1307,9 +1307,19 @@ async function watchX3(){
 
         await AdController.show();
 
+        // закрываем окно x3
+        closeX3();
+
         tg.showPopup?.({
             message:"Reward will be credited automatically"
         });
+
+        // обновляем баланс через пару секунд
+        setTimeout(async ()=>{
+
+            await loadStatus();
+
+        }, 2500);
 
     }catch(e){
 
@@ -1324,7 +1334,7 @@ async function watchX3(){
 
     btn.disabled = false;
 
-    btn.innerText = "WATCH X3";
+    btn.innerText = "Watch ad x3";
 }
 
 // ---------------- WITHDRAW ----------------
