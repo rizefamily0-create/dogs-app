@@ -312,6 +312,59 @@ input{
     --adsgram-task-button-width:110px;
     --adsgram-task-icon-border-radius:12px;
 }
+
+
+/* ---------------- DAILY STREAK ---------------- */
+
+.streak-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+    margin-top:18px;
+}
+
+.streak-day{
+    background:#151515;
+    border:1px solid #222;
+    border-radius:14px;
+    padding:10px 4px;
+    text-align:center;
+    transition:0.2s;
+}
+
+.streak-day.active{
+    background:#008cff;
+    border-color:#008cff;
+    transform:scale(1.05);
+}
+
+.streak-day.claimed{
+    background:#1c1c1e;
+    border-color:#2c2c2e;
+    opacity:0.5;
+}
+
+.streak-day.special{
+    background:#1a1200;
+    border-color:#ffb300;
+}
+
+.streak-num{
+    font-size:12px;
+    opacity:0.7;
+}
+
+.streak-reward{
+    margin-top:6px;
+    font-size:15px;
+    font-weight:700;
+}
+
+.streak-btn{
+    margin-top:18px;
+    font-size:16px;
+}
+    
     
 </style>
 </head>
@@ -433,25 +486,72 @@ input{
 <div id="tasks" class="page">
 
     <!-- DAILY BONUS -->
-    <div class="card daily-box">
+    <!-- DAILY STREAK -->
+<div class="card daily-box">
 
-        <div style="font-size:18px;font-weight:700;">
-            🎁 Daily Bonus
+    <div style="font-size:20px;font-weight:700;">
+        🔥 Daily Streak
+    </div>
+
+    <div style="
+        opacity:0.7;
+        margin-top:6px;
+        font-size:14px;
+        line-height:1.5;
+    ">
+        Login every day and keep your streak alive.<br>
+        Watch ads and earn bigger rewards daily.
+    </div>
+
+    <!-- STREAK DAYS -->
+    <div class="streak-grid">
+
+        <div class="streak-day" id="day1">
+            <div class="streak-num">1</div>
+            <div class="streak-reward">50</div>
         </div>
 
-        <div style="opacity:0.7;margin-top:6px;">
-            Watch ad and get 100 DOGS every 24h
+        <div class="streak-day" id="day2">
+            <div class="streak-num">2</div>
+            <div class="streak-reward">60</div>
         </div>
 
-        <button
-            id="dailyBtn"
-            style="margin-top:12px;"
-            onclick="dailyBonus()"
-        >
-            CLAIM DAILY BONUS
-        </button>
+        <div class="streak-day" id="day3">
+            <div class="streak-num">3</div>
+            <div class="streak-reward">70</div>
+        </div>
+
+        <div class="streak-day" id="day4">
+            <div class="streak-num">4</div>
+            <div class="streak-reward">80</div>
+        </div>
+
+        <div class="streak-day" id="day5">
+            <div class="streak-num">5</div>
+            <div class="streak-reward">90</div>
+        </div>
+
+        <div class="streak-day" id="day6">
+            <div class="streak-num">6</div>
+            <div class="streak-reward">100</div>
+        </div>
+
+        <div class="streak-day special" id="day7">
+            <div class="streak-num">7</div>
+            <div class="streak-reward">150</div>
+        </div>
 
     </div>
+
+    <button
+        id="dailyBtn"
+        class="streak-btn"
+        onclick="dailyBonus()"
+    >
+        CLAIM STREAK REWARD
+    </button>
+
+</div>
 
     <!-- PROMO -->
     <div class="card">
@@ -906,6 +1006,36 @@ function startDailyCooldown(seconds){
     dailyTimerInterval = setInterval(update, 1000);
 }
 
+
+// ---------------- DAILY STREAK UI ----------------
+
+function updateDailyStreak(day){
+
+    // очистка
+    document.querySelectorAll(".streak-day")
+        .forEach(el => {
+            el.classList.remove("active");
+            el.classList.remove("claimed");
+        });
+
+    // предыдущие дни = claimed
+    for(let i = 1; i < day; i++){
+
+        const el = document.getElementById(`day${i}`);
+
+        if(el){
+            el.classList.add("claimed");
+        }
+    }
+
+    // текущий день
+    const current = document.getElementById(`day${day}`);
+
+    if(current){
+        current.classList.add("active");
+    }
+}
+
 // ---------------- LOAD DAILY STATUS ----------------
 
 async function loadDailyStatus(){
@@ -924,17 +1054,24 @@ async function loadDailyStatus(){
 
         const d = await r.json();
 
+        // streak UI
+        updateDailyStreak(d.streak_day || 1);
+
+        const btn = document.getElementById("dailyBtn");
+
+        // cooldown active
         if(d.ok && d.remaining > 0){
 
             startDailyCooldown(d.remaining);
 
         }else{
 
-            const btn = document.getElementById("dailyBtn");
-
             btn.disabled = false;
             btn.dataset.locked = "0";
-            btn.innerText = "CLAIM DAILY BONUS";
+
+            // текст кнопки с наградой
+            btn.innerText =
+                `CLAIM ${d.reward || 50} DOGS`;
         }
 
     }catch(e){
@@ -942,7 +1079,6 @@ async function loadDailyStatus(){
         console.log(e);
     }
 }
-
 
 // ---------------- PROMO ----------------
 
