@@ -1290,38 +1290,26 @@ async function checkTask(taskId){
 
 // ---------------- X3 ----------------
 
-async function watchX3(){
+async function claimX3(){
+
+    const btn = document.getElementById("x3Btn");
+
+    if(btn.dataset.loading === "1"){
+        return;
+    }
+
+    btn.dataset.loading = "1";
+
+    btn.disabled = true;
+    btn.innerText = "Loading...";
 
     try{
 
         await AdController.show();
 
-        const r = await fetch(API + "/claim_x3", {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                init_data: tg.initData
-            })
+        tg.showPopup?.({
+            message:"Reward will be credited automatically"
         });
-
-        const d = await r.json();
-
-        if(d.ok){
-
-            tg.showPopup?.({
-                message: "+" + d.reward + " DOGS"
-            });
-
-            loadStatus();
-
-        }else{
-
-            tg.showPopup?.({
-                message:"Reward failed"
-            });
-        }
 
     }catch(e){
 
@@ -1332,7 +1320,11 @@ async function watchX3(){
         });
     }
 
-    closeX3();
+    btn.dataset.loading = "0";
+
+    btn.disabled = false;
+
+    btn.innerText = "WATCH X3";
 }
 
 // ---------------- WITHDRAW ----------------
