@@ -932,6 +932,8 @@ async function dailyBonus(){
 
             loadStatus();
 
+            updateDailyStreak((d.streak_day % 7) + 1);
+
             startDailyCooldown(86400);
 
         }else{
