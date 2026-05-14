@@ -666,7 +666,7 @@ input{
             Multiply reward x3?
         </div>
 
-        <button onclick="watchX3()" style="margin-bottom:10px;">
+        <button id="x3Btn" onclick="WatchX3()" style="margin-bottom:10px;">
             Watch ad x3
         </button>
 
@@ -1292,6 +1292,8 @@ async function checkTask(taskId){
 
 async function watchX3(){
 
+    const btn = document.getElementById("x3Btn");
+    
     if(btn.dataset.loading === "1"){
         return;
     }
