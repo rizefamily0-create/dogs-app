@@ -1719,25 +1719,14 @@ function inviteFriend() {
 
 function loadOfferwall(){
 
-    const container =
-        document.getElementById("offerwall");
-
-    // очищаем старый iframe
-    container.innerHTML = "";
-
-    const iframe = document.createElement("iframe");
-
-    iframe.style.width = "100%";
-    iframe.style.height = "100vh";
-    iframe.style.border = "none";
+    const iframe =
+        document.getElementById("offerwallFrame");
 
     const userId =
         tg.initDataUnsafe?.user?.id;
 
     iframe.src =
         `https://bitcotasks.com/offerwall/8blopnz472x3du39j0cepxs7twbhc0/${userId}`;
-
-    container.appendChild(iframe);
 }
 
 async function auth(){
