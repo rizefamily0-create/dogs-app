@@ -1719,14 +1719,13 @@ function inviteFriend() {
 
 function loadOfferwall(){
 
-    const iframe =
-        document.getElementById("offerwallFrame");
-
     const userId =
         tg.initDataUnsafe?.user?.id;
 
-    iframe.src =
+    const url =
         `https://bitcotasks.com/offerwall/8blopnz472x3du39j0cepxs7twbhc0/${userId}`;
+
+    tg.openLink(url);
 }
 
 async function auth(){
