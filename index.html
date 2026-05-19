@@ -1847,40 +1847,6 @@ async function loadStats(){
     }
 }
 
-// Special Offer Cooldown
-
-@app.post("/special_offer/status")
-async def special_offer_status(request: Request):
-
-    data = await request.json()
-
-    user = get_user_from_init_data(
-        data["init_data"]
-    )
-
-    user_id = user["id"]
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT special_offer_cooldown
-        FROM users
-        WHERE user_id = %s
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    cooldown_until = row[0] or 0
-
-    now = int(time.time())
-
-    remaining = max(0, cooldown_until - now)
-
-    return {
-        "ok": True,
-        "remaining": remaining
-    }
 
 // ---------------- SPECIAL OFFER COOLDOWN ----------------
 
