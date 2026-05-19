@@ -1892,10 +1892,13 @@ function startSpecialOfferCooldown(seconds){
     const timer =
         document.getElementById("specialOfferTimer");
 
-    // скрываем adsgram block
+    // если элементов нет — выходим
+    if(!task || !timer){
+        return;
+    }
+
     task.style.display = "none";
 
-    // показываем timer
     timer.style.display = "block";
 
     clearInterval(specialOfferInterval);
@@ -1916,6 +1919,7 @@ function startSpecialOfferCooldown(seconds){
         }
 
         const m = Math.floor(timeLeft / 60);
+
         const s = timeLeft % 60;
 
         timer.innerText =
