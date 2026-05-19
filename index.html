@@ -449,7 +449,7 @@ input{
 
         <div class="info-title">
             Minimum withdraw: 14000 DOGS<br>
-            Network fee: 250 DOGS
+            Network fee: 1700 DOGS
         </div>
 
         <input id="wallet" placeholder="TON wallet">
@@ -605,11 +605,32 @@ input{
             🚀 Special Offers (60 Dogs)
         </div>
 
-        <adsgram-task
-            data-block-id="task-30046"
-            class="task"
-            style="margin-top:12px;display:block;"
-        ></adsgram-task>
+        <div id="specialOfferWrapper">
+
+            <adsgram-task
+                id="specialOfferTask"
+                data-block-id="task-30046"
+                class="task"
+                style="margin-top:12px;display:block;"
+            ></adsgram-task>
+
+            <div
+                id="specialOfferTimer"
+                style="
+                    display:none;
+                    margin-top:12px;
+                    background:#111;
+                    border-radius:16px;
+                    padding:18px;
+                    text-align:center;
+                    font-weight:700;
+                    font-size:18px;
+                "
+            >
+                ⏳ 30:00
+            </div>
+
+        </div>
 
     </div>
 
@@ -790,6 +811,7 @@ const AdController = window.Adsgram.init({
 
 let cooldown = 0;
 let timerInterval = null;
+let specialOfferInterval = null;
 
 // ---------------- TABS ----------------
 
@@ -1825,6 +1847,124 @@ async function loadStats(){
     }
 }
 
+// Special Offer Cooldown
+
+@app.post("/special_offer/status")
+async def special_offer_status(request: Request):
+
+    data = await request.json()
+
+    user = get_user_from_init_data(
+        data["init_data"]
+    )
+
+    user_id = user["id"]
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT special_offer_cooldown
+        FROM users
+        WHERE user_id = %s
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    cooldown_until = row[0] or 0
+
+    now = int(time.time())
+
+    remaining = max(0, cooldown_until - now)
+
+    return {
+        "ok": True,
+        "remaining": remaining
+    }
+
+// ---------------- SPECIAL OFFER COOLDOWN ----------------
+
+function startSpecialOfferCooldown(seconds){
+
+    const task =
+        document.getElementById("specialOfferTask");
+
+    const timer =
+        document.getElementById("specialOfferTimer");
+
+    // скрываем adsgram block
+    task.style.display = "none";
+
+    // показываем timer
+    timer.style.display = "block";
+
+    clearInterval(specialOfferInterval);
+
+    let timeLeft = seconds;
+
+    function update(){
+
+        if(timeLeft <= 0){
+
+            clearInterval(specialOfferInterval);
+
+            timer.style.display = "none";
+
+            task.style.display = "block";
+
+            return;
+        }
+
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+
+        timer.innerText =
+            `⏳ ${m}:${s.toString().padStart(2,"0")}`;
+
+        timeLeft--;
+    }
+
+    update();
+
+    specialOfferInterval =
+        setInterval(update, 1000);
+}
+
+async function loadSpecialOfferStatus(){
+
+    try{
+
+        const r = await fetch(
+            API + "/special_offer/status",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    init_data: tg.initData
+                })
+            }
+        );
+
+        const d = await r.json();
+
+        if(d.ok && d.remaining > 0){
+
+            startSpecialOfferCooldown(
+                d.remaining
+            );
+        }
+
+    }catch(e){
+
+        console.log(
+            "SPECIAL OFFER STATUS ERROR",
+            e
+        );
+    }
+}
+
 
 // ---------------- ADSGRAM TASK REWARD ----------------
 
@@ -1862,6 +2002,7 @@ loadTasks();
 loadStats();
 loadDailyStatus();
 updateWithdrawInfo();
+loadSpecialOfferStatus();
 
 setInterval(()=>{
     loadStatus();
