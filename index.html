@@ -373,6 +373,115 @@ input{
     margin-bottom:12px;
     padding:0 10px;
 }
+
+#dailyQuestReset{
+
+    font-size:12px;
+    opacity:.7;
+
+    margin-top:4px;
+    margin-bottom:14px;
+
+    text-align:center;
+}
+
+.dailyQuest{
+
+    background:#1b1b1b;
+
+    border:1px solid #2a2a2a;
+
+    border-radius:16px;
+
+    padding:14px;
+
+    margin-bottom:12px;
+}
+
+.dailyQuestTop{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+}
+
+.dailyQuestTitle{
+
+    font-size:14px;
+    font-weight:600;
+}
+
+.dailyQuestReward{
+
+    color:#ffd54f;
+    font-size:13px;
+}
+
+.dailyQuestProgress{
+
+    width:100%;
+    height:8px;
+
+    background:#2a2a2a;
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+    margin-bottom:10px;
+}
+
+.dailyQuestBar{
+
+    height:100%;
+
+    background:#55ef8b;
+
+    width:0%;
+}
+
+.dailyQuestBottom{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+.dailyQuestText{
+
+    font-size:12px;
+    opacity:.7;
+}
+
+.dailyQuestBtn{
+
+    border:none;
+
+    background:#55ef8b;
+
+    color:#000;
+
+    font-weight:700;
+
+    padding:8px 14px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+}
+
+.dailyQuestBtn:disabled{
+
+    opacity:.5;
+
+    cursor:default;
+}
     
     
 </style>
@@ -599,6 +708,16 @@ input{
 
     <div id="tasksList"></div>
 
+    <div class="tasksTitle">
+        Daily Quests
+    </div>
+
+    <div id="dailyQuestReset">
+        ⏳ Updating in...
+    </div>
+
+    <div id="dailyQuests"></div>
+
     <div class="card">
 
         <div style="font-size:18px;font-weight:700;">
@@ -812,6 +931,7 @@ const AdController = window.Adsgram.init({
 let cooldown = 0;
 let timerInterval = null;
 let specialOfferInterval = null;
+let dailyQuestTimer = null;
 
 // ---------------- TABS ----------------
 
@@ -1962,6 +2082,229 @@ adsTask.addEventListener("reward", async () => {
     }, 3000);
 });
 
+// ------------- Daily Quest ------------
+
+function startDailyQuestResetTimer(){
+
+    clearInterval(dailyQuestTimer);
+
+    function update(){
+
+        const now = new Date();
+
+        const kyivNow = new Date(
+            now.toLocaleString(
+                "en-US",
+                {
+                    timeZone:"Europe/Kiev"
+                }
+            )
+        );
+
+        const next = new Date(kyivNow);
+
+        next.setHours(24,0,0,0);
+
+        const diff =
+            Math.floor(
+                (next - kyivNow) / 1000
+            );
+
+        const h =
+            Math.floor(diff / 3600);
+
+        const m =
+            Math.floor((diff % 3600)/60);
+
+        const s =
+            diff % 60;
+
+        document.getElementById(
+            "dailyQuestReset"
+        ).innerText =
+            `⏳ Updating in ${h}h ${m}m ${s}s`;
+    }
+
+    update();
+
+    dailyQuestTimer =
+        setInterval(update,1000);
+}
+
+async function loadDailyQuests(){
+
+    try{
+
+        const r = await fetch(
+            API + "/daily_quests",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    init_data: tg.initData
+                })
+            }
+        );
+
+        const d = await r.json();
+
+        if(!d.ok) return;
+
+        const container =
+            document.getElementById(
+                "dailyQuests"
+            );
+
+        container.innerHTML = "";
+
+        d.quests.forEach(q => {
+
+            const completed =
+                q.progress >= q.target;
+
+            let button = "";
+
+            if(q.claimed){
+
+                button = `
+                    <button
+                        class="dailyQuestBtn"
+                        disabled
+                    >
+                        Completed
+                    </button>
+                `;
+
+            }else if(completed){
+
+                button = `
+                    <button
+                        class="dailyQuestBtn"
+                        onclick="claimDailyQuest(${q.id})"
+                    >
+                        Claim
+                    </button>
+                `;
+
+            }else{
+
+                button = `
+                    <button
+                        class="dailyQuestBtn"
+                        disabled
+                    >
+                        In Progress
+                    </button>
+                `;
+            }
+
+            const percent =
+                Math.min(
+                    100,
+                    (q.progress / q.target) * 100
+                );
+
+            container.innerHTML += `
+
+                <div class="dailyQuest">
+
+                    <div class="dailyQuestTop">
+
+                        <div class="dailyQuestTitle">
+                            ${q.title}
+                        </div>
+
+                        <div class="dailyQuestReward">
+                            +${q.reward} DOGS
+                        </div>
+
+                    </div>
+
+                    <div class="dailyQuestProgress">
+
+                        <div
+                            class="dailyQuestBar"
+                            style="
+                                width:${percent}%;
+                            "
+                        ></div>
+
+                    </div>
+
+                    <div class="dailyQuestBottom">
+
+                        <div class="dailyQuestText">
+                            ${q.progress}/${q.target}
+                        </div>
+
+                        ${button}
+
+                    </div>
+
+                </div>
+            `;
+        });
+
+    }catch(e){
+
+        console.log(
+            "DAILY QUESTS ERROR",
+            e
+        );
+    }
+}
+
+async function claimDailyQuest(id){
+
+    try{
+
+        const r = await fetch(
+            API + "/daily_quests/claim",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    init_data: tg.initData,
+                    quest_id: id
+                })
+            }
+        );
+
+        const d = await r.json();
+
+        if(d.ok){
+
+            tg.showPopup({
+                title:"Reward",
+                message:
+                    `🎉 +${d.reward} DOGS`,
+                buttons:[
+                    {
+                        type:"ok"
+                    }
+                ]
+            });
+
+            loadStatus();
+
+            loadDailyQuests();
+        }
+
+    }catch(e){
+
+        console.log(
+            "CLAIM QUEST ERROR",
+            e
+        );
+    }
+}
+
+
+
 // ---------------- INIT ----------------
 
 auth();
@@ -1973,6 +2316,10 @@ loadStats();
 loadDailyStatus();
 updateWithdrawInfo();
 loadSpecialOfferStatus();
+
+loadDailyQuests();
+
+startDailyQuestResetTimer();
 
 setInterval(()=>{
     loadStatus();
