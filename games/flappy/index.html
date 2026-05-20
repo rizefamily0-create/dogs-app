@@ -24,7 +24,11 @@
     box-sizing:border-box;
 }
 
+html,
 body{
+
+    width:100%;
+    height:100%;
 
     overflow:hidden;
 
@@ -36,6 +40,8 @@ body{
         sans-serif;
 
     color:white;
+
+    touch-action:none;
 }
 
 #gameWrap{
@@ -64,9 +70,9 @@ canvas{
 
     position:absolute;
 
-    top:12px;
-    left:12px;
-    right:12px;
+    top:14px;
+    left:14px;
+    right:14px;
 
     z-index:20;
 
@@ -79,7 +85,7 @@ canvas{
 
 .uiCard{
 
-    background:rgba(20,20,20,.92);
+    background:rgba(18,18,18,.92);
 
     border:1px solid #2a2a2a;
 
@@ -92,9 +98,9 @@ canvas{
 
 #timer{
 
-    font-size:20px;
+    font-size:22px;
 
-    font-weight:800;
+    font-weight:900;
 }
 
 #difficulty{
@@ -103,10 +109,10 @@ canvas{
 
     color:#55ef8b;
 
-    font-weight:700;
+    font-weight:800;
 }
 
-/* ---------------- START ---------------- */
+/* ---------------- START SCREEN ---------------- */
 
 #startScreen{
 
@@ -118,7 +124,7 @@ canvas{
         linear-gradient(
             180deg,
             #0d0d0e,
-            #131416
+            #17181c
         );
 
     display:flex;
@@ -129,7 +135,7 @@ canvas{
 
     align-items:center;
 
-    z-index:40;
+    z-index:50;
 }
 
 #logo{
@@ -138,37 +144,37 @@ canvas{
 
     font-weight:900;
 
-    margin-bottom:12px;
+    margin-bottom:14px;
 }
 
 #subtitle{
 
-    color:#8e8e93;
+    max-width:320px;
 
     text-align:center;
 
+    color:#8e8e93;
+
     line-height:1.5;
 
-    max-width:320px;
-
-    margin-bottom:28px;
+    margin-bottom:30px;
 }
 
 .playBtn{
+
+    border:none;
 
     background:#55ef8b;
 
     color:black;
 
-    border:none;
+    font-size:18px;
+
+    font-weight:900;
 
     border-radius:18px;
 
     padding:16px 34px;
-
-    font-size:18px;
-
-    font-weight:900;
 
     cursor:pointer;
 }
@@ -189,7 +195,7 @@ canvas{
 
     align-items:center;
 
-    z-index:50;
+    z-index:60;
 }
 
 .resultCard{
@@ -207,13 +213,13 @@ canvas{
 
 .resultTitle{
 
+    text-align:center;
+
     font-size:30px;
 
     font-weight:900;
 
-    text-align:center;
-
-    margin-bottom:10px;
+    margin-bottom:8px;
 }
 
 .resultText{
@@ -233,7 +239,7 @@ canvas{
 
     width:100%;
 
-    height:56px;
+    height:58px;
 
     border-radius:16px;
 
@@ -252,7 +258,35 @@ canvas{
     margin-bottom:12px;
 }
 
-/* ---------------- BUTTONS ---------------- */
+/* ---------------- WAIT ---------------- */
+
+.waitBox{
+
+    background:#101010;
+
+    border:1px solid #2c2c2c;
+
+    border-radius:18px;
+
+    padding:16px;
+
+    text-align:center;
+
+    margin-bottom:16px;
+}
+
+#claimTimer{
+
+    font-size:32px;
+
+    font-weight:900;
+
+    color:#55ef8b;
+
+    margin-top:8px;
+}
+
+/* ---------------- BUTTON ---------------- */
 
 .resultBtn{
 
@@ -264,46 +298,15 @@ canvas{
 
     padding:15px;
 
-    font-size:16px;
-
-    font-weight:800;
-
-    cursor:pointer;
-}
-
-.homeBtn{
-
     background:#55ef8b;
 
     color:black;
-}
 
-/* ---------------- WAIT ---------------- */
-
-.waitBox{
-
-    background:#101010;
-
-    border:1px solid #2c2c2c;
-
-    border-radius:16px;
-
-    padding:16px;
-
-    text-align:center;
-
-    margin-bottom:16px;
-}
-
-#claimTimer{
-
-    font-size:30px;
+    font-size:16px;
 
     font-weight:900;
 
-    color:#55ef8b;
-
-    margin-top:8px;
+    cursor:pointer;
 }
 
 /* ---------------- LOADING ---------------- */
@@ -316,17 +319,17 @@ canvas{
 
     background:#0d0d0e;
 
-    z-index:100;
-
     display:flex;
 
     justify-content:center;
 
     align-items:center;
 
+    z-index:100;
+
     font-size:20px;
 
-    font-weight:700;
+    font-weight:800;
 }
 
 </style>
@@ -412,7 +415,7 @@ canvas{
                 Banner Ad
             </div>
 
-            <!-- WIN -->
+            <!-- WAIT -->
 
             <div
                 id="winBlock"
@@ -435,7 +438,7 @@ canvas{
             <!-- BUTTON -->
 
             <button
-                class="resultBtn homeBtn"
+                class="resultBtn"
                 onclick="goHome()"
                 id="homeBtn"
             >
@@ -467,13 +470,13 @@ bgImg.src = "bg.png";
 
 /* ---------------- PRELOAD ---------------- */
 
-let loaded = 0;
+let loadedImages = 0;
 
 function imageLoaded(){
 
-    loaded++;
+    loadedImages++;
 
-    if(loaded >= 3){
+    if(loadedImages >= 3){
 
         document.getElementById(
             "loading"
@@ -490,10 +493,10 @@ bgImg.onload = imageLoaded;
 /*
 
 0-2 wins => EASY
-3-5 wins => MEDIUM
+3-5 => MEDIUM
 6+ => HARD
 
-must come from backend later
+later from backend
 
 */
 
@@ -501,7 +504,7 @@ const difficultyLevel = 0;
 
 let difficulty = {
 
-    pipeGap:220,
+    pipeGap:230,
     pipeSpeed:2.8,
     gravity:0.38,
 
@@ -512,7 +515,7 @@ if(difficultyLevel >= 3){
 
     difficulty = {
 
-        pipeGap:195,
+        pipeGap:205,
         pipeSpeed:3.5,
         gravity:0.4,
 
@@ -528,7 +531,7 @@ if(difficultyLevel >= 6){
 
     difficulty = {
 
-        pipeGap:175,
+        pipeGap:185,
         pipeSpeed:4.2,
         gravity:0.43,
 
@@ -548,8 +551,18 @@ const canvas =
 const ctx =
     canvas.getContext("2d");
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+function resizeCanvas(){
+
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+
+resizeCanvas();
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
 /* ---------------- GAME ---------------- */
 
@@ -566,8 +579,8 @@ const bird = {
     x:90,
     y:300,
 
-    width:62,
-    height:62,
+    width:92,
+    height:38,
 
     velocity:0,
 
@@ -583,6 +596,7 @@ function createPipe(){
     const minTop = 90;
 
     const maxTop =
+
         canvas.height -
         difficulty.pipeGap -
         160;
@@ -590,6 +604,7 @@ function createPipe(){
     const topHeight =
 
         Math.random() *
+
         (maxTop - minTop)
 
         + minTop;
@@ -598,7 +613,7 @@ function createPipe(){
 
         x:canvas.width,
 
-        width:90,
+        width:110,
 
         top:topHeight,
 
@@ -658,39 +673,89 @@ function startTimer(){
         },1000);
 }
 
-/* ---------------- DRAW BG ---------------- */
+/* ---------------- BG ---------------- */
 
 function drawBackground(){
+
+    const bgRatio =
+        bgImg.width / bgImg.height;
+
+    const canvasRatio =
+        canvas.width / canvas.height;
+
+    let drawWidth;
+    let drawHeight;
+
+    if(bgRatio > canvasRatio){
+
+        drawHeight =
+            canvas.height;
+
+        drawWidth =
+            canvas.height *
+            bgRatio;
+
+    }else{
+
+        drawWidth =
+            canvas.width;
+
+        drawHeight =
+            canvas.width /
+            bgRatio;
+    }
 
     ctx.drawImage(
 
         bgImg,
 
-        0,
-        0,
+        (canvas.width - drawWidth) / 2,
 
-        canvas.width,
-        canvas.height
+        (canvas.height - drawHeight) / 2,
+
+        drawWidth,
+        drawHeight
     );
 }
 
-/* ---------------- DRAW BIRD ---------------- */
+/* ---------------- BIRD ---------------- */
 
 function drawBird(){
+
+    const angle =
+
+        Math.min(
+            bird.velocity * 0.05,
+            0.5
+        );
+
+    ctx.save();
+
+    ctx.translate(
+
+        bird.x + bird.width / 2,
+
+        bird.y + bird.height / 2
+    );
+
+    ctx.rotate(angle);
 
     ctx.drawImage(
 
         birdImg,
 
-        bird.x,
-        bird.y,
+        -bird.width / 2,
+
+        -bird.height / 2,
 
         bird.width,
         bird.height
     );
+
+    ctx.restore();
 }
 
-/* ---------------- DRAW PIPES ---------------- */
+/* ---------------- PIPES ---------------- */
 
 function drawPipes(){
 
@@ -718,7 +783,6 @@ function drawPipes(){
             -pipe.top / 2,
 
             pipe.width,
-
             pipe.top
         );
 
@@ -736,7 +800,6 @@ function drawPipes(){
             pipe.bottom,
 
             pipe.width,
-
             pipe.bottom
         );
     });
@@ -791,11 +854,13 @@ function winGame(){
 
     document.getElementById(
         "winBlock"
-    ).style.display = "block";
+    ).style.display =
+        "block";
 
     document.getElementById(
         "homeBtn"
-    ).style.display = "none";
+    ).style.display =
+        "none";
 
     let wait = 5;
 
@@ -828,7 +893,7 @@ function winGame(){
 
         },1000);
 
-    // SEND REWARD TO BACKEND HERE
+    // backend reward request here
 }
 
 /* ---------------- HOME ---------------- */
@@ -847,7 +912,8 @@ function flap(){
         gameEnded
     ) return;
 
-    bird.velocity = bird.jump;
+    bird.velocity =
+        bird.jump;
 }
 
 window.addEventListener(
@@ -860,7 +926,7 @@ window.addEventListener(
     flap
 );
 
-/* ---------------- GAME LOOP ---------------- */
+/* ---------------- LOOP ---------------- */
 
 function update(){
 
@@ -883,7 +949,7 @@ function update(){
         bird.y +=
             bird.velocity;
 
-        // create pipes
+        // pipes
 
         if(
 
@@ -891,32 +957,45 @@ function update(){
 
             pipes[
                 pipes.length - 1
-            ].x < canvas.width - 320
+            ].x < canvas.width - 340
         ){
             createPipe();
         }
+
+        // collision hitbox
+
+        const hitbox = {
+
+            x: bird.x + 12,
+            y: bird.y + 6,
+
+            width:
+                bird.width - 24,
+
+            height:
+                bird.height - 12
+        };
 
         pipes.forEach(pipe => {
 
             pipe.x -=
                 difficulty.pipeSpeed;
 
-            // collision
-
             if(
 
-                bird.x + bird.width >
+                hitbox.x + hitbox.width >
                 pipe.x &&
 
-                bird.x <
+                hitbox.x <
                 pipe.x + pipe.width &&
 
                 (
 
-                    bird.y <
+                    hitbox.y <
                     pipe.top ||
 
-                    bird.y + bird.height >
+                    hitbox.y +
+                    hitbox.height >
 
                     canvas.height -
                     pipe.bottom
@@ -936,7 +1015,9 @@ function update(){
         // floor
 
         if(
-            bird.y + bird.height >=
+
+            bird.y +
+            bird.height >=
             canvas.height
         ){
             loseGame();
