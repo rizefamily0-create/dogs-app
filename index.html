@@ -866,6 +866,123 @@ input{
 
 </div>
 
+<div id="games" class="page">
+
+    <div class="page-title">
+        🎮 GameHub
+    </div>
+
+    <!-- ENERGY -->
+
+    <div class="card">
+
+        <div class="card-title">
+            ⚡ Energy
+        </div>
+
+        <div id="gamesEnergy"
+             style="
+                font-size:34px;
+                font-weight:900;
+                margin-top:10px;
+             ">
+            15 / 15
+        </div>
+
+        <div id="gamesRestore"
+             style="
+                margin-top:6px;
+                opacity:.7;
+                font-size:13px;
+             ">
+            Full energy
+        </div>
+
+    </div>
+
+    <!-- DIFFICULTY -->
+
+    <div class="card">
+
+        <div class="card-title">
+            🏆 Daily Difficulty
+        </div>
+
+        <div style="
+            margin-top:10px;
+            font-size:20px;
+            font-weight:800;
+        ">
+            EASY
+        </div>
+
+        <div style="
+            margin-top:8px;
+            opacity:.7;
+            line-height:1.5;
+            font-size:13px;
+        ">
+            Win games to unlock
+            harder difficulties.
+        </div>
+
+    </div>
+
+    <!-- GAME CARD -->
+
+    <div class="card">
+
+        <img
+            src="games/flappy/preview.png"
+            style="
+                width:100%;
+                border-radius:18px;
+                margin-bottom:14px;
+            "
+        >
+
+        <div class="card-title">
+            🐶 DOGS Flappy
+        </div>
+
+        <div style="
+            margin-top:8px;
+            opacity:.7;
+            line-height:1.5;
+            font-size:14px;
+        ">
+            Survive for 40 seconds
+            and earn DOGS reward.
+        </div>
+
+        <div style="
+            margin-top:16px;
+            display:flex;
+            justify-content:space-between;
+            font-size:14px;
+        ">
+
+            <div>
+                💰 100 DOGS
+            </div>
+
+            <div>
+                ⭐ Easy
+            </div>
+
+        </div>
+
+        <button
+            class="main-btn"
+            style="margin-top:16px;"
+        >
+            PLAY
+        </button>
+
+    </div>
+
+</div>
+
 <!-- OFFERWALL -->
 <div id="offerwall" class="page">
 
@@ -959,6 +1076,11 @@ input{
         Tasks
     </div>
 
+    <div class="nav-item" onclick="tab('games', this)">
+        <span>🎮</span>
+        Games
+    </div>
+
     <div class="nav-item" onclick="tab('offerwall', this)">
         <span>🎁</span>
         Offerwall
@@ -968,7 +1090,7 @@ input{
         <span>👥</span>
         Ref
     </div>
-
+    
 </div>
 
 <!-- X3 -->
@@ -1037,7 +1159,13 @@ function tab(id, el){
         loadTasks();
     }
 
+    if(name === "games"){
+        loadGamesStatus();
+    }
+
     if(id === 'ref') loadRefInfo();
+
+    
 
 }
 
@@ -1458,6 +1586,111 @@ async function activatePromo(){
             message:"Ad failed"
         });
     }
+}
+
+// ---------- GAME STATUS ----------
+
+async function loadGamesStatus(){
+
+    try{
+
+        const r = await fetch(
+
+            API_URL + "/games/status",
+
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    init_data:
+                        Telegram.WebApp.initData
+                })
+            }
+        );
+
+        const data = await r.json();
+
+        if(!data.ok) return;
+
+        // energy
+
+        document.getElementById(
+            "gamesEnergy"
+        ).innerText =
+
+            `${data.energy} / ${data.max_energy}`;
+
+        // restore timer
+
+        if(data.energy >= data.max_energy){
+
+            document.getElementById(
+                "gamesRestore"
+            ).innerText =
+                "Full energy";
+
+        }else{
+
+            updateEnergyTimer(
+                data.next_restore
+            );
+        }
+
+    }catch(e){
+
+        console.log(e);
+    }
+}
+
+// ----- game timer -----
+
+function updateEnergyTimer(seconds){
+
+    let remaining = seconds;
+
+    const el =
+        document.getElementById(
+            "gamesRestore"
+        );
+
+    function render(){
+
+        const m =
+            Math.floor(
+                remaining / 60
+            );
+
+        const s =
+            remaining % 60;
+
+        el.innerText =
+
+            `Next energy in ${m}:${
+                s.toString().padStart(2,"0")
+            }`;
+    }
+
+    render();
+
+    const interval = setInterval(() => {
+
+        remaining--;
+
+        render();
+
+        if(remaining <= 0){
+
+            clearInterval(interval);
+
+            loadGamesStatus();
+        }
+
+    },1000);
 }
 
 // ---------------- TASKS ----------------
