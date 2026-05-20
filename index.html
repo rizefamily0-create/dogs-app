@@ -555,6 +555,288 @@ input{
 
     transform:none;
 }
+
+
+/* ---------------- GAME HUB ---------------- */
+
+.gameEnergyCard{
+
+    background:#17181c;
+
+    border:1px solid #2a2b31;
+
+    border-radius:24px;
+
+    padding:18px;
+
+    margin-bottom:16px;
+}
+
+.energyTop{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:14px;
+}
+
+.energyTitle{
+
+    font-size:16px;
+
+    font-weight:700;
+}
+
+.energyCount{
+
+    font-size:16px;
+
+    font-weight:900;
+
+    color:#55ef8b;
+}
+
+.energyBar{
+
+    width:100%;
+
+    height:12px;
+
+    background:#2a2b31;
+
+    border-radius:999px;
+
+    overflow:hidden;
+}
+
+.energyFill{
+
+    height:100%;
+
+    background:#3b82f6;
+
+    border-radius:999px;
+}
+
+.energyTimer{
+
+    margin-top:10px;
+
+    opacity:.7;
+
+    font-size:13px;
+}
+
+/* ---------------- DIFFICULTY ---------------- */
+
+.gameDifficultyCard{
+
+    background:#17181c;
+
+    border:1px solid #2a2b31;
+
+    border-radius:24px;
+
+    padding:18px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+.difficultyLeft{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+}
+
+.difficultyIcon{
+
+    width:54px;
+    height:54px;
+
+    border-radius:18px;
+
+    background:#22232a;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:28px;
+}
+
+.difficultyTitle{
+
+    font-size:18px;
+
+    font-weight:800;
+}
+
+.difficultyWins{
+
+    margin-top:4px;
+
+    font-size:13px;
+
+    opacity:.7;
+}
+
+.difficultyBadge{
+
+    padding:8px 14px;
+
+    border-radius:14px;
+
+    font-size:13px;
+
+    font-weight:900;
+}
+
+.easyBadge{
+
+    background:rgba(85,239,139,.15);
+
+    color:#55ef8b;
+}
+
+/* ---------------- GAME CARD ---------------- */
+
+.gameCard{
+
+    background:#17181c;
+
+    border:1px solid #2a2b31;
+
+    border-radius:26px;
+
+    padding:14px;
+
+    display:flex;
+
+    gap:14px;
+
+    margin-bottom:18px;
+}
+
+.gamePreview{
+
+    width:120px;
+
+    min-width:120px;
+}
+
+.gamePreview img{
+
+    width:100%;
+
+    height:170px;
+
+    object-fit:cover;
+
+    border-radius:18px;
+}
+
+.gameInfo{
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+.gameTop{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+}
+
+.gameName{
+
+    font-size:24px;
+
+    font-weight:900;
+
+    line-height:1.1;
+}
+
+.gameBadge{
+
+    background:rgba(168,85,247,.15);
+
+    color:#c084fc;
+
+    padding:6px 12px;
+
+    border-radius:12px;
+
+    font-size:12px;
+
+    font-weight:900;
+}
+
+.gameDescription{
+
+    opacity:.75;
+
+    font-size:14px;
+
+    line-height:1.5;
+
+    margin-bottom:14px;
+}
+
+.gameMeta{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    font-size:13px;
+
+    margin-bottom:16px;
+
+    opacity:.9;
+}
+
+.gameStartBtn{
+
+    margin-top:auto;
+
+    width:100%;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:#3b82f6;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:900;
+
+    cursor:pointer;
+}
     
     
 </style>
@@ -868,116 +1150,161 @@ input{
 
 <div id="games" class="page">
 
-    <div class="page-title">
-        🎮 GameHub
+    <!-- HEADER -->
+
+    <div style="margin-bottom:18px;">
+
+        <div style="
+            font-size:32px;
+            font-weight:900;
+        ">
+            🎮 GameHub
+        </div>
+
+        <div style="
+            margin-top:4px;
+            opacity:.7;
+            font-size:14px;
+        ">
+            Play games and earn DOGS
+        </div>
+
     </div>
 
     <!-- ENERGY -->
 
-    <div class="card">
+    <div class="gameEnergyCard">
 
-        <div class="card-title">
-            ⚡ Energy
+        <div class="energyTop">
+
+            <div class="energyTitle">
+                ⚡ Energy
+            </div>
+
+            <div
+                class="energyCount"
+                id="gamesEnergy"
+            >
+                12 / 15
+            </div>
+
         </div>
 
-        <div id="gamesEnergy"
-             style="
-                font-size:34px;
-                font-weight:900;
-                margin-top:10px;
-             ">
-            15 / 15
+        <div class="energyBar">
+
+            <div
+                class="energyFill"
+                id="gamesEnergyFill"
+                style="width:80%;"
+            ></div>
+
         </div>
 
-        <div id="gamesRestore"
-             style="
-                margin-top:6px;
-                opacity:.7;
-                font-size:13px;
-             ">
-            Full energy
+        <div
+            class="energyTimer"
+            id="gamesRestore"
+        >
+            Next energy in 08:22
         </div>
 
     </div>
 
-    <!-- DIFFICULTY -->
+    <!-- DAILY DIFFICULTY -->
 
-    <div class="card">
+    <div class="gameDifficultyCard">
 
-        <div class="card-title">
-            🏆 Daily Difficulty
+        <div class="difficultyLeft">
+
+            <div class="difficultyIcon">
+                🏆
+            </div>
+
+            <div>
+
+                <div class="difficultyTitle">
+                    Daily Difficulty
+                </div>
+
+                <div class="difficultyWins">
+                    Wins today: 2 / 6
+                </div>
+
+            </div>
+
         </div>
 
-        <div style="
-            margin-top:10px;
-            font-size:20px;
-            font-weight:800;
-        ">
+        <div class="difficultyBadge easyBadge">
             EASY
         </div>
 
-        <div style="
-            margin-top:8px;
-            opacity:.7;
-            line-height:1.5;
-            font-size:13px;
-        ">
-            Win games to unlock
-            harder difficulties.
-        </div>
+    </div>
 
+    <!-- GAMES TITLE -->
+
+    <div style="
+        margin-top:24px;
+        margin-bottom:14px;
+        font-size:20px;
+        font-weight:800;
+    ">
+        Available Games
     </div>
 
     <!-- GAME CARD -->
 
-    <div class="card">
+    <div class="gameCard">
 
-        <img
-            src="games/flappy/preview.png"
-            style="
-                width:100%;
-                border-radius:18px;
-                margin-bottom:14px;
-            "
-        >
+        <!-- IMAGE -->
 
-        <div class="card-title">
-            🐶 DOGS Flappy
+        <div class="gamePreview">
+
+            <img src="games/flappy/preview.png">
+
         </div>
 
-        <div style="
-            margin-top:8px;
-            opacity:.7;
-            line-height:1.5;
-            font-size:14px;
-        ">
-            Survive for 40 seconds
-            and earn DOGS reward.
-        </div>
+        <!-- INFO -->
 
-        <div style="
-            margin-top:16px;
-            display:flex;
-            justify-content:space-between;
-            font-size:14px;
-        ">
+        <div class="gameInfo">
 
-            <div>
-                💰 100 DOGS
+            <div class="gameTop">
+
+                <div class="gameName">
+                    DOGS Flappy
+                </div>
+
+                <div class="gameBadge">
+                    EASY
+                </div>
+
             </div>
 
-            <div>
-                ⭐ Easy
+            <div class="gameDescription">
+
+                Survive for 40 seconds
+                and earn DOGS rewards.
+
             </div>
 
-        </div>
+            <div class="gameMeta">
 
-        <button
-            class="main-btn"
-            style="margin-top:16px;"
-        >
-            PLAY
-        </button>
+                <div class="gameReward">
+                    💰 100 DOGS
+                </div>
+
+                <div class="gameTime">
+                    ⏱ 40 SEC
+                </div>
+
+            </div>
+
+            <button
+                class="gameStartBtn"
+                onclick="window.location.href='games/flappy/'"
+            >
+                ▶ PLAY
+            </button>
+
+        </div>
 
     </div>
 
