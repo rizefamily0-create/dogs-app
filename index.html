@@ -2107,9 +2107,6 @@ async function startFlappyGame(btn){
         // опционально: сразу обновим энергию в UI
         await loadGamesStatus();
 
-        // переход в игру с токеном
-        const tg = window.Telegram?.WebApp;
-
         const initData = tg?.initData || "";
 
         window.location.href =
