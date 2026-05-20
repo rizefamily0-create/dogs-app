@@ -456,18 +456,6 @@ canvas{
 </div>
 
 <script>
-
-/* ---------------- IMAGES ---------------- */
-
-const birdImg = new Image();
-birdImg.src = "bird.png";
-
-const pipeImg = new Image();
-pipeImg.src = "pipe.png";
-
-const bgImg = new Image();
-bgImg.src = "bg.png";
-
 /* ---------------- API + TG ---------------- */
 
 const tg = window.Telegram?.WebApp;
@@ -481,24 +469,26 @@ const sessionToken =
 
 let finishSent = false; // защита от двойной отправки
 
-if(!sessionToken){
-    document.querySelector(".playBtn").disabled = true;
-    document.querySelector(".playBtn").innerText = "INVALID SESSION";
-}
-    
-/* ---------------- PRELOAD ---------------- */
+/* ---------------- IMAGES + PRELOAD ---------------- */
+
+const birdImg = new Image();
+const pipeImg = new Image();
+const bgImg = new Image();
 
 let loadedImages = 0;
+const TOTAL_IMAGES = 3;
+let loadingHidden = false;
+
+function hideLoading(){
+    if(loadingHidden) return;
+    loadingHidden = true;
+    document.getElementById("loading").style.display = "none";
+}
 
 function imageLoaded(){
-
     loadedImages++;
-
-    if(loadedImages >= 3){
-
-        document.getElementById(
-            "loading"
-        ).style.display = "none";
+    if(loadedImages >= TOTAL_IMAGES){
+        hideLoading();
     }
 }
 
@@ -506,102 +496,94 @@ birdImg.onload = imageLoaded;
 pipeImg.onload = imageLoaded;
 bgImg.onload = imageLoaded;
 
+// если картинка не загрузилась — всё равно снимаем loader
+birdImg.onerror = imageLoaded;
+pipeImg.onerror = imageLoaded;
+bgImg.onerror = imageLoaded;
+
+// ВАЖНО: src после onload/onerror
+birdImg.src = "bird.png";
+pipeImg.src = "pipe.png";
+bgImg.src = "bg.png";
+
+// аварийный fallback: не висим вечно
+setTimeout(hideLoading, 3000);
+
+/* ---------------- SESSION GUARD ---------------- */
+
+if(!sessionToken){
+    const playBtn = document.querySelector(".playBtn");
+    if(playBtn){
+        playBtn.disabled = true;
+        playBtn.innerText = "OPEN FROM GAMEHUB";
+    }
+}
+
 /* ---------------- DIFFICULTY ---------------- */
 
 /*
-
 0-2 wins => EASY
 3-5 => MEDIUM
 6+ => HARD
-
 later from backend
-
 */
 
 const difficultyLevel = 0;
 
 let difficulty = {
-
     pipeGap:230,
     pipeSpeed:2.8,
     gravity:0.38,
-
     survive:40
 };
 
 if(difficultyLevel >= 3){
-
     difficulty = {
-
         pipeGap:205,
         pipeSpeed:3.5,
         gravity:0.4,
-
         survive:45
     };
-
-    document.getElementById(
-        "difficulty"
-    ).innerText = "MEDIUM";
+    document.getElementById("difficulty").innerText = "MEDIUM";
 }
 
 if(difficultyLevel >= 6){
-
     difficulty = {
-
         pipeGap:185,
         pipeSpeed:4.2,
         gravity:0.43,
-
         survive:50
     };
-
-    document.getElementById(
-        "difficulty"
-    ).innerText = "HARD";
+    document.getElementById("difficulty").innerText = "HARD";
 }
 
 /* ---------------- CANVAS ---------------- */
 
-const canvas =
-    document.getElementById("game");
-
-const ctx =
-    canvas.getContext("2d");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
 function resizeCanvas(){
-
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 }
 
 resizeCanvas();
-
-window.addEventListener(
-    "resize",
-    resizeCanvas
-);
+window.addEventListener("resize", resizeCanvas);
 
 /* ---------------- GAME ---------------- */
 
 let gameStarted = false;
 let gameEnded = false;
 
-let surviveTime =
-    difficulty.survive;
-
+let surviveTime = difficulty.survive;
 let timerInterval;
 
 const bird = {
-
     x:90,
     y:300,
-
     width:92,
     height:38,
-
     velocity:0,
-
     jump:-7
 };
 
@@ -612,33 +594,15 @@ let pipes = [];
 function createPipe(){
 
     const minTop = 90;
+    const maxTop = canvas.height - difficulty.pipeGap - 160;
 
-    const maxTop =
-
-        canvas.height -
-        difficulty.pipeGap -
-        160;
-
-    const topHeight =
-
-        Math.random() *
-
-        (maxTop - minTop)
-
-        + minTop;
+    const topHeight = Math.random() * (maxTop - minTop) + minTop;
 
     pipes.push({
-
         x:canvas.width,
-
         width:110,
-
         top:topHeight,
-
-        bottom:
-            canvas.height -
-            topHeight -
-            difficulty.pipeGap
+        bottom: canvas.height - topHeight - difficulty.pipeGap
     });
 }
 
@@ -646,9 +610,7 @@ function createPipe(){
 
 function startGame(){
 
-    document.getElementById(
-        "startScreen"
-    ).style.display = "none";
+    document.getElementById("startScreen").style.display = "none";
 
     gameStarted = true;
 
@@ -659,78 +621,53 @@ function startGame(){
 
 function startTimer(){
 
-    surviveTime =
-        difficulty.survive;
-
-    document.getElementById(
-        "timer"
-    ).innerText =
-        surviveTime;
+    surviveTime = difficulty.survive;
+    document.getElementById("timer").innerText = surviveTime;
 
     clearInterval(timerInterval);
 
-    timerInterval =
-        setInterval(() => {
+    timerInterval = setInterval(() => {
 
-            surviveTime--;
+        surviveTime--;
+        document.getElementById("timer").innerText = surviveTime;
 
-            document.getElementById(
-                "timer"
-            ).innerText =
-                surviveTime;
+        if(surviveTime <= 0){
+            clearInterval(timerInterval);
+            winGame();
+        }
 
-            if(surviveTime <= 0){
-
-                clearInterval(
-                    timerInterval
-                );
-
-                winGame();
-            }
-
-        },1000);
+    },1000);
 }
 
 /* ---------------- BG ---------------- */
 
 function drawBackground(){
 
-    const bgRatio =
-        bgImg.width / bgImg.height;
+    // если фон еще не готов, просто заливаем цветом
+    if(!bgImg.complete || !bgImg.naturalWidth){
+        ctx.fillStyle = "#0d0d0e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        return;
+    }
 
-    const canvasRatio =
-        canvas.width / canvas.height;
+    const bgRatio = bgImg.width / bgImg.height;
+    const canvasRatio = canvas.width / canvas.height;
 
     let drawWidth;
     let drawHeight;
 
     if(bgRatio > canvasRatio){
-
-        drawHeight =
-            canvas.height;
-
-        drawWidth =
-            canvas.height *
-            bgRatio;
-
+        drawHeight = canvas.height;
+        drawWidth = canvas.height * bgRatio;
     }else{
-
-        drawWidth =
-            canvas.width;
-
-        drawHeight =
-            canvas.width /
-            bgRatio;
+        drawWidth = canvas.width;
+        drawHeight = canvas.width / bgRatio;
     }
 
     ctx.drawImage(
-
         bgImg,
-
         (canvas.width - drawWidth) / 2,
-
         (canvas.height - drawHeight) / 2,
-
         drawWidth,
         drawHeight
     );
@@ -740,32 +677,23 @@ function drawBackground(){
 
 function drawBird(){
 
-    const angle =
+    if(!birdImg.complete || !birdImg.naturalWidth){
+        // fallback прямоугольник
+        ctx.fillStyle = "#55ef8b";
+        ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+        return;
+    }
 
-        Math.min(
-            bird.velocity * 0.05,
-            0.5
-        );
+    const angle = Math.min(bird.velocity * 0.05, 0.5);
 
     ctx.save();
-
-    ctx.translate(
-
-        bird.x + bird.width / 2,
-
-        bird.y + bird.height / 2
-    );
-
+    ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
     ctx.rotate(angle);
 
     ctx.drawImage(
-
         birdImg,
-
         -bird.width / 2,
-
         -bird.height / 2,
-
         bird.width,
         bird.height
     );
@@ -779,27 +707,28 @@ function drawPipes(){
 
     pipes.forEach(pipe => {
 
+        if(!pipeImg.complete || !pipeImg.naturalWidth){
+            // fallback pipes
+            ctx.fillStyle = "#2f80ff";
+            ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+            ctx.fillRect(
+                pipe.x,
+                canvas.height - pipe.bottom,
+                pipe.width,
+                pipe.bottom
+            );
+            return;
+        }
+
         // TOP
-
         ctx.save();
-
-        ctx.translate(
-
-            pipe.x + pipe.width / 2,
-
-            pipe.top / 2
-        );
-
+        ctx.translate(pipe.x + pipe.width / 2, pipe.top / 2);
         ctx.scale(1,-1);
 
         ctx.drawImage(
-
             pipeImg,
-
             -pipe.width / 2,
-
             -pipe.top / 2,
-
             pipe.width,
             pipe.top
         );
@@ -807,146 +736,15 @@ function drawPipes(){
         ctx.restore();
 
         // BOTTOM
-
         ctx.drawImage(
-
             pipeImg,
-
             pipe.x,
-
-            canvas.height -
-            pipe.bottom,
-
+            canvas.height - pipe.bottom,
             pipe.width,
             pipe.bottom
         );
     });
 }
-
-/* ---------------- LOSE ---------------- */
-
-async function loseGame(){
-
-    if(gameEnded) return;
-
-    gameEnded = true;
-    clearInterval(timerInterval);
-
-    document.getElementById("resultScreen").style.display = "flex";
-    document.getElementById("resultTitle").innerText = "YOU LOST";
-    document.getElementById("resultText").innerText = "You failed to survive.";
-
-    const res = await sendFinish(false);
-
-    // Мягкая обработка ошибок для UX
-    if(!res.ok){
-        if(res.error === "already_completed"){
-            // уже отправляли — игнор
-        }else if(res.error === "session_expired"){
-            document.getElementById("resultText").innerText =
-                "Session expired. Start a new run from GameHub.";
-        }else if(res.error === "invalid_session"){
-            document.getElementById("resultText").innerText =
-                "Invalid game session. Start game from GameHub.";
-        }else{
-            // network/server error: просто лог, экран поражения уже показан
-            console.log("LOSE FINISH ERROR:", res.error);
-        }
-    }
-}
-
-/* ---------------- WIN ---------------- */
-
-async function winGame(){
-
-    if(gameEnded) return;
-
-    gameEnded = true;
-    clearInterval(timerInterval);
-
-    document.getElementById("resultScreen").style.display = "flex";
-    document.getElementById("resultTitle").innerText = "YOU WON";
-    document.getElementById("resultText").innerText =
-        "DOGS reward will be credited shortly.";
-
-    document.getElementById("winBlock").style.display = "block";
-    document.getElementById("homeBtn").style.display = "none";
-
-    // сначала отправляем результат на backend
-    const res = await sendFinish(true);
-
-    if(!res.ok){
-        // если не удалось зачесть — покажем понятный текст
-        document.getElementById("winBlock").style.display = "none";
-        document.getElementById("homeBtn").style.display = "block";
-
-        if(res.error === "already_completed"){
-            document.getElementById("resultText").innerText =
-                "Run already completed.";
-        }else if(res.error === "session_expired"){
-            document.getElementById("resultText").innerText =
-                "Session expired. Reward not credited.";
-        }else if(res.error === "invalid_session"){
-            document.getElementById("resultText").innerText =
-                "Invalid session. Start from GameHub.";
-        }else{
-            document.getElementById("resultText").innerText =
-                "Server error. Please try again.";
-        }
-
-        return;
-    }
-
-    // успех: можно показать награду из backend
-    if(res.win && typeof res.reward !== "undefined"){
-        document.getElementById("resultText").innerText =
-            `You survived! Reward: +${res.reward} DOGS`;
-    }
-
-    let wait = 5;
-    document.getElementById("claimTimer").innerText = wait;
-
-    const rewardTimer = setInterval(() => {
-
-        wait--;
-        document.getElementById("claimTimer").innerText = wait;
-
-        if(wait <= 0){
-            clearInterval(rewardTimer);
-            document.getElementById("homeBtn").style.display = "block";
-        }
-
-    }, 1000);
-}
-
-/* ---------------- HOME ---------------- */
-
-function goHome(){
-    window.location.href = "../../";
-}
-
-/* ---------------- INPUT ---------------- */
-
-function flap(){
-
-    if(
-        !gameStarted ||
-        gameEnded
-    ) return;
-
-    bird.velocity =
-        bird.jump;
-}
-
-window.addEventListener(
-    "click",
-    flap
-);
-
-window.addEventListener(
-    "touchstart",
-    flap
-);
 
 /* ---------------- FINISH REQUEST ---------------- */
 
@@ -983,79 +781,148 @@ async function sendFinish(survived){
     }
 }
 
+/* ---------------- LOSE ---------------- */
+
+async function loseGame(){
+
+    if(gameEnded) return;
+
+    gameEnded = true;
+    clearInterval(timerInterval);
+
+    document.getElementById("resultScreen").style.display = "flex";
+    document.getElementById("resultTitle").innerText = "YOU LOST";
+    document.getElementById("resultText").innerText = "You failed to survive.";
+
+    const res = await sendFinish(false);
+
+    if(!res.ok){
+        if(res.error === "session_expired"){
+            document.getElementById("resultText").innerText =
+                "Session expired. Start a new run from GameHub.";
+        }else if(res.error === "invalid_session"){
+            document.getElementById("resultText").innerText =
+                "Invalid game session. Start game from GameHub.";
+        }else{
+            console.log("LOSE FINISH ERROR:", res.error);
+        }
+    }
+}
+
+/* ---------------- WIN ---------------- */
+
+async function winGame(){
+
+    if(gameEnded) return;
+
+    gameEnded = true;
+    clearInterval(timerInterval);
+
+    document.getElementById("resultScreen").style.display = "flex";
+    document.getElementById("resultTitle").innerText = "YOU WON";
+    document.getElementById("resultText").innerText =
+        "DOGS reward will be credited shortly.";
+
+    document.getElementById("winBlock").style.display = "block";
+    document.getElementById("homeBtn").style.display = "none";
+
+    const res = await sendFinish(true);
+
+    if(!res.ok){
+        document.getElementById("winBlock").style.display = "none";
+        document.getElementById("homeBtn").style.display = "block";
+
+        if(res.error === "already_completed"){
+            document.getElementById("resultText").innerText = "Run already completed.";
+        }else if(res.error === "session_expired"){
+            document.getElementById("resultText").innerText = "Session expired. Reward not credited.";
+        }else if(res.error === "invalid_session"){
+            document.getElementById("resultText").innerText = "Invalid session. Start from GameHub.";
+        }else{
+            document.getElementById("resultText").innerText = "Server error. Please try again.";
+        }
+
+        return;
+    }
+
+    if(res.win && typeof res.reward !== "undefined"){
+        document.getElementById("resultText").innerText =
+            `You survived! Reward: +${res.reward} DOGS`;
+    }
+
+    let wait = 5;
+    document.getElementById("claimTimer").innerText = wait;
+
+    const rewardTimer = setInterval(() => {
+
+        wait--;
+        document.getElementById("claimTimer").innerText = wait;
+
+        if(wait <= 0){
+            clearInterval(rewardTimer);
+            document.getElementById("homeBtn").style.display = "block";
+        }
+
+    }, 1000);
+}
+
+/* ---------------- HOME ---------------- */
+
+function goHome(){
+    window.location.href = "../../";
+}
+
+/* ---------------- INPUT ---------------- */
+
+function flap(){
+
+    if(!gameStarted || gameEnded) return;
+
+    bird.velocity = bird.jump;
+}
+
+window.addEventListener("click", flap);
+window.addEventListener("touchstart", flap);
+
 /* ---------------- LOOP ---------------- */
 
 function update(){
 
-    ctx.clearRect(
-
-        0,
-        0,
-
-        canvas.width,
-        canvas.height
-    );
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawBackground();
 
     if(gameStarted && !gameEnded){
 
-        bird.velocity +=
-            difficulty.gravity;
-
-        bird.y +=
-            bird.velocity;
+        bird.velocity += difficulty.gravity;
+        bird.y += bird.velocity;
 
         // pipes
-
         if(
-
             pipes.length === 0 ||
-
-            pipes[
-                pipes.length - 1
-            ].x < canvas.width - 340
+            pipes[pipes.length - 1].x < canvas.width - 340
         ){
             createPipe();
         }
 
         // collision hitbox
-
         const hitbox = {
-
             x: bird.x + 12,
             y: bird.y + 6,
-
-            width:
-                bird.width - 24,
-
-            height:
-                bird.height - 12
+            width: bird.width - 24,
+            height: bird.height - 12
         };
 
         pipes.forEach(pipe => {
 
-            pipe.x -=
-                difficulty.pipeSpeed;
+            pipe.x -= difficulty.pipeSpeed;
 
             if(
-
-                hitbox.x + hitbox.width >
-                pipe.x &&
-
-                hitbox.x <
-                pipe.x + pipe.width &&
-
+                hitbox.x + hitbox.width > pipe.x &&
+                hitbox.x < pipe.x + pipe.width &&
                 (
-
-                    hitbox.y <
-                    pipe.top ||
-
-                    hitbox.y +
-                    hitbox.height >
-
-                    canvas.height -
-                    pipe.bottom
+                    hitbox.y < pipe.top ||
+                    hitbox.y + hitbox.height > canvas.height - pipe.bottom
                 )
             ){
                 loseGame();
@@ -1064,39 +931,26 @@ function update(){
         });
 
         // cleanup
-
-        pipes = pipes.filter(
-            p => p.x + p.width > 0
-        );
+        pipes = pipes.filter(p => p.x + p.width > 0);
 
         // floor
-
-        if(
-
-            bird.y +
-            bird.height >=
-            canvas.height
-        ){
+        if(bird.y + bird.height >= canvas.height){
             loseGame();
         }
 
         // ceiling
-
         if(bird.y <= 0){
-
             bird.y = 0;
         }
     }
 
     drawPipes();
-
     drawBird();
 
     requestAnimationFrame(update);
 }
 
 update();
-
 </script>
 
 </body>
