@@ -1,1 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
+<meta charset="UTF-8" />
+
+<meta
+    name="viewport"
+    content="
+        width=device-width,
+        initial-scale=1.0,
+        maximum-scale=1.0,
+        user-scalable=no
+    "
+/>
+
+<title>DOGS FLAPPY</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    overflow:hidden;
+
+    background:#0d0d0e;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+
+    color:white;
+}
+
+#gameWrap{
+
+    position:relative;
+
+    width:100vw;
+    height:100vh;
+
+    overflow:hidden;
+}
+
+/* ---------------- CANVAS ---------------- */
+
+canvas{
+
+    width:100%;
+    height:100%;
+
+    display:block;
+}
+
+/* ---------------- TOP UI ---------------- */
+
+#topUI{
+
+    position:absolute;
+
+    top:12px;
+    left:12px;
+    right:12px;
+
+    z-index:20;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+.uiCard{
+
+    background:rgba(20,20,20,.92);
+
+    border:1px solid #2a2a2a;
+
+    border-radius:18px;
+
+    padding:10px 14px;
+
+    backdrop-filter:blur(8px);
+}
+
+#timer{
+
+    font-size:20px;
+
+    font-weight:800;
+}
+
+#difficulty{
+
+    font-size:13px;
+
+    color:#55ef8b;
+
+    font-weight:700;
+}
+
+/* ---------------- START ---------------- */
+
+#startScreen{
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0d0d0e,
+            #131416
+        );
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:40;
+}
+
+#logo{
+
+    font-size:48px;
+
+    font-weight:900;
+
+    margin-bottom:12px;
+}
+
+#subtitle{
+
+    color:#8e8e93;
+
+    text-align:center;
+
+    line-height:1.5;
+
+    max-width:320px;
+
+    margin-bottom:28px;
+}
+
+.playBtn{
+
+    background:#55ef8b;
+
+    color:black;
+
+    border:none;
+
+    border-radius:18px;
+
+    padding:16px 34px;
+
+    font-size:18px;
+
+    font-weight:900;
+
+    cursor:pointer;
+}
+
+/* ---------------- RESULT ---------------- */
+
+#resultScreen{
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(0,0,0,.84);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:50;
+}
+
+.resultCard{
+
+    width:340px;
+
+    background:#18181a;
+
+    border:1px solid #2d2d2f;
+
+    border-radius:24px;
+
+    padding:22px;
+}
+
+.resultTitle{
+
+    font-size:30px;
+
+    font-weight:900;
+
+    text-align:center;
+
+    margin-bottom:10px;
+}
+
+.resultText{
+
+    text-align:center;
+
+    color:#8e8e93;
+
+    line-height:1.5;
+
+    margin-bottom:18px;
+}
+
+/* ---------------- ADS ---------------- */
+
+.adBanner{
+
+    width:100%;
+
+    height:56px;
+
+    border-radius:16px;
+
+    background:#101010;
+
+    border:1px dashed #333;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:#666;
+
+    margin-bottom:12px;
+}
+
+/* ---------------- BUTTONS ---------------- */
+
+.resultBtn{
+
+    width:100%;
+
+    border:none;
+
+    border-radius:16px;
+
+    padding:15px;
+
+    font-size:16px;
+
+    font-weight:800;
+
+    cursor:pointer;
+}
+
+.homeBtn{
+
+    background:#55ef8b;
+
+    color:black;
+}
+
+/* ---------------- WAIT ---------------- */
+
+.waitBox{
+
+    background:#101010;
+
+    border:1px solid #2c2c2c;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    text-align:center;
+
+    margin-bottom:16px;
+}
+
+#claimTimer{
+
+    font-size:30px;
+
+    font-weight:900;
+
+    color:#55ef8b;
+
+    margin-top:8px;
+}
+
+/* ---------------- LOADING ---------------- */
+
+#loading{
+
+    position:absolute;
+
+    inset:0;
+
+    background:#0d0d0e;
+
+    z-index:100;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:20px;
+
+    font-weight:700;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="gameWrap">
+
+    <!-- LOADING -->
+
+    <div id="loading">
+        Loading...
+    </div>
+
+    <!-- TOP UI -->
+
+    <div id="topUI">
+
+        <div class="uiCard">
+            <div id="timer">
+                20
+            </div>
+        </div>
+
+        <div class="uiCard">
+            <div id="difficulty">
+                EASY
+            </div>
+        </div>
+
+    </div>
+
+    <!-- START -->
+
+    <div id="startScreen">
+
+        <div id="logo">
+            DOGS FLAPPY
+        </div>
+
+        <div id="subtitle">
+            Survive until timer ends
+            to receive DOGS reward.
+        </div>
+
+        <button
+            class="playBtn"
+            onclick="startGame()"
+        >
+            PLAY
+        </button>
+
+    </div>
+
+    <!-- RESULT -->
+
+    <div id="resultScreen">
+
+        <div class="resultCard">
+
+            <div
+                class="resultTitle"
+                id="resultTitle"
+            >
+                YOU LOST
+            </div>
+
+            <div
+                class="resultText"
+                id="resultText"
+            >
+                Try again tomorrow.
+            </div>
+
+            <!-- ADS -->
+
+            <div class="adBanner">
+                Banner Ad
+            </div>
+
+            <div class="adBanner">
+                Banner Ad
+            </div>
+
+            <!-- WIN -->
+
+            <div
+                id="winBlock"
+                style="display:none;"
+            >
+
+                <div class="waitBox">
+
+                    Reward is being credited.
+                    Please wait...
+
+                    <div id="claimTimer">
+                        5
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- BUTTON -->
+
+            <button
+                class="resultBtn homeBtn"
+                onclick="goHome()"
+                id="homeBtn"
+            >
+                RETURN HOME
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- CANVAS -->
+
+    <canvas id="game"></canvas>
+
+</div>
+
+<script>
+
+/* ---------------- IMAGES ---------------- */
+
+const birdImg = new Image();
+birdImg.src = "bird.png";
+
+const pipeImg = new Image();
+pipeImg.src = "pipe.png";
+
+const bgImg = new Image();
+bgImg.src = "bg.png";
+
+/* ---------------- PRELOAD ---------------- */
+
+let loaded = 0;
+
+function imageLoaded(){
+
+    loaded++;
+
+    if(loaded >= 3){
+
+        document.getElementById(
+            "loading"
+        ).style.display = "none";
+    }
+}
+
+birdImg.onload = imageLoaded;
+pipeImg.onload = imageLoaded;
+bgImg.onload = imageLoaded;
+
+/* ---------------- DIFFICULTY ---------------- */
+
+/*
+
+0-2 wins => EASY
+3-5 wins => MEDIUM
+6+ => HARD
+
+must come from backend later
+
+*/
+
+const difficultyLevel = 0;
+
+let difficulty = {
+
+    pipeGap:220,
+    pipeSpeed:2.8,
+    gravity:0.38,
+
+    survive:20
+};
+
+if(difficultyLevel >= 3){
+
+    difficulty = {
+
+        pipeGap:195,
+        pipeSpeed:3.5,
+        gravity:0.4,
+
+        survive:25
+    };
+
+    document.getElementById(
+        "difficulty"
+    ).innerText = "MEDIUM";
+}
+
+if(difficultyLevel >= 6){
+
+    difficulty = {
+
+        pipeGap:175,
+        pipeSpeed:4.2,
+        gravity:0.43,
+
+        survive:30
+    };
+
+    document.getElementById(
+        "difficulty"
+    ).innerText = "HARD";
+}
+
+/* ---------------- CANVAS ---------------- */
+
+const canvas =
+    document.getElementById("game");
+
+const ctx =
+    canvas.getContext("2d");
+
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+/* ---------------- GAME ---------------- */
+
+let gameStarted = false;
+let gameEnded = false;
+
+let surviveTime =
+    difficulty.survive;
+
+let timerInterval;
+
+const bird = {
+
+    x:90,
+    y:300,
+
+    width:62,
+    height:62,
+
+    velocity:0,
+
+    jump:-7
+};
+
+let pipes = [];
+
+/* ---------------- PIPE ---------------- */
+
+function createPipe(){
+
+    const minTop = 90;
+
+    const maxTop =
+        canvas.height -
+        difficulty.pipeGap -
+        160;
+
+    const topHeight =
+
+        Math.random() *
+        (maxTop - minTop)
+
+        + minTop;
+
+    pipes.push({
+
+        x:canvas.width,
+
+        width:90,
+
+        top:topHeight,
+
+        bottom:
+            canvas.height -
+            topHeight -
+            difficulty.pipeGap
+    });
+}
+
+/* ---------------- START ---------------- */
+
+function startGame(){
+
+    document.getElementById(
+        "startScreen"
+    ).style.display = "none";
+
+    gameStarted = true;
+
+    startTimer();
+}
+
+/* ---------------- TIMER ---------------- */
+
+function startTimer(){
+
+    surviveTime =
+        difficulty.survive;
+
+    document.getElementById(
+        "timer"
+    ).innerText =
+        surviveTime;
+
+    clearInterval(timerInterval);
+
+    timerInterval =
+        setInterval(() => {
+
+            surviveTime--;
+
+            document.getElementById(
+                "timer"
+            ).innerText =
+                surviveTime;
+
+            if(surviveTime <= 0){
+
+                clearInterval(
+                    timerInterval
+                );
+
+                winGame();
+            }
+
+        },1000);
+}
+
+/* ---------------- DRAW BG ---------------- */
+
+function drawBackground(){
+
+    ctx.drawImage(
+
+        bgImg,
+
+        0,
+        0,
+
+        canvas.width,
+        canvas.height
+    );
+}
+
+/* ---------------- DRAW BIRD ---------------- */
+
+function drawBird(){
+
+    ctx.drawImage(
+
+        birdImg,
+
+        bird.x,
+        bird.y,
+
+        bird.width,
+        bird.height
+    );
+}
+
+/* ---------------- DRAW PIPES ---------------- */
+
+function drawPipes(){
+
+    pipes.forEach(pipe => {
+
+        // TOP
+
+        ctx.save();
+
+        ctx.translate(
+
+            pipe.x + pipe.width / 2,
+
+            pipe.top / 2
+        );
+
+        ctx.scale(1,-1);
+
+        ctx.drawImage(
+
+            pipeImg,
+
+            -pipe.width / 2,
+
+            -pipe.top / 2,
+
+            pipe.width,
+
+            pipe.top
+        );
+
+        ctx.restore();
+
+        // BOTTOM
+
+        ctx.drawImage(
+
+            pipeImg,
+
+            pipe.x,
+
+            canvas.height -
+            pipe.bottom,
+
+            pipe.width,
+
+            pipe.bottom
+        );
+    });
+}
+
+/* ---------------- LOSE ---------------- */
+
+function loseGame(){
+
+    if(gameEnded) return;
+
+    gameEnded = true;
+
+    clearInterval(timerInterval);
+
+    document.getElementById(
+        "resultScreen"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "resultTitle"
+    ).innerText =
+        "YOU LOST";
+
+    document.getElementById(
+        "resultText"
+    ).innerText =
+        "You failed to survive.";
+}
+
+/* ---------------- WIN ---------------- */
+
+function winGame(){
+
+    if(gameEnded) return;
+
+    gameEnded = true;
+
+    document.getElementById(
+        "resultScreen"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "resultTitle"
+    ).innerText =
+        "YOU WON";
+
+    document.getElementById(
+        "resultText"
+    ).innerText =
+        "DOGS reward will be credited shortly.";
+
+    document.getElementById(
+        "winBlock"
+    ).style.display = "block";
+
+    document.getElementById(
+        "homeBtn"
+    ).style.display = "none";
+
+    let wait = 5;
+
+    document.getElementById(
+        "claimTimer"
+    ).innerText =
+        wait;
+
+    const rewardTimer =
+        setInterval(() => {
+
+            wait--;
+
+            document.getElementById(
+                "claimTimer"
+            ).innerText =
+                wait;
+
+            if(wait <= 0){
+
+                clearInterval(
+                    rewardTimer
+                );
+
+                document.getElementById(
+                    "homeBtn"
+                ).style.display =
+                    "block";
+            }
+
+        },1000);
+
+    // SEND REWARD TO BACKEND HERE
+}
+
+/* ---------------- HOME ---------------- */
+
+function goHome(){
+
+    window.location.href = "/";
+}
+
+/* ---------------- INPUT ---------------- */
+
+function flap(){
+
+    if(
+        !gameStarted ||
+        gameEnded
+    ) return;
+
+    bird.velocity = bird.jump;
+}
+
+window.addEventListener(
+    "click",
+    flap
+);
+
+window.addEventListener(
+    "touchstart",
+    flap
+);
+
+/* ---------------- GAME LOOP ---------------- */
+
+function update(){
+
+    ctx.clearRect(
+
+        0,
+        0,
+
+        canvas.width,
+        canvas.height
+    );
+
+    drawBackground();
+
+    if(gameStarted && !gameEnded){
+
+        bird.velocity +=
+            difficulty.gravity;
+
+        bird.y +=
+            bird.velocity;
+
+        // create pipes
+
+        if(
+
+            pipes.length === 0 ||
+
+            pipes[
+                pipes.length - 1
+            ].x < canvas.width - 320
+        ){
+            createPipe();
+        }
+
+        pipes.forEach(pipe => {
+
+            pipe.x -=
+                difficulty.pipeSpeed;
+
+            // collision
+
+            if(
+
+                bird.x + bird.width >
+                pipe.x &&
+
+                bird.x <
+                pipe.x + pipe.width &&
+
+                (
+
+                    bird.y <
+                    pipe.top ||
+
+                    bird.y + bird.height >
+
+                    canvas.height -
+                    pipe.bottom
+                )
+            ){
+                loseGame();
+            }
+
+        });
+
+        // cleanup
+
+        pipes = pipes.filter(
+            p => p.x + p.width > 0
+        );
+
+        // floor
+
+        if(
+            bird.y + bird.height >=
+            canvas.height
+        ){
+            loseGame();
+        }
+
+        // ceiling
+
+        if(bird.y <= 0){
+
+            bird.y = 0;
+        }
+    }
+
+    drawPipes();
+
+    drawBird();
+
+    requestAnimationFrame(update);
+}
+
+update();
+
+</script>
+
+</body>
+</html>
