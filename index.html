@@ -365,6 +365,8 @@ input{
     font-size:16px;
 }
 
+/* ---------------- SUPPORT ---------------- */
+
 .support-text{
     text-align:center;
     color:#8e8e93;
@@ -374,28 +376,66 @@ input{
     padding:0 10px;
 }
 
+/* ---------------- DAILY QUESTS ---------------- */
+
+.tasksBlock{
+
+    background:#151515;
+
+    border:1px solid #262626;
+
+    border-radius:20px;
+
+    padding:16px;
+
+    margin-top:18px;
+}
+
+.tasksBlockHeader{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:16px;
+}
+
+.tasksTitle{
+
+    font-size:17px;
+
+    font-weight:700;
+}
+
 #dailyQuestReset{
 
-    font-size:12px;
-    opacity:.7;
+    font-size:11px;
 
-    margin-top:4px;
-    margin-bottom:14px;
+    color:#8e8e93;
 
-    text-align:center;
+    opacity:.9;
 }
 
 .dailyQuest{
 
-    background:#1b1b1b;
+    background:#1d1d1f;
 
-    border:1px solid #2a2a2a;
+    border:1px solid #2b2b2e;
 
     border-radius:16px;
 
     padding:14px;
 
     margin-bottom:12px;
+
+    transition:.2s;
+}
+
+.dailyQuest:last-child{
+
+    margin-bottom:0;
 }
 
 .dailyQuestTop{
@@ -404,44 +444,61 @@ input{
 
     justify-content:space-between;
 
-    align-items:center;
+    align-items:flex-start;
 
-    margin-bottom:10px;
+    gap:10px;
+
+    margin-bottom:12px;
 }
 
 .dailyQuestTitle{
 
     font-size:14px;
+
     font-weight:600;
+
+    line-height:1.35;
 }
 
 .dailyQuestReward{
 
     color:#ffd54f;
-    font-size:13px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    white-space:nowrap;
 }
 
 .dailyQuestProgress{
 
     width:100%;
+
     height:8px;
 
-    background:#2a2a2a;
+    background:#2d2d30;
 
     border-radius:999px;
 
     overflow:hidden;
 
-    margin-bottom:10px;
+    margin-bottom:12px;
 }
 
 .dailyQuestBar{
 
     height:100%;
 
-    background:#55ef8b;
+    background:linear-gradient(
+        90deg,
+        #55ef8b,
+        #00d26a
+    );
 
     width:0%;
+
+    transition:.3s;
 }
 
 .dailyQuestBottom{
@@ -451,12 +508,15 @@ input{
     justify-content:space-between;
 
     align-items:center;
+
+    gap:10px;
 }
 
 .dailyQuestText{
 
     font-size:12px;
-    opacity:.7;
+
+    color:#8e8e93;
 }
 
 .dailyQuestBtn{
@@ -469,18 +529,31 @@ input{
 
     font-weight:700;
 
+    font-size:12px;
+
     padding:8px 14px;
 
     border-radius:12px;
 
     cursor:pointer;
+
+    transition:.2s;
+}
+
+.dailyQuestBtn:active{
+
+    transform:scale(.96);
 }
 
 .dailyQuestBtn:disabled{
 
-    opacity:.5;
+    background:#303033;
+
+    color:#8a8a8f;
 
     cursor:default;
+
+    transform:none;
 }
     
     
@@ -696,6 +769,24 @@ input{
 
     </div>
 
+    <div class="tasksBlock">
+
+        <div class="tasksBlockHeader">
+
+            <div class="tasksTitle">
+                Daily Quests
+            </div>
+
+            <div id="dailyQuestReset">
+                ⏳ Updating...
+            </div>
+
+        </div>
+
+        <div id="dailyQuests"></div>
+
+    </div>
+
     <div class="card">
         <div style="font-size:20px;font-weight:700;">
             📋 Tasks
@@ -707,16 +798,6 @@ input{
     </div>
 
     <div id="tasksList"></div>
-
-    <div class="tasksTitle">
-        Daily Quests
-    </div>
-
-    <div id="dailyQuestReset">
-        ⏳ Updating in...
-    </div>
-
-    <div id="dailyQuests"></div>
 
     <div class="card">
 
