@@ -1301,7 +1301,8 @@ input{
 
             <button
                 class="gameStartBtn"
-                onclick="window.location.href='games/flappy/'"
+                id="playFlappyBtn"
+                onclick="startFlappyGame(this)"
             >
                 ▶ PLAY
             </button>
@@ -1488,7 +1489,7 @@ function tab(id, el){
         loadTasks();
     }
 
-    if(name === "games"){
+    if(id === "games"){
         loadGamesStatus();
     }
 
@@ -1927,7 +1928,7 @@ async function loadGamesStatus(){
 
         const r = await fetch(
 
-            API_URL + "/games/status",
+            API + "/games/status",
 
             {
                 method:"POST",
@@ -2052,6 +2053,75 @@ function startEnergyTimer(seconds){
             }
 
         },1000);
+}
+
+async function startFlappyGame(btn){
+
+    if(btn.dataset.loading === "1"){
+        return;
+    }
+
+    btn.dataset.loading = "1";
+    btn.disabled = true;
+
+    const oldText = btn.innerText;
+    btn.innerText = "Loading...";
+
+    try{
+
+        const r = await fetch(API + "/games/flappy/start", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                init_data: tg.initData
+            })
+        });
+
+        const d = await r.json();
+
+        if(!d.ok){
+
+            if(d.error === "no_energy"){
+                tg.showPopup?.({ message: "No energy. Wait for restore." });
+            }else{
+                tg.showPopup?.({ message: d.error || "Game start failed" });
+            }
+
+            // обновим статус энергии в UI
+            await loadGamesStatus();
+
+            return;
+        }
+
+        // d.session_token обязателен
+        const token = d.session_token;
+
+        if(!token){
+            tg.showPopup?.({ message: "Session error: no token" });
+            await loadGamesStatus();
+            return;
+        }
+
+        // опционально: сразу обновим энергию в UI
+        await loadGamesStatus();
+
+        // переход в игру с токеном
+        window.location.href = `games/flappy/?session_token=${encodeURIComponent(token)}`;
+
+    }catch(e){
+
+        console.log("FLAPPY START CLIENT ERROR:", e);
+
+        tg.showPopup?.({ message: "Server error" });
+
+    }finally{
+
+        btn.dataset.loading = "0";
+        btn.disabled = false;
+        btn.innerText = oldText;
+    }
 }
 
 // ---------------- TASKS ----------------
