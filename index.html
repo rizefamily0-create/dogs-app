@@ -2110,7 +2110,7 @@ async function startFlappyGame(btn){
         const initData = tg?.initData || "";
 
         window.location.href =
-            `/games/flappy/index.html?session_token=${data.session_token}&init_data=${encodeURIComponent(initData)}`;
+            `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
 
     }catch(e){
 
