@@ -750,13 +750,24 @@ function drawPipes(){
 
 async function sendFinish(survived){
 
-    if(finishSent) return { ok:false, error:"already_sent_local" };
-    finishSent = true;
+    if(finishSent){
+        return { ok:false, error:"already_sent_local" };
+    }
 
+    const initData = tg?.initData || "";
+
+    // ВАЖНО: не помечаем finishSent=true, пока не прошли локальные проверки
     if(!sessionToken){
-        console.log("No session_token in URL");
+        console.log("FINISH ERROR: missing session token");
         return { ok:false, error:"missing_session_token" };
     }
+
+    if(!initData){
+        console.log("FINISH ERROR: missing init_data (open game from Telegram GameHub)");
+        return { ok:false, error:"missing_init_data" };
+    }
+
+    finishSent = true;
 
     try{
 
@@ -766,17 +777,36 @@ async function sendFinish(survived){
                 "Content-Type":"application/json"
             },
             body: JSON.stringify({
-                init_data: tg?.initData || "",
+                init_data: initData,
                 session_token: sessionToken,
                 survived: !!survived
             })
         });
 
-        const d = await r.json();
+        let d = null;
+
+        try{
+            d = await r.json();
+        }catch(parseErr){
+            console.log("FINISH ERROR: bad JSON response", parseErr);
+            finishSent = false; // можно повторить позже
+            return {
+                ok:false,
+                error:"bad_json_response",
+                http_status:r.status
+            };
+        }
+
+        // если backend вернул ok:false — разрешим повторную попытку
+        if(!d?.ok){
+            finishSent = false;
+        }
+
         return d;
 
     }catch(e){
         console.log("FINISH REQUEST ERROR:", e);
+        finishSent = false; // сеть могла упасть, дадим ретрай
         return { ok:false, error:"network_error" };
     }
 }
