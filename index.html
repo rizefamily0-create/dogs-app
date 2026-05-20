@@ -2108,7 +2108,9 @@ async function startFlappyGame(btn){
         await loadGamesStatus();
 
         // переход в игру с токеном
-        const initData = Telegram.WebApp.initData;
+        const tg = window.Telegram?.WebApp;
+
+        const initData = tg?.initData || "";
 
         window.location.href =
             `/games/flappy/index.html?session_token=${data.session_token}&init_data=${encodeURIComponent(initData)}`;
