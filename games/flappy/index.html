@@ -763,8 +763,7 @@ async function sendFinish(survived){
     }
 
     if(!initData){
-        console.log("FINISH ERROR: missing init_data (open game from Telegram GameHub)");
-        return { ok:false, error:"missing_init_data" };
+        console.log("NO INIT DATA");
     }
 
     finishSent = true;
