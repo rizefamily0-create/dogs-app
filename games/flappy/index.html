@@ -467,6 +467,13 @@ const sessionToken =
     new URLSearchParams(window.location.search)
         .get("session_token");
 
+const initDataFromUrl =
+    new URLSearchParams(window.location.search)
+        .get("init_data");
+
+console.log("TG INIT:", tg?.initData);
+console.log("URL INIT:", initDataFromUrl);
+
 let finishSent = false; // защита от двойной отправки
 
 /* ---------------- IMAGES + PRELOAD ---------------- */
@@ -754,9 +761,11 @@ async function sendFinish(survived){
         return { ok:false, error:"already_sent_local" };
     }
 
-    const initData = tg?.initData || "";
+    const initData =
+        initDataFromUrl ||
+        tg?.initData ||
+        "";
 
-    // ВАЖНО: не помечаем finishSent=true, пока не прошли локальные проверки
     if(!sessionToken){
         console.log("FINISH ERROR: missing session token");
         return { ok:false, error:"missing_session_token" };
@@ -788,7 +797,8 @@ async function sendFinish(survived){
             d = await r.json();
         }catch(parseErr){
             console.log("FINISH ERROR: bad JSON response", parseErr);
-            finishSent = false; // можно повторить позже
+            finishSent = false;
+
             return {
                 ok:false,
                 error:"bad_json_response",
@@ -796,7 +806,6 @@ async function sendFinish(survived){
             };
         }
 
-        // если backend вернул ok:false — разрешим повторную попытку
         if(!d?.ok){
             finishSent = false;
         }
@@ -804,9 +813,15 @@ async function sendFinish(survived){
         return d;
 
     }catch(e){
+
         console.log("FINISH REQUEST ERROR:", e);
-        finishSent = false; // сеть могла упасть, дадим ретрай
-        return { ok:false, error:"network_error" };
+
+        finishSent = false;
+
+        return {
+            ok:false,
+            error:"network_error"
+        };
     }
 }
 
