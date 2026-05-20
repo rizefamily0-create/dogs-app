@@ -468,6 +468,24 @@ pipeImg.src = "pipe.png";
 const bgImg = new Image();
 bgImg.src = "bg.png";
 
+/* ---------------- API + TG ---------------- */
+
+const tg = window.Telegram?.WebApp;
+tg?.expand?.();
+
+const API = "https://dogs-7ntt.onrender.com";
+
+const sessionToken =
+    new URLSearchParams(window.location.search)
+        .get("session_token");
+
+let finishSent = false; // защита от двойной отправки
+
+if(!sessionToken){
+    document.querySelector(".playBtn").disabled = true;
+    document.querySelector(".playBtn").innerText = "INVALID SESSION";
+}
+    
 /* ---------------- PRELOAD ---------------- */
 
 let loadedImages = 0;
@@ -807,91 +825,99 @@ function drawPipes(){
 
 /* ---------------- LOSE ---------------- */
 
-function loseGame(){
+async function loseGame(){
 
     if(gameEnded) return;
 
     gameEnded = true;
-
     clearInterval(timerInterval);
 
-    document.getElementById(
-        "resultScreen"
-    ).style.display = "flex";
+    document.getElementById("resultScreen").style.display = "flex";
+    document.getElementById("resultTitle").innerText = "YOU LOST";
+    document.getElementById("resultText").innerText = "You failed to survive.";
 
-    document.getElementById(
-        "resultTitle"
-    ).innerText =
-        "YOU LOST";
+    const res = await sendFinish(false);
 
-    document.getElementById(
-        "resultText"
-    ).innerText =
-        "You failed to survive.";
+    // Мягкая обработка ошибок для UX
+    if(!res.ok){
+        if(res.error === "already_completed"){
+            // уже отправляли — игнор
+        }else if(res.error === "session_expired"){
+            document.getElementById("resultText").innerText =
+                "Session expired. Start a new run from GameHub.";
+        }else if(res.error === "invalid_session"){
+            document.getElementById("resultText").innerText =
+                "Invalid game session. Start game from GameHub.";
+        }else{
+            // network/server error: просто лог, экран поражения уже показан
+            console.log("LOSE FINISH ERROR:", res.error);
+        }
+    }
 }
 
 /* ---------------- WIN ---------------- */
 
-function winGame(){
+async function winGame(){
 
     if(gameEnded) return;
 
     gameEnded = true;
+    clearInterval(timerInterval);
 
-    document.getElementById(
-        "resultScreen"
-    ).style.display = "flex";
-
-    document.getElementById(
-        "resultTitle"
-    ).innerText =
-        "YOU WON";
-
-    document.getElementById(
-        "resultText"
-    ).innerText =
+    document.getElementById("resultScreen").style.display = "flex";
+    document.getElementById("resultTitle").innerText = "YOU WON";
+    document.getElementById("resultText").innerText =
         "DOGS reward will be credited shortly.";
 
-    document.getElementById(
-        "winBlock"
-    ).style.display =
-        "block";
+    document.getElementById("winBlock").style.display = "block";
+    document.getElementById("homeBtn").style.display = "none";
 
-    document.getElementById(
-        "homeBtn"
-    ).style.display =
-        "none";
+    // сначала отправляем результат на backend
+    const res = await sendFinish(true);
+
+    if(!res.ok){
+        // если не удалось зачесть — покажем понятный текст
+        document.getElementById("winBlock").style.display = "none";
+        document.getElementById("homeBtn").style.display = "block";
+
+        if(res.error === "already_completed"){
+            document.getElementById("resultText").innerText =
+                "Run already completed.";
+        }else if(res.error === "session_expired"){
+            document.getElementById("resultText").innerText =
+                "Session expired. Reward not credited.";
+        }else if(res.error === "invalid_session"){
+            document.getElementById("resultText").innerText =
+                "Invalid session. Start from GameHub.";
+        }else{
+            document.getElementById("resultText").innerText =
+                "Server error. Please try again.";
+        }
+
+        return;
+    }
+
+    // успех: можно показать награду из backend
+    if(res.win && typeof res.reward !== "undefined"){
+        document.getElementById("resultText").innerText =
+            `You survived! Reward: +${res.reward} DOGS`;
+    }
 
     let wait = 5;
+    document.getElementById("claimTimer").innerText = wait;
 
-    document.getElementById(
-        "claimTimer"
-    ).innerText =
-        wait;
+    const rewardTimer = setInterval(() => {
 
-    const rewardTimer =
-        setInterval(() => {
+        wait--;
+        document.getElementById("claimTimer").innerText = wait;
 
-            wait--;
+        if(wait <= 0){
+            clearInterval(rewardTimer);
+            document.getElementById("homeBtn").style.display = "block";
+        }
 
-            document.getElementById(
-                "claimTimer"
-            ).innerText =
-                wait;
-
-            if(wait <= 0){
-
-                clearInterval(
-                    rewardTimer
-                );
-
-                document.getElementById(
-                    "homeBtn"
-                ).style.display =
-                    "block";
-            }
-
-        },1000);
+    }, 1000);
+}
 
     // backend reward request here
 }
@@ -899,8 +925,7 @@ function winGame(){
 /* ---------------- HOME ---------------- */
 
 function goHome(){
-
-    window.location.href = "/";
+    window.location.href = "../../";
 }
 
 /* ---------------- INPUT ---------------- */
@@ -925,6 +950,41 @@ window.addEventListener(
     "touchstart",
     flap
 );
+
+/* ---------------- FINISH REQUEST ---------------- */
+
+async function sendFinish(survived){
+
+    if(finishSent) return { ok:false, error:"already_sent_local" };
+    finishSent = true;
+
+    if(!sessionToken){
+        console.log("No session_token in URL");
+        return { ok:false, error:"missing_session_token" };
+    }
+
+    try{
+
+        const r = await fetch(API + "/games/flappy/finish", {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                init_data: tg?.initData || "",
+                session_token: sessionToken,
+                survived: !!survived
+            })
+        });
+
+        const d = await r.json();
+        return d;
+
+    }catch(e){
+        console.log("FINISH REQUEST ERROR:", e);
+        return { ok:false, error:"network_error" };
+    }
+}
 
 /* ---------------- LOOP ---------------- */
 
