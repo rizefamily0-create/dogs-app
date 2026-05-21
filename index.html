@@ -1180,7 +1180,7 @@ input{
         <div class="energyTop">
 
             <div class="energyTitle">
-                ⚡ Energy
+                🔋 Energy 🔋
             </div>
 
             <div
@@ -1189,6 +1189,25 @@ input{
             >
                 15 / 15
             </div>
+
+            <button
+                id="restoreEnergyBtn"
+                onclick="watchEnergyAd()"
+                style="
+                    display:none;
+                    margin-top:8px;
+                    width:100%;
+                    border:none;
+                    border-radius:12px;
+                    padding:12px;
+                    background:#55ef8b;
+                    color:black;
+                    font-weight:800;
+                    cursor:pointer;
+                "
+            >
+                Watch Ad +10 Energy
+            </button>
 
         </div>
 
@@ -1949,6 +1968,18 @@ async function loadGamesStatus(){
 
         if(!data.ok) return;
 
+        const restoreBtn =
+            document.getElementById("restoreEnergyBtn");
+
+        if(data.energy <= 0){
+
+            restoreBtn.style.display = "block";
+
+        }else{
+
+            restoreBtn.style.display = "none";
+        }
+
         // ---------- energy text ----------
 
         document.getElementById(
@@ -2123,6 +2154,115 @@ async function startFlappyGame(btn){
         btn.dataset.loading = "0";
         btn.disabled = false;
         btn.innerText = oldText;
+    }
+}
+
+async function watchEnergyAd(){
+
+    const btn =
+        document.getElementById(
+            "restoreEnergyBtn"
+        );
+
+    if(btn.dataset.loading === "1"){
+        return;
+    }
+
+    btn.dataset.loading = "1";
+
+    btn.disabled = true;
+
+    btn.innerText = "Loading...";
+
+    try{
+
+        await AdController.show();
+
+        const r = await fetch(
+
+            API + "/games/restore-energy",
+
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+                    init_data: tg.initData
+                })
+            }
+        );
+
+        const d = await r.json();
+
+        console.log("RESTORE:", d);
+
+        if(d.ok){
+
+            tg.showPopup?.({
+                message:"+10 Energy restored"
+            });
+
+            await loadGamesStatus();
+
+        }else{
+
+            tg.showPopup?.({
+                message:d.error || "Restore failed"
+            });
+        }
+
+    }catch(e){
+
+        console.log(e);
+
+        tg.showPopup?.({
+            message:"Ad failed"
+        });
+    }
+
+    btn.dataset.loading = "0";
+
+    btn.disabled = false;
+
+    btn.innerText = "Watch Ad +10 Energy";
+}
+
+async function restoreEnergy(){
+
+    try{
+
+        const r = await fetch(
+
+            API + "/games/restore-energy",
+
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+                    init_data: tg.initData
+                })
+            }
+        );
+
+        const d = await r.json();
+
+        console.log("RESTORE:", d);
+
+        if(d.ok){
+
+            await loadGamesStatus();
+        }
+
+    }catch(e){
+
+        console.log(e);
     }
 }
 
