@@ -14,7 +14,7 @@
     "
 />
 
-<title>DOGS FLAPPY</title>
+<title>FLAPPY DOGS</title>
 
 <style>
 
@@ -368,7 +368,7 @@ canvas{
     <div id="startScreen">
 
         <div id="logo">
-            DOGS FLAPPY
+            Flappy DOGS
         </div>
 
         <div id="subtitle">
@@ -395,7 +395,7 @@ canvas{
                 class="resultTitle"
                 id="resultTitle"
             >
-                YOU LOST
+                YOU LOST (>_<)
             </div>
 
             <div
@@ -835,7 +835,7 @@ async function loseGame(){
     clearInterval(timerInterval);
 
     document.getElementById("resultScreen").style.display = "flex";
-    document.getElementById("resultTitle").innerText = "YOU LOST";
+    document.getElementById("resultTitle").innerText = "YOU LOST (>_<)";
     document.getElementById("resultText").innerText = "You failed to survive.";
 
     const res = await sendFinish(false);
@@ -863,7 +863,7 @@ async function winGame(){
     clearInterval(timerInterval);
 
     document.getElementById("resultScreen").style.display = "flex";
-    document.getElementById("resultTitle").innerText = "YOU WON";
+    document.getElementById("resultTitle").innerText = "YOU WON 🎉";
     document.getElementById("resultText").innerText =
         "DOGS reward will be credited shortly.";
 
