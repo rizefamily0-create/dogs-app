@@ -1,1259 +1,1362 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-/* ========== SPLASH SCREEN ========== */
-#splash {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #0f1015;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 99999;
-}
-
-#splash img {
-    width: 120px;
-    height: 120px;
-    border-radius: 24px;
-    object-fit: cover;
-    margin-bottom: 24px;
-}
-
-#loadingText {
-    font-size: 22px;
-    font-weight: 600;
-    color: white;
-    letter-spacing: 2px;
-}
-
-.loading-letter {
-    display: inline-block;
-    animation: pulse 1.2s infinite;
-}
-
-.loading-letter:nth-child(1)  { animation-delay: 0s; }
-.loading-letter:nth-child(2)  { animation-delay: 0.1s; }
-.loading-letter:nth-child(3)  { animation-delay: 0.2s; }
-.loading-letter:nth-child(4)  { animation-delay: 0.3s; }
-.loading-letter:nth-child(5)  { animation-delay: 0.4s; }
-.loading-letter:nth-child(6)  { animation-delay: 0.5s; }
-.loading-letter:nth-child(7)  { animation-delay: 0.6s; }
-.loading-letter:nth-child(8)  { animation-delay: 0.7s; }
-.loading-letter:nth-child(9)  { animation-delay: 0.8s; }
-.loading-letter:nth-child(10) { animation-delay: 0.9s; }
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.25); }
-}
-
-/* ========== ГЛОБАЛЬНЫЕ СТИЛИ (GameHub) ========== */
-body {
-    margin: 0;
-    background: #0f1015;
-    color: white;
-    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
-    height: 100vh;
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-.app {
-    height: 100vh;
-    display: none;
-    flex-direction: column;
-    padding: 16px;
-    padding-bottom: 90px;
-}
-
-.app.ready {
-    display: flex;
-}
-
-/* ========== СТРАНИЦЫ ========== */
-.page {
-    display: none;
-    flex-direction: column;
-    height: 100%;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-}
-
-.page.active {
-    display: flex;
-}
-
-/* ========== КАРТОЧКИ (GameHub) ========== */
-.card {
-    background: #17181c;
-    border: 1px solid #2a2b31;
-    border-radius: 24px;
-    padding: 18px;
-    margin-top: 14px;
-}
-
-/* ========== БАЛАНС ========== */
-.balance {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 700;
-}
-
-.balance-left {
-    display: flex;
-    align-items: baseline;
-}
-
-.balance .num {
-    font-size: 34px;
-    font-weight: 900;
-}
-
-.balance .unit {
-    font-size: 15px;
-    opacity: 0.6;
-    margin-left: 8px;
-    font-weight: 600;
-}
-
-/* ========== АВАТАР ПОЛЬЗОВАТЕЛЯ ========== */
-.user {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.user img {
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
-    border: 2px solid #2a2b31;
-}
-
-/* ========== ЦЕНТРИРОВАНИЕ ========== */
-.center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0;
-}
-
-/* ========== КНОПКИ ========== */
-button {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 18px;
-    background: #3b82f6;
-    color: white;
-    font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    letter-spacing: 0.3px;
-}
-
-button:active {
-    transform: scale(0.97);
-    opacity: 0.9;
-}
-
-button:disabled {
-    background: #1f2028;
-    color: #555;
-    cursor: default;
-    transform: none;
-    opacity: 0.8;
-}
-
-.claim-btn {
-    margin-top: auto;
-    font-size: 18px;
-    height: 56px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-/* ========== ИНПУТЫ ========== */
-input {
-    width: 100%;
-    padding: 15px 16px;
-    border-radius: 16px;
-    border: 1px solid #2a2b31;
-    background: #1a1b20;
-    color: white;
-    margin-top: 10px;
-    font-size: 15px;
-    transition: border 0.2s;
-    outline: none;
-}
-
-input:focus {
-    border-color: #3b82f6;
-}
-
-input::placeholder {
-    color: #555;
-}
-
-/* ========== НАВИГАЦИЯ (GameHub) ========== */
-.nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    background: #17181c;
-    border-top: 1px solid #2a2b31;
-    padding: 8px 8px 12px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 100;
-}
-
-.nav-item {
-    flex: 1;
-    text-align: center;
-    color: #666;
-    font-size: 11px;
-    cursor: pointer;
-    transition: color 0.2s;
-    padding: 4px 0;
-}
-
-.nav-item span {
-    display: block;
-    font-size: 22px;
-    margin-bottom: 2px;
-}
-
-.nav-item.active {
-    color: #3b82f6;
-}
-
-/* ========== МОДАЛЬНОЕ ОКНО X3 ========== */
-#x3modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-}
-
-.x3box {
-    background: #17181c;
-    border: 1px solid #2a2b31;
-    padding: 24px;
-    border-radius: 24px;
-    text-align: center;
-    width: 85%;
-    max-width: 320px;
-}
-
-.x3box button:last-child {
-    background: #2a2b31;
-    color: #ccc;
-}
-
-/* ========== ИСТОРИЯ ВЫВОДОВ ========== */
-.history-item {
-    background: #1a1b20;
-    border: 1px solid #2a2b31;
-    border-radius: 18px;
-    padding: 14px;
-    margin-top: 10px;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.status {
-    margin-top: 10px;
-    font-weight: 700;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.pending { color: #f59e0b; }
-.paid { color: #55ef8b; }
-.rejected { color: #ef4444; }
-
-/* ========== ИНФО ВЫВОДА ========== */
-.withdraw-info {
-    margin-top: 14px;
-    background: #1a1b20;
-    border: 1px solid #2a2b31;
-    border-radius: 16px;
-    padding: 14px;
-    font-size: 14px;
-    line-height: 2;
-}
-
-.info-title {
-    font-size: 13px;
-    opacity: 0.7;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-/* ========== ЗАДАНИЯ ========== */
-.tasksBlock {
-    background: #151515;
-    border: 1px solid #262626;
-    border-radius: 20px;
-    padding: 16px;
-    margin-top: 18px;
-}
-
-.tasksBlockHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.tasksTitle {
-    font-size: 17px;
-    font-weight: 700;
-}
-
-/* ========== DAILY QUESTS ========== */
-#dailyQuestReset {
-    font-size: 11px;
-    color: #8e8e93;
-    opacity: .9;
-}
-
-.dailyQuest {
-    background: #1d1d1f;
-    border: 1px solid #2b2b2e;
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 12px;
-    transition: .2s;
-}
-
-.dailyQuest:last-child { margin-bottom: 0; }
-
-.dailyQuestTop {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.dailyQuestTitle {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.35;
-}
-
-.dailyQuestReward {
-    color: #ffd54f;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.dailyQuestProgress {
-    width: 100%;
-    height: 8px;
-    background: #2d2d30;
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 12px;
-}
-
-.dailyQuestBar {
-    height: 100%;
-    background: linear-gradient(90deg, #55ef8b, #00d26a);
-    width: 0%;
-    transition: .3s;
-}
-
-.dailyQuestBottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.dailyQuestText {
-    font-size: 12px;
-    color: #8e8e93;
-}
-
-.dailyQuestBtn {
-    border: none;
-    background: #55ef8b;
-    color: #000;
-    font-weight: 700;
-    font-size: 12px;
-    padding: 8px 14px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: .2s;
-}
-
-.dailyQuestBtn:active { transform: scale(.96); }
-.dailyQuestBtn:disabled {
-    background: #303033;
-    color: #8a8a8f;
-    cursor: default;
-    transform: none;
-}
-
-/* ========== DAILY STREAK ========== */
-.streak-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    margin-top: 18px;
-}
-
-.streak-day {
-    background: #151515;
-    border: 1px solid #222;
-    border-radius: 14px;
-    padding: 10px 4px;
-    text-align: center;
-    transition: 0.2s;
-}
-
-.streak-day.active {
-    background: #008cff;
-    border-color: #008cff;
-    transform: scale(1.05);
-}
-
-.streak-day.claimed {
-    background: #1c1c1e;
-    border-color: #2c2c2e;
-    opacity: 0.5;
-}
-
-.streak-day.special {
-    background: #1a1200;
-    border-color: #ffb300;
-}
-
-.streak-num {
-    font-size: 12px;
-    opacity: 0.7;
-}
-
-.streak-reward {
-    margin-top: 6px;
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.streak-btn {
-    margin-top: 18px;
-    font-size: 16px;
-}
-
-/* ========== GAME HUB ========== */
-.gameEnergyCard {
-    background: #17181c;
-    border: 1px solid #2a2b31;
-    border-radius: 24px;
-    padding: 18px;
-    margin-bottom: 16px;
-}
-
-.energyTop {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-}
-
-.energyTitle { font-size: 16px; font-weight: 700; }
-.energyCount { font-size: 16px; font-weight: 900; color: #55ef8b; }
-
-.energyBar {
-    width: 100%;
-    height: 12px;
-    background: #2a2b31;
-    border-radius: 999px;
-    overflow: hidden;
-}
-
-.energyFill {
-    height: 100%;
-    background: #3b82f6;
-    border-radius: 999px;
-    transition: width 0.3s ease;
-}
-
-.energyTimer { margin-top: 10px; opacity: 0.7; font-size: 13px; }
-
-.gameCard {
-    background: #17181c;
-    border: 1px solid #2a2b31;
-    border-radius: 26px;
-    padding: 14px;
-    display: flex;
-    gap: 14px;
-    margin-bottom: 18px;
-}
-
-.gamePreview { width: 120px; min-width: 120px; }
-.gamePreview img { width: 100%; height: 170px; object-fit: cover; border-radius: 18px; }
-.gameInfo { flex: 1; display: flex; flex-direction: column; }
-.gameTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.gameName { font-size: 24px; font-weight: 900; line-height: 1.1; }
-.gameBadge { background: rgba(168,85,247,0.15); color: #c084fc; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 900; }
-.gameDescription { opacity: 0.75; font-size: 14px; line-height: 1.5; margin-bottom: 14px; }
-.gameMeta { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 16px; opacity: 0.9; }
-.gameStartBtn {
-    margin-top: auto;
-    width: 100%;
-    height: 52px;
-    border: none;
-    border-radius: 18px;
-    background: #3b82f6;
-    color: white;
-    font-size: 16px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.gameStartBtn:active { transform: scale(0.97); }
-
-/* ========== ПРОЧЕЕ ========== */
-.support-text {
-    text-align: center;
-    color: #8e8e93;
-    font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 12px;
-    padding: 0 10px;
-}
-
-.task-item {
-    background: #1a1b20;
-    border: 1px solid #2a2b31;
-    border-radius: 20px;
-    padding: 16px;
-    margin-top: 12px;
-}
-
-.task-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.task-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex: 1;
-}
-
-.task-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    object-fit: cover;
-    background: #22232a;
-}
-
-.task-title {
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.task-reward {
-    opacity: 0.7;
-    font-size: 13px;
-    margin-top: 4px;
-    font-weight: 600;
-}
-
-.task-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.task-buttons button {
-    width: auto;
-    padding: 10px 16px;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: 0.2px;
-}
-
-.task-buttons button:first-child {
-    background: #22232a;
-    color: #fff;
-    border: 1px solid #2a2b31;
-}
-
-.task-buttons button:last-child {
-    background: #3b82f6;
-}
-
-.daily-box { margin-top: 14px; }
-.promo-btn { margin-top: 12px; }
-
-.global-stats {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: transparent;
-    padding: 4px 2px;
-    margin-top: 6px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.left-stat { opacity: 0.8; }
-.right-stat { opacity: 0.8; text-align: right; }
-#globalStats { border: none; box-shadow: none; }
-
-/* Скроллбар */
-.page::-webkit-scrollbar { width: 4px; }
-.page::-webkit-scrollbar-track { background: transparent; }
-.page::-webkit-scrollbar-thumb { background: #2a2b31; border-radius: 4px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+
+    <script src="https://sad.adsgram.ai/js/sad.min.js">
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+    </script>
+
+    <style>
+        /* ========== SPLASH SCREEN ========== */
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #0f1015;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        #splash img {
+            width: 120px;
+            height: 120px;
+            border-radius: 28px;
+            object-fit: cover;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        #loadingText {
+            font-size: 22px;
+            font-weight: 600;
+            color: #c0c0c0;
+            letter-spacing: 3px;
+        }
+
+        .loading-letter {
+            display: inline-block;
+            animation: pulse 1.2s infinite;
+        }
+
+        .loading-letter:nth-child(1) { animation-delay: 0s; }
+        .loading-letter:nth-child(2) { animation-delay: 0.1s; }
+        .loading-letter:nth-child(3) { animation-delay: 0.2s; }
+        .loading-letter:nth-child(4) { animation-delay: 0.3s; }
+        .loading-letter:nth-child(5) { animation-delay: 0.4s; }
+        .loading-letter:nth-child(6) { animation-delay: 0.5s; }
+        .loading-letter:nth-child(7) { animation-delay: 0.6s; }
+        .loading-letter:nth-child(8) { animation-delay: 0.7s; }
+        .loading-letter:nth-child(9) { animation-delay: 0.8s; }
+        .loading-letter:nth-child(10) { animation-delay: 0.9s; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+        }
+
+        /* ========== ГЛОБАЛЬНЫЕ СТИЛИ (Apple Glass) ========== */
+        body {
+            margin: 0;
+            background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%);
+            color: #f5f5f7;
+            font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .app {
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            padding: 12px 14px;
+            padding-bottom: 95px;
+        }
+
+        .app.ready {
+            display: flex;
+        }
+
+        /* ========== СТРАНИЦЫ ========== */
+        .page {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* ========== КАРТОЧКИ (Glass) ========== */
+        .card {
+            background: rgba(28, 28, 32, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            padding: 18px;
+            margin-top: 12px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+            transition: all 0.3s ease;
+        }
+
+        /* ========== БАЛАНС ========== */
+        .balance {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .balance-left {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .balance .num {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #ffffff;
+        }
+
+        .balance .unit {
+            font-size: 14px;
+            opacity: 0.5;
+            margin-left: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* ========== АВАТАР ПОЛЬЗОВАТЕЛЯ ========== */
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user img {
+            width: 42px;
+            height: 42px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ========== ЦЕНТРИРОВАНИЕ ========== */
+        .center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        /* ========== КНОПКИ ========== */
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            background: #c0c0c0;
+            color: #1a1a1d;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 12px rgba(192, 192, 192, 0.2);
+        }
+
+        button:active {
+            transform: scale(0.96);
+            opacity: 0.85;
+            box-shadow: 0 1px 4px rgba(192, 192, 192, 0.1);
+        }
+
+        button:disabled {
+            background: rgba(40, 40, 44, 0.7);
+            color: #666;
+            cursor: default;
+            transform: none;
+            opacity: 0.7;
+            box-shadow: none;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .claim-btn {
+            margin-top: auto;
+            font-size: 18px;
+            height: 58px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+            color: #1a1a1d;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 28px rgba(192, 192, 192, 0.25);
+        }
+        .claim-btn:active {
+            box-shadow: 0 2px 10px rgba(192, 192, 192, 0.15);
+        }
+
+        /* ========== ИНПУТЫ ========== */
+        input {
+            width: 100%;
+            padding: 15px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(20, 20, 24, 0.6);
+            color: #f5f5f7;
+            margin-top: 10px;
+            font-size: 15px;
+            transition: border 0.25s ease, box-shadow 0.25s ease;
+            outline: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        input:focus {
+            border-color: #c0c0c0;
+            box-shadow: 0 0 0 3px rgba(192, 192, 192, 0.12);
+        }
+
+        input::placeholder {
+            color: #555;
+            opacity: 0.8;
+        }
+
+        /* ========== НАВИГАЦИЯ (Floating Glass Dock - iPhone Style) ========== */
+        .nav {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            background: rgba(28, 28, 34, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 5px 6px 9px;
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            z-index: 100;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+                0 1px 0 rgba(255, 255, 255, 0.06) inset;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: #6e6e73;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 5px 0 3px;
+            letter-spacing: 0.2px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .nav-item span {
+            display: block;
+            font-size: 22px;
+            margin-bottom: 3px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: #c0c0c0;
+        }
+        .nav-item.active span {
+            transform: scale(1.08);
+        }
+        .nav-item:active {
+            opacity: 0.7;
+        }
+
+        /* ========== МОДАЛЬНОЕ ОКНО X3 (Glass) ========== */
+        #x3modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .x3box {
+            background: rgba(28, 28, 34, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 28px 24px;
+            border-radius: 26px;
+            text-align: center;
+            width: 85%;
+            max-width: 330px;
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+
+        .x3box button:last-child {
+            background: rgba(50, 50, 56, 0.6);
+            color: #aaa;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: none;
+        }
+
+        /* ========== ИСТОРИЯ ВЫВОДОВ ========== */
+        .history-item {
+            background: rgba(22, 22, 28, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            padding: 14px;
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .status {
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pending { color: #f59e0b; }
+        .paid { color: #55ef8b; }
+        .rejected { color: #ef4444; }
+
+        /* ========== ИНФО ВЫВОДА ========== */
+        .withdraw-info {
+            margin-top: 14px;
+            background: rgba(20, 20, 26, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px;
+            font-size: 14px;
+            line-height: 2;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .info-title {
+            font-size: 13px;
+            opacity: 0.55;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* ========== ЗАДАНИЯ ========== */
+        .tasksBlock {
+            background: rgba(21, 21, 26, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .tasksBlockHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .tasksTitle {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+
+        /* ========== DAILY QUESTS ========== */
+        #dailyQuestReset {
+            font-size: 11px;
+            color: #8e8e93;
+            opacity: .85;
+        }
+
+        .dailyQuest {
+            background: rgba(29, 29, 33, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+            transition: .2s;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .dailyQuest:last-child { margin-bottom: 0; }
+
+        .dailyQuestTop {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .dailyQuestTitle {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+
+        .dailyQuestReward {
+            color: #ffd54f;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .dailyQuestProgress {
+            width: 100%;
+            height: 8px;
+            background: rgba(45, 45, 50, 0.5);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .dailyQuestBar {
+            height: 100%;
+            background: linear-gradient(90deg, #55ef8b, #00d26a);
+            width: 0%;
+            transition: .3s;
+            border-radius: 999px;
+        }
+
+        .dailyQuestBottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dailyQuestText {
+            font-size: 12px;
+            color: #8e8e93;
+        }
+
+        .dailyQuestBtn {
+            border: none;
+            background: #55ef8b;
+            color: #000;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .2s;
+            width: auto;
+            box-shadow: 0 2px 10px rgba(85, 239, 139, 0.2);
+        }
+
+        .dailyQuestBtn:active { transform: scale(.96); }
+        .dailyQuestBtn:disabled {
+            background: rgba(48, 48, 54, 0.7);
+            color: #8a8a8f;
+            cursor: default;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ========== DAILY STREAK ========== */
+        .streak-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .streak-day {
+            background: rgba(21, 21, 26, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 10px 4px;
+            text-align: center;
+            transition: 0.2s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .streak-day.active {
+            background: #c0c0c0;
+            border-color: #c0c0c0;
+            transform: scale(1.06);
+            color: #1a1a1d;
+            box-shadow: 0 4px 16px rgba(192, 192, 192, 0.35);
+        }
+        .streak-day.active .streak-num,
+        .streak-day.active .streak-reward {
+            color: #1a1a1d;
+        }
+
+        .streak-day.claimed {
+            background: rgba(28, 28, 32, 0.4);
+            border-color: rgba(255, 255, 255, 0.04);
+            opacity: 0.45;
+        }
+
+        .streak-day.special {
+            background: rgba(26, 18, 0, 0.4);
+            border-color: rgba(255, 179, 0, 0.5);
+        }
+
+        .streak-num {
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        .streak-reward {
+            margin-top: 6px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .streak-btn {
+            margin-top: 18px;
+            font-size: 16px;
+        }
+
+        /* ========== GAME HUB ========== */
+        .gameEnergyCard {
+            background: rgba(23, 24, 28, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            padding: 18px;
+            margin-bottom: 14px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .energyTop {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .energyTitle { font-size: 16px; font-weight: 700; }
+        .energyCount { font-size: 16px; font-weight: 900; color: #55ef8b; }
+
+        .energyBar {
+            width: 100%;
+            height: 10px;
+            background: rgba(42, 43, 49, 0.5);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .energyFill {
+            height: 100%;
+            background: #c0c0c0;
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .energyTimer { margin-top: 10px; opacity: 0.55; font-size: 13px; }
+
+        .gameCard {
+            background: rgba(23, 24, 28, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 14px;
+            display: flex;
+            gap: 14px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .gamePreview { width: 120px; min-width: 120px; }
+        .gamePreview img { width: 100%; height: 170px; object-fit: cover; border-radius: 18px; }
+        .gameInfo { flex: 1; display: flex; flex-direction: column; }
+        .gameTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .gameName { font-size: 23px; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px; }
+        .gameBadge { background: rgba(168,85,247,0.12); color: #c084fc; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 800; }
+        .gameDescription { opacity: 0.65; font-size: 14px; line-height: 1.5; margin-bottom: 14px; }
+        .gameMeta { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 16px; opacity: 0.8; }
+        .gameStartBtn {
+            margin-top: auto;
+            width: 100%;
+            height: 52px;
+            border: none;
+            border-radius: 18px;
+            background: #c0c0c0;
+            color: #1a1a1d;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 18px rgba(192, 192, 192, 0.2);
+        }
+        .gameStartBtn:active { transform: scale(0.96); box-shadow: 0 1px 6px rgba(192, 192, 192, 0.1); }
+
+        /* ========== ПРОЧЕЕ ========== */
+        .support-text {
+            text-align: center;
+            color: #8e8e93;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            padding: 0 10px;
+        }
+
+        .task-item {
+            background: rgba(22, 22, 28, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 12px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .task-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .task-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            object-fit: cover;
+            background: rgba(34, 35, 42, 0.6);
+        }
+
+        .task-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .task-reward {
+            opacity: 0.55;
+            font-size: 13px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .task-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-buttons button {
+            width: auto;
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 0.2px;
+        }
+
+        .task-buttons button:first-child {
+            background: rgba(34, 35, 42, 0.6);
+            color: #f5f5f7;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .task-buttons button:last-child {
+            background: #c0c0c0;
+            color: #1a1a1d;
+        }
+
+        .daily-box { margin-top: 14px; }
+        .promo-btn { margin-top: 12px; }
+
+        /* Скроллбар */
+        .page::-webkit-scrollbar { width: 3px; }
+        .page::-webkit-scrollbar-track { background: transparent; }
+        .page::-webkit-scrollbar-thumb { background: rgba(192, 192, 192, 0.25); border-radius: 3px; }
+
+        /* Дополнительные штрихи */
+        .card h3, .tasksBlock .tasksTitle { letter-spacing: -0.2px; }
+
+        #restoreEnergyBtn {
+            width: auto;
+            font-size: 13px;
+            padding: 10px 18px;
+            border-radius: 14px;
+            background: #55ef8b;
+            color: #000;
+            font-weight: 800;
+            box-shadow: 0 2px 12px rgba(85, 239, 139, 0.2);
+        }
+        #restoreEnergyBtn:active { transform: scale(0.96); }
+
+        /* Убираем лишние стили для глобальной статистики */
+        #globalStats {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 2px 6px 2px;
+            margin: 0;
+            border-radius: 0;
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- Splash Screen -->
-<div id="splash">
-    <img src="dogs.png" alt="loading">
-    <div id="loadingText">
-        <span class="loading-letter">L</span>
-        <span class="loading-letter">o</span>
-        <span class="loading-letter">a</span>
-        <span class="loading-letter">d</span>
-        <span class="loading-letter">i</span>
-        <span class="loading-letter">n</span>
-        <span class="loading-letter">g</span>
-        <span class="loading-letter">.</span>
-        <span class="loading-letter">.</span>
-        <span class="loading-letter">.</span>
-    </div>
-</div>
-
-<div class="app" id="mainApp">
-
-<!-- FAUCET (без верхнего заголовка) -->
-<div id="faucet" class="page active">
-
-    <div class="card global-stats" id="globalStats">
-        <div class="left-stat">👥 <span id="usersCount">0</span> users</div>
-        <div class="right-stat">🦴 <span id="earnedCount">0</span> DOGS</div>
+    <!-- Splash Screen -->
+    <div id="splash">
+        <img src="dogs.png" alt="loading">
+        <div id="loadingText">
+            <span class="loading-letter">L</span>
+            <span class="loading-letter">o</span>
+            <span class="loading-letter">a</span>
+            <span class="loading-letter">d</span>
+            <span class="loading-letter">i</span>
+            <span class="loading-letter">n</span>
+            <span class="loading-letter">g</span>
+            <span class="loading-letter">.</span>
+            <span class="loading-letter">.</span>
+            <span class="loading-letter">.</span>
+        </div>
     </div>
 
-    <div class="card">
-        <div id="balance1" class="balance">
-            <div class="balance-left">
-                <span class="num">0</span>
-                <span class="unit">DOGS</span>
+    <div class="app" id="mainApp">
+
+        <!-- FAUCET (без рамки статистики) -->
+        <div id="faucet" class="page active">
+
+            <div id="globalStats" style="display: flex; justify-content: space-between; align-items: center; padding: 0 2px 6px 2px; margin: 0; font-size: 13px; font-weight: 600;">
+                <div class="left-stat" style="opacity:0.7;">👥 <span id="usersCount">0</span> users</div>
+                <div class="right-stat" style="opacity:0.7; text-align: right;">🦴 <span id="earnedCount">0</span> DOGS</div>
             </div>
-            <div class="user"><img id="avatar"></div>
-        </div>
-    </div>
 
-    <div class="center">
-        <img src="dogs.png" style="width: 280px; height: 280px; border-radius: 20px; object-fit: cover;">
-    </div>
-
-    <div class="support-text">
-        Please interact with ads to help maintain the current reward rate ❤️
-    </div>
-
-    <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
-</div>
-
-<!-- WALLET -->
-<div id="withdraw" class="page">
-
-    <div style="margin-bottom:18px;">
-        <div style="font-size:32px;font-weight:900;">💸 Wallet</div>
-        <div style="margin-top:4px;opacity:.7;font-size:14px;">Withdraw your earnings</div>
-    </div>
-
-    <div class="card">
-        <div id="balance2" class="balance">
-            <div class="balance-left">
-                <span class="num">0</span>
-                <span class="unit">DOGS</span>
+            <div class="card" style="margin-top: 6px;">
+                <div id="balance1" class="balance">
+                    <div class="balance-left">
+                        <span class="num">0</span>
+                        <span class="unit">DOGS</span>
+                    </div>
+                    <div class="user"><img id="avatar"></div>
+                </div>
             </div>
-            <div class="user"><img id="avatar2"></div>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="info-title">Minimum withdraw: 14000 DOGS<br>Network fee: 1700 DOGS</div>
-        <input id="wallet" placeholder="TON wallet">
-        <input id="memo" placeholder="Memo (optional)">
-        <input id="amount" type="number" placeholder="Amount" oninput="updateWithdrawInfo()">
-        <div class="withdraw-info">
-            <div>Withdraw: <span id="withdrawAmount">0</span></div>
-            <div>Receive: <span id="receiveAmount">0</span></div>
-            <div>Fee: <span id="feeAmount">1700</span></div>
-        </div>
-    </div>
+            <div class="center">
+                <img src="dogs.png" style="width: 260px; height: 260px; border-radius: 24px; object-fit: cover; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            </div>
 
-    <button onclick="withdraw()" style="margin-top: 14px;">WITHDRAW</button>
+            <div class="support-text">
+                Please interact with ads to help maintain the current reward rate ❤️
+            </div>
 
-    <div class="card">
-        <h3 style="margin-top:0; font-size:18px; font-weight:800;">📜 Withdraw history</h3>
-        <div id="withdrawHistory">No withdraws</div>
-    </div>
-</div>
-
-<!-- TASKS -->
-<div id="tasks" class="page">
-
-    <div class="card daily-box">
-        <div style="font-size:20px;font-weight:700;">🔥 Daily Streak</div>
-        <div style="opacity:0.7;margin-top:6px;font-size:14px;line-height:1.5;">
-            Login every day and keep your streak alive.<br>
-            Watch ads and earn bigger rewards daily.
+            <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
         </div>
 
-        <div class="streak-grid">
-            <div class="streak-day" id="day1"><div class="streak-num">1</div><div class="streak-reward">50</div></div>
-            <div class="streak-day" id="day2"><div class="streak-num">2</div><div class="streak-reward">60</div></div>
-            <div class="streak-day" id="day3"><div class="streak-num">3</div><div class="streak-reward">70</div></div>
-            <div class="streak-day" id="day4"><div class="streak-num">4</div><div class="streak-reward">80</div></div>
-            <div class="streak-day" id="day5"><div class="streak-num">5</div><div class="streak-reward">90</div></div>
-            <div class="streak-day" id="day6"><div class="streak-num">6</div><div class="streak-reward">100</div></div>
-            <div class="streak-day special" id="day7"><div class="streak-num">7</div><div class="streak-reward">150</div></div>
-        </div>
+        <!-- WALLET (первая карточка без верхнего отступа) -->
+        <div id="withdraw" class="page">
 
-        <button id="dailyBtn" class="streak-btn" onclick="dailyBonus()">CLAIM STREAK REWARD</button>
-    </div>
+            <div style="margin-bottom:18px; text-align: center;">
+                <div style="font-size:32px; font-weight:900; letter-spacing:-0.5px;">💸 Wallet</div>
+                <div style="margin-top:4px; opacity:0.55; font-size:14px;">Withdraw your earnings</div>
+            </div>
 
-    <div class="tasksBlock">
-        <div class="tasksBlockHeader">
-            <div class="tasksTitle">⏳ Daily Quests</div>
-            <div id="dailyQuestReset">⏳ Updating...</div>
-        </div>
-        <div id="dailyQuests"></div>
-    </div>
+            <div class="card" style="margin-top:0;">
+                <div id="balance2" class="balance">
+                    <div class="balance-left">
+                        <span class="num">0</span>
+                        <span class="unit">DOGS</span>
+                    </div>
+                    <div class="user"><img id="avatar2"></div>
+                </div>
+            </div>
 
-    <div class="card">
-        <div style="font-size:18px;font-weight:800;">🎟 Promo Code</div>
-        <input id="promoInput" placeholder="Enter promo code">
-        <button class="promo-btn" onclick="activatePromo()">ACTIVATE</button>
-    </div>
+            <div class="card">
+                <div class="info-title">Minimum withdraw: 14000 DOGS<br>Network fee: 1700 DOGS</div>
+                <input id="wallet" placeholder="TON wallet">
+                <input id="memo" placeholder="Memo (optional)">
+                <input id="amount" type="number" placeholder="Amount" oninput="updateWithdrawInfo()">
+                <div class="withdraw-info">
+                    <div>Withdraw: <span id="withdrawAmount">0</span></div>
+                    <div>Receive: <span id="receiveAmount">0</span></div>
+                    <div>Fee: <span id="feeAmount">1700</span></div>
+                </div>
+            </div>
 
-    <div class="tasksBlock">
-        <div class="tasksBlockHeader">
-            <div class="tasksTitle">📋 Tasks</div>
-        </div>
-        <div id="tasksList"></div>
-    </div>
+            <button onclick="withdraw()" style="margin-top: 14px;">WITHDRAW</button>
 
-    <div class="card">
-        <div style="font-size:18px;font-weight:800;">🚀 Special Offers (60 Dogs)</div>
-        <div id="specialOfferWrapper">
-            <adsgram-task id="specialOfferTask" data-block-id="task-30046" class="task" style="margin-top:12px;display:block;"></adsgram-task>
-            <div id="specialOfferTimer" style="display:none;margin-top:12px;background:#111;border-radius:16px;padding:18px;text-align:center;font-weight:700;font-size:18px;">
-                ⏳ 30:00
+            <div class="card">
+                <h3 style="margin-top:0; font-size:18px; font-weight:800;">📜 Withdraw history</h3>
+                <div id="withdrawHistory">No withdraws</div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- REF -->
-<div id="ref" class="page">
-    <div style="margin-bottom: 18px;">
-        <div style="font-size: 32px; font-weight: 900;">👥 Referral</div>
-        <div style="margin-top: 4px; opacity: 0.7; font-size: 14px;">Invite friends and earn together</div>
-    </div>
+        <!-- TASKS (daily-box без верхнего отступа) -->
+        <div id="tasks" class="page">
 
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <span style="color: #8e8e93; font-size: 14px;">Referral Balance</span>
-                <h2 id="refBalance" style="margin: 5px 0 0 0; font-size: 28px; font-weight: 900;">0.00</h2>
+            <div style="margin-bottom:18px; text-align: center;">
+                <div style="font-size:32px; font-weight:900; letter-spacing:-0.5px;">📋 Tasks</div>
+                <div style="margin-top:4px; opacity:0.55; font-size:14px;">Complete quests and earn rewards</div>
             </div>
-            <div style="text-align: right;">
-                <span style="color: #8e8e93; font-size: 14px;">Total Friends</span>
-                <h3 id="refCount" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900;">0</h3>
+
+            <div class="card daily-box" style="margin-top:0;">
+                <div style="font-size:20px;font-weight:700;">🔥 Daily Streak</div>
+                <div style="opacity:0.55;margin-top:6px;font-size:14px;line-height:1.5;">
+                    Login every day and keep your streak alive.<br>
+                    Watch ads and earn bigger rewards daily.
+                </div>
+
+                <div class="streak-grid">
+                    <div class="streak-day" id="day1"><div class="streak-num">1</div><div class="streak-reward">50</div></div>
+                    <div class="streak-day" id="day2"><div class="streak-num">2</div><div class="streak-reward">60</div></div>
+                    <div class="streak-day" id="day3"><div class="streak-num">3</div><div class="streak-reward">70</div></div>
+                    <div class="streak-day" id="day4"><div class="streak-num">4</div><div class="streak-reward">80</div></div>
+                    <div class="streak-day" id="day5"><div class="streak-num">5</div><div class="streak-reward">90</div></div>
+                    <div class="streak-day" id="day6"><div class="streak-num">6</div><div class="streak-reward">100</div></div>
+                    <div class="streak-day special" id="day7"><div class="streak-num">7</div><div class="streak-reward">150</div></div>
+                </div>
+
+                <button id="dailyBtn" class="streak-btn" onclick="dailyBonus()">CLAIM STREAK REWARD</button>
             </div>
-        </div>
-    </div>
 
-    <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
-        <button onclick="claimRef()" style="background:#3b82f6;">Claim Reward</button>
-        <button onclick="inviteFriend()" style="background:#22232a; color:white; border:1px solid #2a2b31;">Invite Friends</button>
-    </div>
-
-    <div class="card" style="margin-top: 16px;">
-        <p style="color:#8e8e93; font-size:14px; margin: 0; line-height: 1.6;">
-            Invite your friends and earn <b>10%</b> of their earnings! Tokens are added to your referral balance immediately after they claim.
-        </p>
-    </div>
-</div>
-
-<!-- GAMES -->
-<div id="games" class="page">
-    <div style="margin-bottom:18px;">
-        <div style="font-size:32px;font-weight:900;">🎮 GameHub</div>
-        <div style="margin-top:4px;opacity:.7;font-size:14px;">Play games and earn DOGS</div>
-    </div>
-
-    <div class="gameEnergyCard">
-        <div class="energyTop">
-            <div class="energyTitle">🔋 Energy</div>
-            <div class="energyCount" id="gamesEnergy">15 / 15</div>
-        </div>
-        <button id="restoreEnergyBtn" onclick="watchEnergyAd()"
-                style="display:none;margin-top:6px;border:none;border-radius:14px;padding:10px 16px;background:#55ef8b;color:black;font-size:13px;font-weight:800;cursor:pointer;width:auto;transition:all 0.2s;">
-            Watch Ad +10 Energy
-        </button>
-        <div class="energyBar">
-            <div class="energyFill" id="gamesEnergyFill" style="width:100%;"></div>
-        </div>
-        <div class="energyTimer" id="gamesRestore">Full energy</div>
-    </div>
-
-    <div style="margin-top:24px;margin-bottom:14px;font-size:20px;font-weight:800;">Available Games</div>
-
-    <div class="gameCard">
-        <div class="gamePreview"><img src="games/flappy/preview.png" alt="Flappy DOGS"></div>
-        <div class="gameInfo">
-            <div class="gameTop">
-                <div class="gameName">Flappy DOGS</div>
-                <div class="gameBadge">EASY</div>
+            <div class="tasksBlock">
+                <div class="tasksBlockHeader">
+                    <div class="tasksTitle">⏳ Daily Quests</div>
+                    <div id="dailyQuestReset">⏳ Updating...</div>
+                </div>
+                <div id="dailyQuests"></div>
             </div>
-            <div class="gameDescription">Survive for 40 seconds and earn DOGS rewards.</div>
-            <div class="gameMeta">
-                <div>💰 5 DOGS</div>
-                <div>⏱ 40 SEC</div>
+
+            <div class="card">
+                <div style="font-size:18px;font-weight:800;">🎟 Promo Code</div>
+                <input id="promoInput" placeholder="Enter promo code">
+                <button class="promo-btn" onclick="activatePromo()">ACTIVATE</button>
             </div>
-            <button class="gameStartBtn" id="playFlappyBtn" onclick="startFlappyGame(this)">▶ PLAY</button>
-        </div>
-    </div>
-</div>
 
-<!-- OFFERWALL -->
-<div id="offerwall" class="page">
-    <div style="margin-bottom:18px;">
-        <div style="font-size:32px;font-weight:900;">🎁 Offerwalls</div>
-        <div style="margin-top:4px;opacity:.7;font-size:14px;">Complete offers and earn DOGS</div>
-    </div>
+            <div class="tasksBlock">
+                <div class="tasksBlockHeader">
+                    <div class="tasksTitle">📋 Tasks</div>
+                </div>
+                <div id="tasksList"></div>
+            </div>
 
-    <div class="card" style="margin-top:0;">
-        <div style="display:flex;align-items:center;gap:14px;">
-            <img src="https://bitcotasks.com/assets/img/logo.png"
-                 style="width:54px;height:54px;border-radius:16px;object-fit:cover;background:#1a1b20;padding:8px;border:1px solid #2a2b31;">
-            <div style="flex:1;">
-                <div style="font-size:17px;font-weight:800;">BitcoTasks</div>
-                <div style="opacity:0.7;font-size:13px;margin-top:4px;line-height:1.4;">Complete offers and get instant DOGS rewards directly to your balance</div>
+            <div class="card">
+                <div style="font-size:18px;font-weight:800;">🚀 Special Offers (60 Dogs)</div>
+                <div id="specialOfferWrapper">
+                    <adsgram-task id="specialOfferTask" data-block-id="task-30046" class="task" style="margin-top:12px;display:block;"></adsgram-task>
+                    <div id="specialOfferTimer" style="display:none;margin-top:12px;background:rgba(17,17,22,0.6);border-radius:16px;padding:18px;text-align:center;font-weight:700;font-size:18px;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);">
+                        ⏳ 30:00
+                    </div>
+                </div>
             </div>
         </div>
-        <button onclick="openBitcoTasks()" style="margin-top:16px;">OPEN OFFERWALL</button>
+
+        <!-- REF (первая карточка без верхнего отступа) -->
+        <div id="ref" class="page">
+            <div style="margin-bottom: 18px; text-align: center;">
+                <div style="font-size: 32px; font-weight: 900; letter-spacing: -0.5px;">👥 Referral</div>
+                <div style="margin-top: 4px; opacity: 0.55; font-size: 14px;">Invite friends and earn together</div>
+            </div>
+
+            <div class="card" style="margin-top:0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="color: #8e8e93; font-size: 14px;">Referral Balance</span>
+                        <h2 id="refBalance" style="margin: 5px 0 0 0; font-size: 28px; font-weight: 900;">0.00</h2>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: #8e8e93; font-size: 14px;">Total Friends</span>
+                        <h3 id="refCount" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900;">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="claimRef()" style="background:#c0c0c0;color:#1a1a1d;">Claim Reward</button>
+                <button onclick="inviteFriend()" style="background:rgba(34,35,42,0.6);color:#f5f5f7;border:1px solid rgba(255,255,255,0.08);box-shadow:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">Invite Friends</button>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <p style="color:#8e8e93; font-size:14px; margin: 0; line-height: 1.6;">
+                    Invite your friends and earn <b>10%</b> of their earnings! Tokens are added to your referral balance immediately after they claim.
+                </p>
+            </div>
+        </div>
+
+        <!-- GAMES (без изменений) -->
+        <div id="games" class="page">
+            <div style="margin-bottom:18px; text-align: center;">
+                <div style="font-size:32px; font-weight:900; letter-spacing:-0.5px;">🎮 GameHub</div>
+                <div style="margin-top:4px; opacity:0.55; font-size:14px;">Play games and earn DOGS</div>
+            </div>
+
+            <div class="gameEnergyCard">
+                <div class="energyTop">
+                    <div class="energyTitle">🔋 Energy</div>
+                    <div class="energyCount" id="gamesEnergy">15 / 15</div>
+                </div>
+                <button id="restoreEnergyBtn" onclick="watchEnergyAd()" style="display:none;margin-top:6px;">
+                    Watch Ad +10 Energy
+                </button>
+                <div class="energyBar">
+                    <div class="energyFill" id="gamesEnergyFill" style="width:100%;"></div>
+                </div>
+                <div class="energyTimer" id="gamesRestore">Full energy</div>
+            </div>
+
+            <div style="margin-top:12px; margin-bottom:14px; font-size:20px; font-weight:800;">Available Games</div>
+
+            <div class="gameCard">
+                <div class="gamePreview"><img src="games/flappy/preview.png" alt="Flappy DOGS"></div>
+                <div class="gameInfo">
+                    <div class="gameTop">
+                        <div class="gameName">Flappy DOGS</div>
+                        <div class="gameBadge">EASY</div>
+                    </div>
+                    <div class="gameDescription">Survive for 40 seconds and earn DOGS rewards.</div>
+                    <div class="gameMeta">
+                        <div>💰 5 DOGS</div>
+                        <div>⏱ 40 SEC</div>
+                    </div>
+                    <button class="gameStartBtn" id="playFlappyBtn" onclick="startFlappyGame(this)">▶ PLAY</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- OFFERWALL (уже margin-top:0) -->
+        <div id="offerwall" class="page">
+            <div style="margin-bottom:18px; text-align: center;">
+                <div style="font-size:32px; font-weight:900; letter-spacing:-0.5px;">🎁 Offerwalls</div>
+                <div style="margin-top:4px; opacity:0.55; font-size:14px;">Complete offers and earn DOGS</div>
+            </div>
+
+            <div class="card" style="margin-top:0;">
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <img src="https://bitcotasks.com/assets/img/logo.png" style="width:54px;height:54px;border-radius:16px;object-fit:cover;background:rgba(26,27,32,0.6);padding:8px;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
+                    <div style="flex:1;">
+                        <div style="font-size:17px;font-weight:800;">BitcoTasks</div>
+                        <div style="opacity:0.55;font-size:13px;margin-top:4px;line-height:1.4;">Complete offers and get instant DOGS rewards directly to your balance</div>
+                    </div>
+                </div>
+                <button onclick="openBitcoTasks()" style="margin-top:16px;">OPEN OFFERWALL</button>
+            </div>
+        </div>
+
+        <!-- НАВИГАЦИЯ -->
+        <div class="nav">
+            <div class="nav-item active" onclick="tab('faucet', this)"><span>🐶</span>Faucet</div>
+            <div class="nav-item" onclick="tab('withdraw', this)"><span>💸</span>Wallet</div>
+            <div class="nav-item" onclick="tab('tasks', this)"><span>📋</span>Tasks</div>
+            <div class="nav-item" onclick="tab('games', this)"><span>🎮</span>Games</div>
+            <div class="nav-item" onclick="tab('offerwall', this)"><span>🎁</span>Offerwall</div>
+            <div class="nav-item" onclick="tab('ref', this)"><span>👥</span>Ref</div>
+        </div>
+
+        <!-- X3 MODAL -->
+        <div id="x3modal">
+            <div class="x3box">
+                <div style="margin-bottom:15px;font-size:18px;font-weight:700;">Multiply reward x3?</div>
+                <button id="x3Btn" onclick="watchX3()" style="margin-bottom:10px;">Watch ad x3</button>
+                <button onclick="closeX3()" style="background:rgba(50,50,56,0.6);color:#aaa;box-shadow:none;">No thanks</button>
+            </div>
+        </div>
+
     </div>
-</div>
 
-<!-- НАВИГАЦИЯ -->
-<div class="nav">
-    <div class="nav-item active" onclick="tab('faucet', this)"><span>🐶</span>Faucet</div>
-    <div class="nav-item" onclick="tab('withdraw', this)"><span>💸</span>Wallet</div>
-    <div class="nav-item" onclick="tab('tasks', this)"><span>📋</span>Tasks</div>
-    <div class="nav-item" onclick="tab('games', this)"><span>🎮</span>Games</div>
-    <div class="nav-item" onclick="tab('offerwall', this)"><span>🎁</span>Offerwall</div>
-    <div class="nav-item" onclick="tab('ref', this)"><span>👥</span>Ref</div>
-</div>
+    <script>
+        // === ВЕСЬ JavaScript БЕЗ ИЗМЕНЕНИЙ ===
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-<!-- X3 MODAL -->
-<div id="x3modal">
-    <div class="x3box">
-        <div style="margin-bottom:15px;font-size:18px;font-weight:700;">Multiply reward x3?</div>
-        <button id="x3Btn" onclick="watchX3()" style="margin-bottom:10px;">Watch ad x3</button>
-        <button onclick="closeX3()" style="background:#2a2b31;">No thanks</button>
-    </div>
-</div>
+        const initData = tg.initData;
+        const startParam = tg.initDataUnsafe?.start_param || "";
 
-</div>
+        const API = "https://dogs-7ntt.onrender.com";
 
-<script>
-// Весь JavaScript без изменений, кроме инициализации
-const tg = window.Telegram.WebApp;
-tg.expand();
+        const MIN_WITHDRAW = 14000;
+        const WITHDRAW_FEE = 1700;
 
-const initData = tg.initData;
-const startParam = tg.initDataUnsafe?.start_param || "";
+        const AdController = window.Adsgram.init({ blockId: "29657" });
 
-const API = "https://dogs-7ntt.onrender.com";
+        let cooldown = 0;
+        let timerInterval = null;
+        let specialOfferInterval = null;
+        let dailyQuestTimer = null;
 
-const MIN_WITHDRAW = 14000;
-const WITHDRAW_FEE = 1700;
+        function tab(id, el){
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+            el.classList.add("active");
+            if(id === "withdraw") loadWithdrawHistory();
+            if(id === "tasks") loadTasks();
+            if(id === "games") loadGamesStatus();
+            if(id === 'ref') loadRefInfo();
+        }
 
-const AdController = window.Adsgram.init({ blockId: "29657" });
+        function showX3(){ document.getElementById("x3modal").style.display = "flex"; }
+        function closeX3(){ document.getElementById("x3modal").style.display = "none"; }
 
-let cooldown = 0;
-let timerInterval = null;
-let specialOfferInterval = null;
-let dailyQuestTimer = null;
+        function loadUser(){
+            const user = tg.initDataUnsafe?.user;
+            if(user?.photo_url){
+                avatar.src = user.photo_url;
+                avatar2.src = user.photo_url;
+            }
+        }
 
-function tab(id, el){
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-    el.classList.add("active");
-    if(id === "withdraw") loadWithdrawHistory();
-    if(id === "tasks") loadTasks();
-    if(id === "games") loadGamesStatus();
-    if(id === 'ref') loadRefInfo();
-}
+        function setBalance(id, value){
+            document.getElementById(id).querySelector(".num").innerText = value;
+        }
 
-function showX3(){ document.getElementById("x3modal").style.display = "flex"; }
-function closeX3(){ document.getElementById("x3modal").style.display = "none"; }
+        function updateWithdrawInfo(){
+            const amount = Number(document.getElementById("amount").value || 0);
+            let receive = amount - WITHDRAW_FEE;
+            if(receive < 0) receive = 0;
+            document.getElementById("withdrawAmount").innerText = amount;
+            document.getElementById("receiveAmount").innerText = receive;
+            document.getElementById("feeAmount").innerText = WITHDRAW_FEE;
+        }
 
-function loadUser(){
-    const user = tg.initDataUnsafe?.user;
-    if(user?.photo_url){
-        avatar.src = user.photo_url;
-        avatar2.src = user.photo_url;
-    }
-}
-
-function setBalance(id, value){
-    document.getElementById(id).querySelector(".num").innerText = value;
-}
-
-function updateWithdrawInfo(){
-    const amount = Number(document.getElementById("amount").value || 0);
-    let receive = amount - WITHDRAW_FEE;
-    if(receive < 0) receive = 0;
-    document.getElementById("withdrawAmount").innerText = amount;
-    document.getElementById("receiveAmount").innerText = receive;
-    document.getElementById("feeAmount").innerText = WITHDRAW_FEE;
-}
-
-async function loadStatus(){
-    const r = await fetch(API + "/status", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({init_data: tg.initData})
-    });
-    const d = await r.json();
-    setBalance("balance1", d.balance);
-    setBalance("balance2", d.balance);
-    const btn = claimBtn;
-    if(d.remaining > 0){
-        cooldown = d.remaining;
-        btn.disabled = true;
-        clearInterval(timerInterval);
-        timerInterval = setInterval(()=>{
-            if(cooldown <= 0){
+        async function loadStatus(){
+            const r = await fetch(API + "/status", {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({init_data: tg.initData})
+            });
+            const d = await r.json();
+            setBalance("balance1", d.balance);
+            setBalance("balance2", d.balance);
+            const btn = claimBtn;
+            if(d.remaining > 0){
+                cooldown = d.remaining;
+                btn.disabled = true;
+                clearInterval(timerInterval);
+                timerInterval = setInterval(()=>{
+                    if(cooldown <= 0){
+                        btn.innerText = "CLAIM";
+                        btn.disabled = false;
+                        clearInterval(timerInterval);
+                        return;
+                    }
+                    let m = Math.floor(cooldown / 60);
+                    let s = cooldown % 60;
+                    btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
+                    cooldown--;
+                },1000);
+            }else{
                 btn.innerText = "CLAIM";
                 btn.disabled = false;
-                clearInterval(timerInterval);
-                return;
             }
-            let m = Math.floor(cooldown / 60);
-            let s = cooldown % 60;
-            btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
-            cooldown--;
-        },1000);
-    }else{
-        btn.innerText = "CLAIM";
-        btn.disabled = false;
-    }
-}
-
-async function claim(){
-    const btn = claimBtn;
-    btn.disabled = true;
-    btn.innerText = "Loading...";
-    try{
-        const r = await fetch(API + "/claim", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData, device: navigator.userAgent})
-        });
-        const d = await r.json();
-        if(d.ok){
-            tg.showPopup?.({message: "+" + d.reward + " DOGS"});
-            loadStatus();
-            setTimeout(()=>{ showX3(); },300);
-        }else{
-            tg.showPopup?.({message: d.error});
-            btn.disabled = false;
-            btn.innerText = "CLAIM";
         }
-    }catch(e){
-        btn.disabled = false;
-        btn.innerText = "CLAIM";
-    }
-}
 
-let dailyTimerInterval = null;
-async function dailyBonus(){
-    const btn = document.getElementById("dailyBtn");
-    if(btn.dataset.locked === "1") return;
-    btn.disabled = true;
-    btn.innerText = "Loading...";
-    try{
-        await AdController.show();
-        const r = await fetch(API + "/daily_bonus", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        if(d.ok){
-            tg.showPopup?.({message:`+${d.reward} DOGS`});
-            loadStatus();
-            updateDailyStreak((d.streak_day % 7) + 1);
-            startDailyCooldown(86400);
-        }else{
-            tg.showPopup?.({message:d.error || "Already claimed"});
-            if(d.error === "already_claimed") loadDailyStatus();
-            else{
+        async function claim(){
+            const btn = claimBtn;
+            btn.disabled = true;
+            btn.innerText = "Loading...";
+            try{
+                const r = await fetch(API + "/claim", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData, device: navigator.userAgent})
+                });
+                const d = await r.json();
+                if(d.ok){
+                    tg.showPopup?.({message: "+" + d.reward + " DOGS"});
+                    loadStatus();
+                    setTimeout(()=>{ showX3(); },300);
+                }else{
+                    tg.showPopup?.({message: d.error});
+                    btn.disabled = false;
+                    btn.innerText = "CLAIM";
+                }
+            }catch(e){
+                btn.disabled = false;
+                btn.innerText = "CLAIM";
+            }
+        }
+
+        let dailyTimerInterval = null;
+        async function dailyBonus(){
+            const btn = document.getElementById("dailyBtn");
+            if(btn.dataset.locked === "1") return;
+            btn.disabled = true;
+            btn.innerText = "Loading...";
+            try{
+                await AdController.show();
+                const r = await fetch(API + "/daily_bonus", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(d.ok){
+                    tg.showPopup?.({message:`+${d.reward} DOGS`});
+                    loadStatus();
+                    updateDailyStreak((d.streak_day % 7) + 1);
+                    startDailyCooldown(86400);
+                }else{
+                    tg.showPopup?.({message:d.error || "Already claimed"});
+                    if(d.error === "already_claimed") loadDailyStatus();
+                    else{
+                        btn.disabled = false;
+                        btn.innerText = "CLAIM STREAK REWARD";
+                    }
+                }
+            }catch(e){
+                tg.showPopup?.({message:"Ad failed"});
                 btn.disabled = false;
                 btn.innerText = "CLAIM STREAK REWARD";
             }
         }
-    }catch(e){
-        tg.showPopup?.({message:"Ad failed"});
-        btn.disabled = false;
-        btn.innerText = "CLAIM STREAK REWARD";
-    }
-}
 
-function startDailyCooldown(seconds){
-    const btn = document.getElementById("dailyBtn");
-    btn.dataset.locked = "1";
-    clearInterval(dailyTimerInterval);
-    let timeLeft = seconds;
-    function update(){
-        if(timeLeft <= 0){
+        function startDailyCooldown(seconds){
+            const btn = document.getElementById("dailyBtn");
+            btn.dataset.locked = "1";
             clearInterval(dailyTimerInterval);
-            btn.disabled = false;
-            btn.dataset.locked = "0";
-            btn.innerText = "CLAIM DAILY BONUS";
-            return;
+            let timeLeft = seconds;
+            function update(){
+                if(timeLeft <= 0){
+                    clearInterval(dailyTimerInterval);
+                    btn.disabled = false;
+                    btn.dataset.locked = "0";
+                    btn.innerText = "CLAIM DAILY BONUS";
+                    return;
+                }
+                const h = Math.floor(timeLeft / 3600);
+                const m = Math.floor((timeLeft % 3600) / 60);
+                const s = timeLeft % 60;
+                btn.disabled = true;
+                btn.innerText = `${h}h ${m}m ${s}s`;
+                timeLeft--;
+            }
+            update();
+            dailyTimerInterval = setInterval(update, 1000);
         }
-        const h = Math.floor(timeLeft / 3600);
-        const m = Math.floor((timeLeft % 3600) / 60);
-        const s = timeLeft % 60;
-        btn.disabled = true;
-        btn.innerText = `${h}h ${m}m ${s}s`;
-        timeLeft--;
-    }
-    update();
-    dailyTimerInterval = setInterval(update, 1000);
-}
 
-function updateDailyStreak(day){
-    document.querySelectorAll(".streak-day").forEach(el => {
-        el.classList.remove("active");
-        el.classList.remove("claimed");
-    });
-    for(let i = 1; i < day; i++){
-        const el = document.getElementById(`day${i}`);
-        if(el) el.classList.add("claimed");
-    }
-    const current = document.getElementById(`day${day}`);
-    if(current) current.classList.add("active");
-}
-
-async function loadDailyStatus(){
-    try{
-        const r = await fetch(API + "/daily_bonus/status", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        updateDailyStreak(d.streak_day || 1);
-        const btn = document.getElementById("dailyBtn");
-        if(d.ok && d.remaining > 0){
-            startDailyCooldown(d.remaining);
-        }else{
-            btn.disabled = false;
-            btn.dataset.locked = "0";
-            btn.innerText = `CLAIM ${d.reward || 50} DOGS`;
+        function updateDailyStreak(day){
+            document.querySelectorAll(".streak-day").forEach(el => {
+                el.classList.remove("active");
+                el.classList.remove("claimed");
+            });
+            for(let i = 1; i < day; i++){
+                const el = document.getElementById(`day${i}`);
+                if(el) el.classList.add("claimed");
+            }
+            const current = document.getElementById(`day${day}`);
+            if(current) current.classList.add("active");
         }
-    }catch(e){ console.log(e); }
-}
 
-async function activatePromo(){
-    const code = document.getElementById("promoInput").value.trim();
-    if(!code){ tg.showPopup?.({message:"Enter promo code"}); return; }
-    try{
-        await AdController.show();
-        const r = await fetch(API + "/promo/activate", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData, code})
-        });
-        const d = await r.json();
-        if(d.ok){
-            tg.showPopup?.({message:`Promo activated +${d.reward} DOGS`});
-            document.getElementById("promoInput").value = "";
-            loadStatus();
-        }else{
-            tg.showPopup?.({message:d.error || "Promo failed"});
+        async function loadDailyStatus(){
+            try{
+                const r = await fetch(API + "/daily_bonus/status", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                updateDailyStreak(d.streak_day || 1);
+                const btn = document.getElementById("dailyBtn");
+                if(d.ok && d.remaining > 0){
+                    startDailyCooldown(d.remaining);
+                }else{
+                    btn.disabled = false;
+                    btn.dataset.locked = "0";
+                    btn.innerText = `CLAIM ${d.reward || 50} DOGS`;
+                }
+            }catch(e){ console.log(e); }
         }
-    }catch(e){ tg.showPopup?.({message:"Ad failed"}); }
-}
 
-let gamesTimerInterval = null;
+        async function activatePromo(){
+            const code = document.getElementById("promoInput").value.trim();
+            if(!code){ tg.showPopup?.({message:"Enter promo code"}); return; }
+            try{
+                await AdController.show();
+                const r = await fetch(API + "/promo/activate", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData, code})
+                });
+                const d = await r.json();
+                if(d.ok){
+                    tg.showPopup?.({message:`Promo activated +${d.reward} DOGS`});
+                    document.getElementById("promoInput").value = "";
+                    loadStatus();
+                }else{
+                    tg.showPopup?.({message:d.error || "Promo failed"});
+                }
+            }catch(e){ tg.showPopup?.({message:"Ad failed"}); }
+        }
 
-async function loadGamesStatus(){
-    try{
-        const r = await fetch(API + "/games/status", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: Telegram.WebApp.initData})
-        });
-        const data = await r.json();
-        if(!data.ok) return;
-        const restoreBtn = document.getElementById("restoreEnergyBtn");
-        if(data.energy <= 0) restoreBtn.style.display = "block";
-        else restoreBtn.style.display = "none";
-        document.getElementById("gamesEnergy").innerText = `${data.energy} / ${data.max_energy}`;
-        const percent = (data.energy / data.max_energy) * 100;
-        document.getElementById("gamesEnergyFill").style.width = percent + "%";
-        if(data.energy >= data.max_energy){
-            document.getElementById("gamesRestore").innerText = "Full energy";
+        let gamesTimerInterval = null;
+
+        async function loadGamesStatus(){
+            try{
+                const r = await fetch(API + "/games/status", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: Telegram.WebApp.initData})
+                });
+                const data = await r.json();
+                if(!data.ok) return;
+                const restoreBtn = document.getElementById("restoreEnergyBtn");
+                if(data.energy <= 0) restoreBtn.style.display = "block";
+                else restoreBtn.style.display = "none";
+                document.getElementById("gamesEnergy").innerText = `${data.energy} / ${data.max_energy}`;
+                const percent = (data.energy / data.max_energy) * 100;
+                document.getElementById("gamesEnergyFill").style.width = percent + "%";
+                if(data.energy >= data.max_energy){
+                    document.getElementById("gamesRestore").innerText = "Full energy";
+                    if(gamesTimerInterval) clearInterval(gamesTimerInterval);
+                }else{
+                    startEnergyTimer(data.next_restore);
+                }
+            }catch(e){ console.log(e); }
+        }
+
+        function startEnergyTimer(seconds){
             if(gamesTimerInterval) clearInterval(gamesTimerInterval);
-        }else{
-            startEnergyTimer(data.next_restore);
+            let remaining = seconds;
+            const el = document.getElementById("gamesRestore");
+            function render(){
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                el.innerText = `Next energy in ${m}:${s.toString().padStart(2,"0")}`;
+            }
+            render();
+            gamesTimerInterval = setInterval(() => {
+                remaining--;
+                render();
+                if(remaining <= 0){
+                    clearInterval(gamesTimerInterval);
+                    loadGamesStatus();
+                }
+            },1000);
         }
-    }catch(e){ console.log(e); }
-}
 
-function startEnergyTimer(seconds){
-    if(gamesTimerInterval) clearInterval(gamesTimerInterval);
-    let remaining = seconds;
-    const el = document.getElementById("gamesRestore");
-    function render(){
-        const m = Math.floor(remaining / 60);
-        const s = remaining % 60;
-        el.innerText = `Next energy in ${m}:${s.toString().padStart(2,"0")}`;
-    }
-    render();
-    gamesTimerInterval = setInterval(() => {
-        remaining--;
-        render();
-        if(remaining <= 0){
-            clearInterval(gamesTimerInterval);
-            loadGamesStatus();
+        async function startFlappyGame(btn){
+            if(btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1";
+            btn.disabled = true;
+            const oldText = btn.innerText;
+            btn.innerText = "Loading...";
+            try{
+                const r = await fetch(API + "/games/flappy/start", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(!d.ok){
+                    if(d.error === "no_energy") tg.showPopup?.({ message: "No energy. Wait for restore." });
+                    else tg.showPopup?.({ message: d.error || "Game start failed" });
+                    await loadGamesStatus();
+                    return;
+                }
+                const token = d.session_token;
+                if(!token){ tg.showPopup?.({ message: "Session error: no token" }); await loadGamesStatus(); return; }
+                await loadGamesStatus();
+                const initData = tg?.initData || "";
+                window.location.href = `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
+            }catch(e){
+                console.log("FLAPPY START CLIENT ERROR:", e);
+                tg.showPopup?.({ message: "Server error" });
+            }finally{
+                btn.dataset.loading = "0";
+                btn.disabled = false;
+                btn.innerText = oldText;
+            }
         }
-    },1000);
-}
 
-async function startFlappyGame(btn){
-    if(btn.dataset.loading === "1") return;
-    btn.dataset.loading = "1";
-    btn.disabled = true;
-    const oldText = btn.innerText;
-    btn.innerText = "Loading...";
-    try{
-        const r = await fetch(API + "/games/flappy/start", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        if(!d.ok){
-            if(d.error === "no_energy") tg.showPopup?.({ message: "No energy. Wait for restore." });
-            else tg.showPopup?.({ message: d.error || "Game start failed" });
-            await loadGamesStatus();
-            return;
+        async function watchEnergyAd(){
+            const btn = document.getElementById("restoreEnergyBtn");
+            if(btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1";
+            btn.disabled = true;
+            btn.innerText = "Loading...";
+            try{
+                await AdController.show();
+                const r = await fetch(API + "/games/restore-energy", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(d.ok){
+                    tg.showPopup?.({message:"+10 Energy restored"});
+                    await loadGamesStatus();
+                }else{
+                    tg.showPopup?.({message:d.error || "Restore failed"});
+                }
+            }catch(e){
+                console.log(e);
+                tg.showPopup?.({message:"Ad failed"});
+            }
+            btn.dataset.loading = "0";
+            btn.disabled = false;
+            btn.innerText = "Watch Ad +10 Energy";
         }
-        const token = d.session_token;
-        if(!token){ tg.showPopup?.({ message: "Session error: no token" }); await loadGamesStatus(); return; }
-        await loadGamesStatus();
-        const initData = tg?.initData || "";
-        window.location.href = `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
-    }catch(e){
-        console.log("FLAPPY START CLIENT ERROR:", e);
-        tg.showPopup?.({ message: "Server error" });
-    }finally{
-        btn.dataset.loading = "0";
-        btn.disabled = false;
-        btn.innerText = oldText;
-    }
-}
 
-async function watchEnergyAd(){
-    const btn = document.getElementById("restoreEnergyBtn");
-    if(btn.dataset.loading === "1") return;
-    btn.dataset.loading = "1";
-    btn.disabled = true;
-    btn.innerText = "Loading...";
-    try{
-        await AdController.show();
-        const r = await fetch(API + "/games/restore-energy", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        if(d.ok){
-            tg.showPopup?.({message:"+10 Energy restored"});
-            await loadGamesStatus();
-        }else{
-            tg.showPopup?.({message:d.error || "Restore failed"});
-        }
-    }catch(e){
-        console.log(e);
-        tg.showPopup?.({message:"Ad failed"});
-    }
-    btn.dataset.loading = "0";
-    btn.disabled = false;
-    btn.innerText = "Watch Ad +10 Energy";
-}
-
-async function loadTasks(){
-    try{
-        const r = await fetch(API + "/tasks", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        const box = document.getElementById("tasksList");
-        box.innerHTML = "";
-        if(!d.tasks || d.tasks.length === 0){
-            box.innerHTML = `<div class="card" style="margin-top:12px;">No available tasks</div>`;
-            return;
-        }
-        d.tasks.forEach(task => {
-            box.innerHTML += `
+        async function loadTasks(){
+            try{
+                const r = await fetch(API + "/tasks", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                const box = document.getElementById("tasksList");
+                box.innerHTML = "";
+                if(!d.tasks || d.tasks.length === 0){
+                    box.innerHTML = `<div class="card" style="margin-top:12px;">No available tasks</div>`;
+                    return;
+                }
+                d.tasks.forEach(task => {
+                    box.innerHTML += `
                 <div class="task-item">
                     <div class="task-top">
                         <div class="task-left">
@@ -1269,93 +1372,93 @@ async function loadTasks(){
                         </div>
                     </div>
                 </div>`;
-        });
-    }catch(e){ console.log(e); }
-}
-
-function subscribeTask(link){ try{ tg.openTelegramLink(link); }catch(e){ console.log(e); } }
-
-async function checkTask(taskId){
-    try{
-        const r = await fetch(API + "/task/complete", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData, task_id: taskId})
-        });
-        const d = await r.json();
-        if(d.ok){
-            tg.showPopup?.({message:`+${d.reward} DOGS`});
-            loadStatus();
-            loadTasks();
-        }else{
-            tg.showPopup?.({message:d.error || "Task failed"});
+                });
+            }catch(e){ console.log(e); }
         }
-    }catch(e){ tg.showPopup?.({message:"Server error"}); }
-}
 
-async function watchX3(){
-    const btn = document.getElementById("x3Btn");
-    if(btn.dataset.loading === "1") return;
-    btn.dataset.loading = "1";
-    btn.disabled = true;
-    btn.innerText = "Loading...";
-    try{
-        await AdController.show();
-        closeX3();
-        tg.showPopup?.({message:"Reward will be credited automatically"});
-        setTimeout(async ()=>{ await loadStatus(); }, 2500);
-    }catch(e){
-        console.log(e);
-        tg.showPopup?.({message:"Ad failed"});
-    }
-    btn.dataset.loading = "0";
-    btn.disabled = false;
-    btn.innerText = "Watch ad x3";
-}
+        function subscribeTask(link){ try{ tg.openTelegramLink(link); }catch(e){ console.log(e); } }
 
-async function withdraw(){
-    const wallet = document.getElementById("wallet").value.trim();
-    const memo = document.getElementById("memo").value.trim();
-    const amount = Number(document.getElementById("amount").value.trim());
-    if(wallet.length < 20){ tg.showPopup?.({message:"Enter valid TON wallet"}); return; }
-    if(!amount || amount <= 0){ tg.showPopup?.({message:"Enter amount"}); return; }
-    if(amount < MIN_WITHDRAW){ tg.showPopup?.({message:`Minimum withdraw ${MIN_WITHDRAW}`}); return; }
-    if(amount <= WITHDRAW_FEE){ tg.showPopup?.({message:"Amount too small"}); return; }
-    const r = await fetch(API + "/withdraw", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({init_data: tg.initData, wallet, memo, amount})
-    });
-    const d = await r.json();
-    if(d.ok){
-        tg.showPopup?.({message:`You will receive ${d.receive} DOGS`});
-        document.getElementById("wallet").value = "";
-        document.getElementById("memo").value = "";
-        document.getElementById("amount").value = "";
-        updateWithdrawInfo();
-        loadStatus();
-        loadWithdrawHistory();
-    }else{
-        tg.showPopup?.({message:d.error});
-    }
-}
+        async function checkTask(taskId){
+            try{
+                const r = await fetch(API + "/task/complete", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData, task_id: taskId})
+                });
+                const d = await r.json();
+                if(d.ok){
+                    tg.showPopup?.({message:`+${d.reward} DOGS`});
+                    loadStatus();
+                    loadTasks();
+                }else{
+                    tg.showPopup?.({message:d.error || "Task failed"});
+                }
+            }catch(e){ tg.showPopup?.({message:"Server error"}); }
+        }
 
-async function loadWithdrawHistory(){
-    try{
-        const r = await fetch(API + "/withdraw/history", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        const box = document.getElementById("withdrawHistory");
-        box.innerHTML = "";
-        if(!d.history || d.history.length === 0){ box.innerHTML = "No withdraws"; return; }
-        d.history.forEach(w => {
-            let statusClass = "pending";
-            if(w.status === "paid") statusClass = "paid";
-            if(w.status === "rejected") statusClass = "rejected";
-            box.innerHTML += `
+        async function watchX3(){
+            const btn = document.getElementById("x3Btn");
+            if(btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1";
+            btn.disabled = true;
+            btn.innerText = "Loading...";
+            try{
+                await AdController.show();
+                closeX3();
+                tg.showPopup?.({message:"Reward will be credited automatically"});
+                setTimeout(async ()=>{ await loadStatus(); }, 2500);
+            }catch(e){
+                console.log(e);
+                tg.showPopup?.({message:"Ad failed"});
+            }
+            btn.dataset.loading = "0";
+            btn.disabled = false;
+            btn.innerText = "Watch ad x3";
+        }
+
+        async function withdraw(){
+            const wallet = document.getElementById("wallet").value.trim();
+            const memo = document.getElementById("memo").value.trim();
+            const amount = Number(document.getElementById("amount").value.trim());
+            if(wallet.length < 20){ tg.showPopup?.({message:"Enter valid TON wallet"}); return; }
+            if(!amount || amount <= 0){ tg.showPopup?.({message:"Enter amount"}); return; }
+            if(amount < MIN_WITHDRAW){ tg.showPopup?.({message:`Minimum withdraw ${MIN_WITHDRAW}`}); return; }
+            if(amount <= WITHDRAW_FEE){ tg.showPopup?.({message:"Amount too small"}); return; }
+            const r = await fetch(API + "/withdraw", {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({init_data: tg.initData, wallet, memo, amount})
+            });
+            const d = await r.json();
+            if(d.ok){
+                tg.showPopup?.({message:`You will receive ${d.receive} DOGS`});
+                document.getElementById("wallet").value = "";
+                document.getElementById("memo").value = "";
+                document.getElementById("amount").value = "";
+                updateWithdrawInfo();
+                loadStatus();
+                loadWithdrawHistory();
+            }else{
+                tg.showPopup?.({message:d.error});
+            }
+        }
+
+        async function loadWithdrawHistory(){
+            try{
+                const r = await fetch(API + "/withdraw/history", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                const box = document.getElementById("withdrawHistory");
+                box.innerHTML = "";
+                if(!d.history || d.history.length === 0){ box.innerHTML = "No withdraws"; return; }
+                d.history.forEach(w => {
+                    let statusClass = "pending";
+                    if(w.status === "paid") statusClass = "paid";
+                    if(w.status === "rejected") statusClass = "rejected";
+                    box.innerHTML += `
                 <div class="history-item">
                     <div><b>Withdraw:</b> ${w.amount}</div>
                     <div><b>Receive:</b> ${w.receive_amount}</div>
@@ -1364,210 +1467,210 @@ async function loadWithdrawHistory(){
                     ${w.memo ? `<div style="margin-top:6px;"><b>Memo:</b> ${w.memo}</div>` : ""}
                     <div class="status ${statusClass}">${w.status}</div>
                 </div>`;
-        });
-    }catch(e){ console.log(e); }
-}
+                });
+            }catch(e){ console.log(e); }
+        }
 
-let userRefLink = "";
-async function loadRefInfo() {
-    try {
-        const r = await fetch(API + "/get_ref_info", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ init_data: initData })
-        });
-        const d = await r.json();
-        if (d.ok) {
-            document.getElementById("refCount").innerText = d.referrals_count;
-            document.getElementById("refBalance").innerText = d.referral_balance.toFixed(2);
-            userRefLink = d.ref_link;
+        let userRefLink = "";
+        async function loadRefInfo() {
+            try {
+                const r = await fetch(API + "/get_ref_info", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: initData })
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    document.getElementById("refCount").innerText = d.referrals_count;
+                    document.getElementById("refBalance").innerText = d.referral_balance.toFixed(2);
+                    userRefLink = d.ref_link;
+                    const btn = document.querySelector("#ref button");
+                    if(d.remaining && d.remaining > 0){
+                        startRefCooldown(d.remaining);
+                    } else {
+                        btn.disabled = false;
+                        btn.dataset.locked = "0";
+                        if(d.referral_balance <= 0) btn.innerText = "Balance Empty";
+                        else btn.innerText = "Claim Reward";
+                    }
+                }
+            } catch (e) { console.log("REF INFO ERROR:", e); }
+        }
+
+        let refTimerInterval = null;
+        async function claimRef() {
             const btn = document.querySelector("#ref button");
-            if(d.remaining && d.remaining > 0){
-                startRefCooldown(d.remaining);
-            } else {
+            if(btn.dataset.locked === "1") return;
+            btn.disabled = true;
+            btn.innerText = "Loading...";
+            try {
+                await AdController.show();
+                const r = await fetch(API + "/ref/claim", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: initData })
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    tg.showPopup?.({ message: "Funds successfully transferred to main balance" });
+                    loadStatus();
+                    loadRefInfo();
+                    startRefCooldown(86400);
+                } else {
+                    tg.showPopup?.({ message: d.error || "Referral balance is empty" });
+                    btn.disabled = false;
+                    btn.innerText = "Claim Reward";
+                }
+            } catch(e) {
+                console.log(e);
+                tg.showPopup?.({ message: "Ad failed" });
                 btn.disabled = false;
-                btn.dataset.locked = "0";
-                if(d.referral_balance <= 0) btn.innerText = "Balance Empty";
-                else btn.innerText = "Claim Reward";
+                btn.innerText = "Claim Reward";
             }
         }
-    } catch (e) { console.log("REF INFO ERROR:", e); }
-}
 
-let refTimerInterval = null;
-async function claimRef() {
-    const btn = document.querySelector("#ref button");
-    if(btn.dataset.locked === "1") return;
-    btn.disabled = true;
-    btn.innerText = "Loading...";
-    try {
-        await AdController.show();
-        const r = await fetch(API + "/ref/claim", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ init_data: initData })
-        });
-        const d = await r.json();
-        if (d.ok) {
-            tg.showPopup?.({ message: "Funds successfully transferred to main balance" });
-            loadStatus();
-            loadRefInfo();
-            startRefCooldown(86400);
-        } else {
-            tg.showPopup?.({ message: d.error || "Referral balance is empty" });
-            btn.disabled = false;
-            btn.innerText = "Claim Reward";
-        }
-    } catch(e) {
-        console.log(e);
-        tg.showPopup?.({ message: "Ad failed" });
-        btn.disabled = false;
-        btn.innerText = "Claim Reward";
-    }
-}
-
-function startRefCooldown(seconds) {
-    const btn = document.querySelector("#ref button");
-    btn.dataset.locked = "1";
-    clearInterval(refTimerInterval);
-    let timeLeft = seconds;
-    function update() {
-        if(timeLeft <= 0){
+        function startRefCooldown(seconds) {
+            const btn = document.querySelector("#ref button");
+            btn.dataset.locked = "1";
             clearInterval(refTimerInterval);
-            btn.disabled = false;
-            btn.dataset.locked = "0";
-            btn.innerText = "Claim Reward";
-            return;
+            let timeLeft = seconds;
+            function update() {
+                if(timeLeft <= 0){
+                    clearInterval(refTimerInterval);
+                    btn.disabled = false;
+                    btn.dataset.locked = "0";
+                    btn.innerText = "Claim Reward";
+                    return;
+                }
+                const h = Math.floor(timeLeft / 3600);
+                const m = Math.floor((timeLeft % 3600) / 60);
+                const s = timeLeft % 60;
+                btn.disabled = true;
+                btn.innerText = `${h}h ${m}m ${s}s`;
+                timeLeft--;
+            }
+            update();
+            refTimerInterval = setInterval(update, 1000);
         }
-        const h = Math.floor(timeLeft / 3600);
-        const m = Math.floor((timeLeft % 3600) / 60);
-        const s = timeLeft % 60;
-        btn.disabled = true;
-        btn.innerText = `${h}h ${m}m ${s}s`;
-        timeLeft--;
-    }
-    update();
-    refTimerInterval = setInterval(update, 1000);
-}
 
-function inviteFriend() {
-    if (!userRefLink) return;
-    const url = `https://t.me/share/url?url=${encodeURIComponent(userRefLink)}&text=${encodeURIComponent("Join me and earn free DOGS tokens! 🦴")}`;
-    tg.openTelegramLink(url);
-}
-
-function openBitcoTasks(){
-    const userId = tg.initDataUnsafe?.user?.id;
-    const url = `https://bitcotasks.com/offerwall/8blopnz472x3du39j0cepxs7twbhc0/${userId}`;
-    tg.openLink(url);
-}
-
-async function auth(){
-    try{
-        await fetch(API + "/auth", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: initData, start_param: startParam})
-        });
-    }catch(e){ console.log(e); }
-}
-
-function formatNumber(num){ return new Intl.NumberFormat().format(Math.floor(num)); }
-
-async function loadStats(){
-    try{
-        const r = await fetch(API + "/stats", { method:"POST" });
-        const d = await r.json();
-        if(d.ok){
-            document.getElementById("usersCount").innerText = formatNumber(d.users + 28);
-            document.getElementById("earnedCount").innerText = formatNumber(d.earned + 17576);
+        function inviteFriend() {
+            if (!userRefLink) return;
+            const url = `https://t.me/share/url?url=${encodeURIComponent(userRefLink)}&text=${encodeURIComponent("Join me and earn free DOGS tokens! 🦴")}`;
+            tg.openTelegramLink(url);
         }
-    }catch(e){ console.log("STATS ERROR", e); }
-}
 
-function startSpecialOfferCooldown(seconds){
-    const task = document.getElementById("specialOfferTask");
-    const timer = document.getElementById("specialOfferTimer");
-    if(!task || !timer) return;
-    task.style.display = "none";
-    timer.style.display = "block";
-    clearInterval(specialOfferInterval);
-    let timeLeft = seconds;
-    function update(){
-        if(timeLeft <= 0){
+        function openBitcoTasks(){
+            const userId = tg.initDataUnsafe?.user?.id;
+            const url = `https://bitcotasks.com/offerwall/8blopnz472x3du39j0cepxs7twbhc0/${userId}`;
+            tg.openLink(url);
+        }
+
+        async function auth(){
+            try{
+                await fetch(API + "/auth", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: initData, start_param: startParam})
+                });
+            }catch(e){ console.log(e); }
+        }
+
+        function formatNumber(num){ return new Intl.NumberFormat().format(Math.floor(num)); }
+
+        async function loadStats(){
+            try{
+                const r = await fetch(API + "/stats", { method:"POST" });
+                const d = await r.json();
+                if(d.ok){
+                    document.getElementById("usersCount").innerText = formatNumber(d.users + 28);
+                    document.getElementById("earnedCount").innerText = formatNumber(d.earned + 17576);
+                }
+            }catch(e){ console.log("STATS ERROR", e); }
+        }
+
+        function startSpecialOfferCooldown(seconds){
+            const task = document.getElementById("specialOfferTask");
+            const timer = document.getElementById("specialOfferTimer");
+            if(!task || !timer) return;
+            task.style.display = "none";
+            timer.style.display = "block";
             clearInterval(specialOfferInterval);
-            timer.style.display = "none";
-            task.style.display = "block";
-            return;
+            let timeLeft = seconds;
+            function update(){
+                if(timeLeft <= 0){
+                    clearInterval(specialOfferInterval);
+                    timer.style.display = "none";
+                    task.style.display = "block";
+                    return;
+                }
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                timer.innerText = `⏳ ${m}:${s.toString().padStart(2,"0")}`;
+                timeLeft--;
+            }
+            update();
+            specialOfferInterval = setInterval(update, 1000);
         }
-        const m = Math.floor(timeLeft / 60);
-        const s = timeLeft % 60;
-        timer.innerText = `⏳ ${m}:${s.toString().padStart(2,"0")}`;
-        timeLeft--;
-    }
-    update();
-    specialOfferInterval = setInterval(update, 1000);
-}
 
-async function loadSpecialOfferStatus(){
-    try{
-        const r = await fetch(API + "/special_offer/status", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        if(d.ok && d.remaining > 0) startSpecialOfferCooldown(d.remaining);
-    }catch(e){ console.log("SPECIAL OFFER STATUS ERROR", e); }
-}
+        async function loadSpecialOfferStatus(){
+            try{
+                const r = await fetch(API + "/special_offer/status", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(d.ok && d.remaining > 0) startSpecialOfferCooldown(d.remaining);
+            }catch(e){ console.log("SPECIAL OFFER STATUS ERROR", e); }
+        }
 
-const adsTask = document.querySelector("adsgram-task");
-if(adsTask){
-    adsTask.addEventListener("reward", async () => {
-        tg.showPopup({title: "Reward", message: "✅ Your reward will be credited shortly", buttons: [{ type: "ok" }]});
-        setTimeout(async () => {
-            await loadStatus();
-            tg.showPopup({title: "DOGS", message: "🎉 Balance updated", buttons: [{ type: "ok" }]});
-        }, 3000);
-    });
-}
+        const adsTask = document.querySelector("adsgram-task");
+        if(adsTask){
+            adsTask.addEventListener("reward", async () => {
+                tg.showPopup({title: "Reward", message: "✅ Your reward will be credited shortly", buttons: [{ type: "ok" }]});
+                setTimeout(async () => {
+                    await loadStatus();
+                    tg.showPopup({title: "DOGS", message: "🎉 Balance updated", buttons: [{ type: "ok" }]});
+                }, 3000);
+            });
+        }
 
-function startDailyQuestResetTimer(){
-    clearInterval(dailyQuestTimer);
-    function update(){
-        const now = new Date();
-        const kyivNow = new Date(now.toLocaleString("en-US", {timeZone:"Europe/Kiev"}));
-        const next = new Date(kyivNow);
-        next.setHours(24,0,0,0);
-        const diff = Math.floor((next - kyivNow) / 1000);
-        const h = Math.floor(diff / 3600);
-        const m = Math.floor((diff % 3600)/60);
-        const s = diff % 60;
-        document.getElementById("dailyQuestReset").innerText = `⏳ Updating in ${h}h ${m}m ${s}s`;
-    }
-    update();
-    dailyQuestTimer = setInterval(update,1000);
-}
+        function startDailyQuestResetTimer(){
+            clearInterval(dailyQuestTimer);
+            function update(){
+                const now = new Date();
+                const kyivNow = new Date(now.toLocaleString("en-US", {timeZone:"Europe/Kiev"}));
+                const next = new Date(kyivNow);
+                next.setHours(24,0,0,0);
+                const diff = Math.floor((next - kyivNow) / 1000);
+                const h = Math.floor(diff / 3600);
+                const m = Math.floor((diff % 3600)/60);
+                const s = diff % 60;
+                document.getElementById("dailyQuestReset").innerText = `⏳ Updating in ${h}h ${m}m ${s}s`;
+            }
+            update();
+            dailyQuestTimer = setInterval(update,1000);
+        }
 
-async function loadDailyQuests(){
-    try{
-        const r = await fetch(API + "/daily_quests", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData})
-        });
-        const d = await r.json();
-        if(!d.ok) return;
-        const container = document.getElementById("dailyQuests");
-        container.innerHTML = "";
-        d.quests.forEach(q => {
-            const completed = q.progress >= q.target;
-            let button = "";
-            if(q.claimed) button = `<button class="dailyQuestBtn" disabled>Completed</button>`;
-            else if(completed) button = `<button class="dailyQuestBtn" onclick="claimDailyQuest(${q.id})">Claim</button>`;
-            else button = `<button class="dailyQuestBtn" disabled>In Progress</button>`;
-            const percent = Math.min(100, (q.progress / q.target) * 100);
-            container.innerHTML += `
+        async function loadDailyQuests(){
+            try{
+                const r = await fetch(API + "/daily_quests", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(!d.ok) return;
+                const container = document.getElementById("dailyQuests");
+                container.innerHTML = "";
+                d.quests.forEach(q => {
+                    const completed = q.progress >= q.target;
+                    let button = "";
+                    if(q.claimed) button = `<button class="dailyQuestBtn" disabled>Completed</button>`;
+                    else if(completed) button = `<button class="dailyQuestBtn" onclick="claimDailyQuest(${q.id})">Claim</button>`;
+                    else button = `<button class="dailyQuestBtn" disabled>In Progress</button>`;
+                    const percent = Math.min(100, (q.progress / q.target) * 100);
+                    container.innerHTML += `
                 <div class="dailyQuest">
                     <div class="dailyQuestTop">
                         <div class="dailyQuestTitle">${q.title}</div>
@@ -1581,71 +1684,66 @@ async function loadDailyQuests(){
                         ${button}
                     </div>
                 </div>`;
-        });
-    }catch(e){ console.log("DAILY QUESTS ERROR", e); }
-}
-
-async function claimDailyQuest(id){
-    try{
-        const r = await fetch(API + "/daily_quests/claim", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({init_data: tg.initData, quest_id: id})
-        });
-        const d = await r.json();
-        if(d.ok){
-            tg.showPopup({title:"Reward", message:`🎉 +${d.reward} DOGS`, buttons:[{type:"ok"}]});
-            loadStatus();
-            loadDailyQuests();
+                });
+            }catch(e){ console.log("DAILY QUESTS ERROR", e); }
         }
-    }catch(e){ console.log("CLAIM QUEST ERROR", e); }
-}
 
-// ---------- ИНИЦИАЛИЗАЦИЯ С ЗАГРУЗКОЙ ----------
-async function initApp() {
-    try {
-        // Загружаем все данные параллельно
-        await Promise.all([
-            auth(),
-            loadStatus(),
-            loadStats(),
-            loadDailyStatus(),
-            loadSpecialOfferStatus(),
-            loadDailyQuests(),
-            loadGamesStatus(),
-            loadRefInfo(),
-            loadWithdrawHistory(),
-            loadTasks()
-        ]);
+        async function claimDailyQuest(id){
+            try{
+                const r = await fetch(API + "/daily_quests/claim", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({init_data: tg.initData, quest_id: id})
+                });
+                const d = await r.json();
+                if(d.ok){
+                    tg.showPopup({title:"Reward", message:`🎉 +${d.reward} DOGS`, buttons:[{type:"ok"}]});
+                    loadStatus();
+                    loadDailyQuests();
+                }
+            }catch(e){ console.log("CLAIM QUEST ERROR", e); }
+        }
 
-        // Таймеры
-        startDailyQuestResetTimer();
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        async function initApp() {
+            try {
+                await Promise.all([
+                    auth(),
+                    loadStatus(),
+                    loadStats(),
+                    loadDailyStatus(),
+                    loadSpecialOfferStatus(),
+                    loadDailyQuests(),
+                    loadGamesStatus(),
+                    loadRefInfo(),
+                    loadWithdrawHistory(),
+                    loadTasks()
+                ]);
 
-        // Показываем приложение
-        document.getElementById("splash").style.display = "none";
-        document.getElementById("mainApp").classList.add("ready");
+                startDailyQuestResetTimer();
 
-        // Периодические обновления
-        setInterval(()=>{
-            loadStatus();
-            loadStats();
-        }, 15000);
+                document.getElementById("splash").style.display = "none";
+                document.getElementById("mainApp").classList.add("ready");
 
-    } catch (e) {
-        console.error("Init failed", e);
-        // В случае ошибки всё равно показываем приложение через 3 секунды
-        setTimeout(() => {
-            document.getElementById("splash").style.display = "none";
-            document.getElementById("mainApp").classList.add("ready");
-        }, 3000);
-    }
-}
+                setInterval(()=>{
+                    loadStatus();
+                    loadStats();
+                }, 15000);
 
-window.addEventListener('DOMContentLoaded', () => {
-    loadUser(); // аватар можно подгрузить сразу
-    initApp();
-});
-</script>
+            } catch (e) {
+                console.error("Init failed", e);
+                setTimeout(() => {
+                    document.getElementById("splash").style.display = "none";
+                    document.getElementById("mainApp").classList.add("ready");
+                }, 3000);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadUser();
+            initApp();
+        });
+    </script>
 
 </body>
 </html>
