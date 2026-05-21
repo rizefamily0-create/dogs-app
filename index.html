@@ -8,837 +8,591 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-body{
-    margin:0;
-    background:#000;
-    color:white;
-    font-family:-apple-system, system-ui;
-    height:100vh;
-    overflow:hidden;
+/* ========== ГЛОБАЛЬНЫЕ СТИЛИ (GameHub) ========== */
+body {
+    margin: 0;
+    background: #0f1015;
+    color: white;
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
-*{
-    box-sizing:border-box;
+* {
+    box-sizing: border-box;
 }
 
-.app{
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-    padding:16px;
-    padding-bottom:90px;
+.app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    padding-bottom: 90px;
 }
 
-.page{
-    display:none;
-    flex-direction:column;
-    height:100%;
-    overflow-y:auto;
+/* ========== СТРАНИЦЫ ========== */
+.page {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    scroll-behavior: smooth;
 }
 
-.page.active{
-    display:flex;
+.page.active {
+    display: flex;
 }
 
-.card{
-    background:#0b0b0c;
-    border-radius:16px;
-    padding:16px;
-    margin-top:12px;
+/* ========== КАРТОЧКИ (GameHub) ========== */
+.card {
+    background: #17181c;
+    border: 1px solid #2a2b31;
+    border-radius: 24px;
+    padding: 18px;
+    margin-top: 14px;
 }
 
-.balance{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-weight:700;
+/* ========== БАЛАНС ========== */
+.balance {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
 }
 
-.balance-left{
-    display:flex;
-    align-items:baseline;
+.balance-left {
+    display: flex;
+    align-items: baseline;
 }
 
-.balance .num{
-    font-size:30px;
+.balance .num {
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.balance .unit {
+    font-size: 15px;
+    opacity: 0.6;
+    margin-left: 8px;
+    font-weight: 600;
 }
+
+/* ========== АВАТАР ПОЛЬЗОВАТЕЛЯ ========== */
+.user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-.balance .unit{
-    font-size:14px;
-    opacity:0.7;
-    margin-left:6px;
+.user img {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    border: 2px solid #2a2b31;
 }
 
-.user{
-    display:flex;
-    align-items:center;
-    gap:8px;
+/* ========== ЦЕНТРИРОВАНИЕ ========== */
+.center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
 }
 
-.user img{
-    width:36px;
-    height:36px;
-    border-radius:50%;
-}
-
-.center{
-    flex:1;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-button{
-    width:100%;
-    padding:16px;
-    border:none;
-    border-radius:16px;
-    background:#008cff;
-    color:white;
-    font-weight:700;
-    font-size:16px;
-    cursor:pointer;
-}
-
-button:disabled{
-    background:#1a1a1a;
-    color:#555;
-}
-
-.claim-btn{
-    margin-top:auto;
-    font-size:18px;
-}
-
-input{
-    width:100%;
-    padding:14px;
-    border-radius:14px;
-    border:none;
-    background:#111;
-    color:white;
-    margin-top:10px;
-}
-
-.nav{
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    display:flex;
-    background:#0a0a0a;
-    border-top:1px solid #111;
-    padding:10px;
-}
-
-.nav-item{
-    flex:1;
-    text-align:center;
-    color:#666;
-    font-size:11px;
-    cursor:pointer;
-}
-
-.nav-item span{
-    display:block;
-    font-size:22px;
-}
-
-.nav-item.active{
-    color:#008cff;
-}
-
-#x3modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.85);
-    z-index:9999;
-    justify-content:center;
-    align-items:center;
-}
-
-.x3box{
-    background:#111;
-    padding:20px;
-    border-radius:16px;
-    text-align:center;
-    width:80%;
-}
-
-.history-item{
-    background:#111;
-    border-radius:12px;
-    padding:12px;
-    margin-top:10px;
-    font-size:14px;
-}
-
-.status{
-    margin-top:8px;
-    font-weight:700;
-}
-
-.pending{
-    color:#ff9800;
-}
-
-.paid{
-    color:#00e676;
-}
-
-.rejected{
-    color:#ff1744;
-}
-
-.withdraw-info{
-    margin-top:12px;
-    background:#111;
-    border-radius:12px;
-    padding:12px;
-    font-size:14px;
-    line-height:1.7;
-}
-
-.info-title{
-    font-size:13px;
-    opacity:0.7;
-    margin-bottom:8px;
-}
-
-.task-item{
-    background:#111;
-    border-radius:18px;
-    padding:14px;
-    margin-top:12px;
-}
-
-.task-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-}
-
-.task-left{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    flex:1;
-}
-
-.task-avatar{
-    width:48px;
-    height:48px;
-    border-radius:14px;
-    object-fit:cover;
-}
-
-.task-title{
-    font-size:14px;
-    font-weight:700;
-}
-
-.task-reward{
-    opacity:0.7;
-    font-size:12px;
-    margin-top:4px;
-}
-
-.task-buttons{
-    display:flex;
-    gap:6px;
-}
-
-.task-buttons button{
-    width:auto;
-    padding:10px 14px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    margin:0;
-}
-
-.task-buttons button:first-child{
-    background:#1c1c1e;
-    color:#fff;
-    border:1px solid #2c2c2e;
-}
-
-.task-buttons button:last-child{
-    background:#008cff;
-}
-
-.daily-box{
-    margin-top:14px;
-}
-
-.promo-btn{
-    margin-top:10px;
-}
-
-.global-stats{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    background:transparent;
-    padding:4px 2px;
-    margin-top:6px;
-
-    font-size:13px;
-    font-weight:600;
-}
-
-.left-stat{
-    opacity:0.85;
-}
+/* ========== КНОПКИ ========== */
+button {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 18px;
+    background: #3b82f6;
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+}
+
+button:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+}
+
+button:disabled {
+    background: #1f2028;
+    color: #555;
+    cursor: default;
+    transform: none;
+    opacity: 0.8;
+}
+
+.claim-btn {
+    margin-top: auto;
+    font-size: 18px;
+    height: 56px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* ========== ИНПУТЫ ========== */
+input {
+    width: 100%;
+    padding: 15px 16px;
+    border-radius: 16px;
+    border: 1px solid #2a2b31;
+    background: #1a1b20;
+    color: white;
+    margin-top: 10px;
+    font-size: 15px;
+    transition: border 0.2s;
+    outline: none;
+}
+
+input:focus {
+    border-color: #3b82f6;
+}
+
+input::placeholder {
+    color: #555;
+}
+
+/* ========== НАВИГАЦИЯ (GameHub) ========== */
+.nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: #17181c;
+    border-top: 1px solid #2a2b31;
+    padding: 8px 8px 12px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    text-align: center;
+    color: #666;
+    font-size: 11px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 4px 0;
+}
+
+.nav-item span {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 2px;
+}
+
+.nav-item.active {
+    color: #3b82f6;
+}
+
+/* ========== МОДАЛЬНОЕ ОКНО X3 ========== */
+#x3modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.x3box {
+    background: #17181c;
+    border: 1px solid #2a2b31;
+    padding: 24px;
+    border-radius: 24px;
+    text-align: center;
+    width: 85%;
+    max-width: 320px;
+}
 
-.right-stat{
-    opacity:0.85;
-    text-align:right;
-}
-
-#globalStats{
-    border:none;
-    box-shadow:none;
-}
-
-.task{
-    margin-top:12px;
-
-    --adsgram-task-font-size:14px;
-    --adsgram-task-icon-size:48px;
-    --adsgram-task-button-width:110px;
-    --adsgram-task-icon-border-radius:12px;
-}
-
-
-/* ---------------- DAILY STREAK ---------------- */
-
-.streak-grid{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:8px;
-    margin-top:18px;
-}
-
-.streak-day{
-    background:#151515;
-    border:1px solid #222;
-    border-radius:14px;
-    padding:10px 4px;
-    text-align:center;
-    transition:0.2s;
-}
-
-.streak-day.active{
-    background:#008cff;
-    border-color:#008cff;
-    transform:scale(1.05);
-}
-
-.streak-day.claimed{
-    background:#1c1c1e;
-    border-color:#2c2c2e;
-    opacity:0.5;
-}
-
-.streak-day.special{
-    background:#1a1200;
-    border-color:#ffb300;
-}
-
-.streak-num{
-    font-size:12px;
-    opacity:0.7;
-}
-
-.streak-reward{
-    margin-top:6px;
-    font-size:15px;
-    font-weight:700;
-}
-
-.streak-btn{
-    margin-top:18px;
-    font-size:16px;
-}
-
-/* ---------------- SUPPORT ---------------- */
-
-.support-text{
-    text-align:center;
-    color:#8e8e93;
-    font-size:13px;
-    line-height:1.5;
-    margin-bottom:12px;
-    padding:0 10px;
-}
-
-/* ---------------- DAILY QUESTS ---------------- */
-
-.tasksBlock{
-
-    background:#151515;
-
-    border:1px solid #262626;
-
-    border-radius:20px;
-
-    padding:16px;
+.x3box button:last-child {
+    background: #2a2b31;
+    color: #ccc;
+}
+
+/* ========== ИСТОРИЯ ВЫВОДОВ ========== */
+.history-item {
+    background: #1a1b20;
+    border: 1px solid #2a2b31;
+    border-radius: 18px;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+}
 
-    margin-top:18px;
+.status {
+    margin-top: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-
-.tasksBlockHeader{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:16px;
-}
-
-.tasksTitle{
-
-    font-size:17px;
-
-    font-weight:700;
-}
-
-#dailyQuestReset{
-
-    font-size:11px;
-
-    color:#8e8e93;
-
-    opacity:.9;
-}
-
-.dailyQuest{
-
-    background:#1d1d1f;
-
-    border:1px solid #2b2b2e;
-
-    border-radius:16px;
-
-    padding:14px;
-
-    margin-bottom:12px;
-
-    transition:.2s;
-}
-
-.dailyQuest:last-child{
-
-    margin-bottom:0;
-}
-
-.dailyQuestTop{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:flex-start;
-
-    gap:10px;
-
-    margin-bottom:12px;
-}
-
-.dailyQuestTitle{
 
-    font-size:14px;
-
-    font-weight:600;
-
-    line-height:1.35;
+.pending { color: #f59e0b; }
+.paid { color: #55ef8b; }
+.rejected { color: #ef4444; }
+
+/* ========== ИНФО ВЫВОДА ========== */
+.withdraw-info {
+    margin-top: 14px;
+    background: #1a1b20;
+    border: 1px solid #2a2b31;
+    border-radius: 16px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 2;
 }
 
-.dailyQuestReward{
+.info-title {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* ========== ЗАДАНИЯ (обычные) – обёртка в стиле daily ========== */
+.tasksBlock {
+    background: #151515;
+    border: 1px solid #262626;
+    border-radius: 20px;
+    padding: 16px;
+    margin-top: 18px;
+}
 
-    color:#ffd54f;
+.tasksBlockHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.tasksTitle {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* ========== DAILY QUESTS (исходный дизайн) ========== */
+#dailyQuestReset {
+    font-size: 11px;
+    color: #8e8e93;
+    opacity: .9;
+}
+
+.dailyQuest {
+    background: #1d1d1f;
+    border: 1px solid #2b2b2e;
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
+    transition: .2s;
+}
 
-    font-size:12px;
+.dailyQuest:last-child { margin-bottom: 0; }
 
-    font-weight:700;
-
-    white-space:nowrap;
+.dailyQuestTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
 }
-
-.dailyQuestProgress{
-
-    width:100%;
-
-    height:8px;
-
-    background:#2d2d30;
-
-    border-radius:999px;
 
-    overflow:hidden;
-
-    margin-bottom:12px;
+.dailyQuestTitle {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
 }
-
-.dailyQuestBar{
-
-    height:100%;
-
-    background:linear-gradient(
-        90deg,
-        #55ef8b,
-        #00d26a
-    );
 
-    width:0%;
-
-    transition:.3s;
+.dailyQuestReward {
+    color: #ffd54f;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
 }
-
-.dailyQuestBottom{
-
-    display:flex;
-
-    justify-content:space-between;
 
-    align-items:center;
-
-    gap:10px;
+.dailyQuestProgress {
+    width: 100%;
+    height: 8px;
+    background: #2d2d30;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 12px;
 }
-
-.dailyQuestText{
 
-    font-size:12px;
-
-    color:#8e8e93;
+.dailyQuestBar {
+    height: 100%;
+    background: linear-gradient(90deg, #55ef8b, #00d26a);
+    width: 0%;
+    transition: .3s;
 }
-
-.dailyQuestBtn{
-
-    border:none;
-
-    background:#55ef8b;
-
-    color:#000;
-
-    font-weight:700;
 
-    font-size:12px;
-
-    padding:8px 14px;
-
-    border-radius:12px;
-
-    cursor:pointer;
-
-    transition:.2s;
+.dailyQuestBottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
-.dailyQuestBtn:active{
-
-    transform:scale(.96);
+.dailyQuestText {
+    font-size: 12px;
+    color: #8e8e93;
 }
-
-.dailyQuestBtn:disabled{
-
-    background:#303033;
-
-    color:#8a8a8f;
-
-    cursor:default;
 
-    transform:none;
+.dailyQuestBtn {
+    border: none;
+    background: #55ef8b;
+    color: #000;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: .2s;
 }
 
-
-/* ---------------- GAME HUB ---------------- */
-
-.gameEnergyCard{
-
-    background:#17181c;
-
-    border:1px solid #2a2b31;
-
-    border-radius:24px;
-
-    padding:18px;
-
-    margin-bottom:16px;
+.dailyQuestBtn:active { transform: scale(.96); }
+.dailyQuestBtn:disabled {
+    background: #303033;
+    color: #8a8a8f;
+    cursor: default;
+    transform: none;
 }
-
-.energyTop{
 
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:14px;
+/* ========== DAILY STREAK (исходный дизайн) ========== */
+.streak-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 18px;
 }
-
-.energyTitle{
 
-    font-size:16px;
-
-    font-weight:700;
+.streak-day {
+    background: #151515;
+    border: 1px solid #222;
+    border-radius: 14px;
+    padding: 10px 4px;
+    text-align: center;
+    transition: 0.2s;
 }
-
-.energyCount{
 
-    font-size:16px;
-
-    font-weight:900;
-
-    color:#55ef8b;
+.streak-day.active {
+    background: #008cff;
+    border-color: #008cff;
+    transform: scale(1.05);
 }
-
-.energyBar{
+
+.streak-day.claimed {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+    opacity: 0.5;
+}
+
+.streak-day.special {
+    background: #1a1200;
+    border-color: #ffb300;
+}
 
-    width:100%;
-
-    height:12px;
-
-    background:#2a2b31;
-
-    border-radius:999px;
-
-    overflow:hidden;
+.streak-num {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.streak-reward {
+    margin-top: 6px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.streak-btn {
+    margin-top: 18px;
+    font-size: 16px;
 }
 
-.energyFill{
-
-    height:100%;
-
-    background:#3b82f6;
-
-    border-radius:999px;
+/* ========== GAME HUB ========== */
+.gameEnergyCard {
+    background: #17181c;
+    border: 1px solid #2a2b31;
+    border-radius: 24px;
+    padding: 18px;
+    margin-bottom: 16px;
 }
-
-.energyTimer{
-
-    margin-top:10px;
-
-    opacity:.7;
-
-    font-size:13px;
+
+.energyTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
 }
-
-/* ---------------- DIFFICULTY ---------------- */
-
-.gameDifficultyCard{
-
-    background:#17181c;
-
-    border:1px solid #2a2b31;
-
-    border-radius:24px;
-
-    padding:18px;
 
-    display:flex;
+.energyTitle { font-size: 16px; font-weight: 700; }
+.energyCount { font-size: 16px; font-weight: 900; color: #55ef8b; }
 
-    justify-content:space-between;
-
-    align-items:center;
+.energyBar {
+    width: 100%;
+    height: 12px;
+    background: #2a2b31;
+    border-radius: 999px;
+    overflow: hidden;
 }
-
-.difficultyLeft{
-
-    display:flex;
-
-    align-items:center;
 
-    gap:14px;
+.energyFill {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 999px;
+    transition: width 0.3s ease;
 }
-
-.difficultyIcon{
-
-    width:54px;
-    height:54px;
-
-    border-radius:18px;
-
-    background:#22232a;
 
-    display:flex;
+.energyTimer { margin-top: 10px; opacity: 0.7; font-size: 13px; }
 
-    align-items:center;
+/* Убраны стили gameDifficultyCard, difficultyLeft, difficultyIcon, difficultyTitle, difficultyWins, difficultyBadge, easyBadge,
+   так как сам блок удалён. Но если эти стили используются где-то ещё – не страшно, они просто не будут применяться. Оставим их в CSS,
+   чтобы ничего не сломать, но из HTML блок убран. */
 
-    justify-content:center;
-
-    font-size:28px;
+.gameCard {
+    background: #17181c;
+    border: 1px solid #2a2b31;
+    border-radius: 26px;
+    padding: 14px;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 18px;
 }
-
-.difficultyTitle{
 
-    font-size:18px;
-
-    font-weight:800;
+.gamePreview { width: 120px; min-width: 120px; }
+.gamePreview img { width: 100%; height: 170px; object-fit: cover; border-radius: 18px; }
+.gameInfo { flex: 1; display: flex; flex-direction: column; }
+.gameTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.gameName { font-size: 24px; font-weight: 900; line-height: 1.1; }
+.gameBadge { background: rgba(168,85,247,0.15); color: #c084fc; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 900; }
+.gameDescription { opacity: 0.75; font-size: 14px; line-height: 1.5; margin-bottom: 14px; }
+.gameMeta { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 16px; opacity: 0.9; }
+.gameStartBtn {
+    margin-top: auto;
+    width: 100%;
+    height: 52px;
+    border: none;
+    border-radius: 18px;
+    background: #3b82f6;
+    color: white;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
-
-.difficultyWins{
+.gameStartBtn:active { transform: scale(0.97); }
 
-    margin-top:4px;
-
-    font-size:13px;
-
-    opacity:.7;
+/* ========== ПРОЧЕЕ ========== */
+.support-text {
+    text-align: center;
+    color: #8e8e93;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    padding: 0 10px;
 }
-
-.difficultyBadge{
-
-    padding:8px 14px;
-
-    border-radius:14px;
 
-    font-size:13px;
-
-    font-weight:900;
+.task-item {
+    background: #1a1b20;
+    border: 1px solid #2a2b31;
+    border-radius: 20px;
+    padding: 16px;
+    margin-top: 12px;
 }
-
-.easyBadge{
 
-    background:rgba(85,239,139,.15);
-
-    color:#55ef8b;
+.task-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
-
-/* ---------------- GAME CARD ---------------- */
-
-.gameCard{
-
-    background:#17181c;
-
-    border:1px solid #2a2b31;
-
-    border-radius:26px;
 
-    padding:14px;
-
-    display:flex;
-
-    gap:14px;
-
-    margin-bottom:18px;
+.task-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
 }
-
-.gamePreview{
 
-    width:120px;
-
-    min-width:120px;
+.task-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: #22232a;
 }
-
-.gamePreview img{
-
-    width:100%;
-
-    height:170px;
-
-    object-fit:cover;
 
-    border-radius:18px;
+.task-title {
+    font-size: 15px;
+    font-weight: 700;
 }
 
-.gameInfo{
-
-    flex:1;
-
-    display:flex;
-
-    flex-direction:column;
+.task-reward {
+    opacity: 0.7;
+    font-size: 13px;
+    margin-top: 4px;
+    font-weight: 600;
 }
-
-.gameTop{
 
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:10px;
+.task-buttons {
+    display: flex;
+    gap: 8px;
 }
-
-.gameName{
 
-    font-size:24px;
-
-    font-weight:900;
-
-    line-height:1.1;
+.task-buttons button {
+    width: auto;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.2px;
 }
-
-.gameBadge{
-
-    background:rgba(168,85,247,.15);
 
-    color:#c084fc;
-
-    padding:6px 12px;
-
-    border-radius:12px;
-
-    font-size:12px;
-
-    font-weight:900;
+.task-buttons button:first-child {
+    background: #22232a;
+    color: #fff;
+    border: 1px solid #2a2b31;
 }
-
-.gameDescription{
 
-    opacity:.75;
-
-    font-size:14px;
-
-    line-height:1.5;
-
-    margin-bottom:14px;
+.task-buttons button:last-child {
+    background: #3b82f6;
 }
-
-.gameMeta{
 
-    display:flex;
+.daily-box { margin-top: 14px; }
+.promo-btn { margin-top: 12px; }
 
-    justify-content:space-between;
-
-    font-size:13px;
-
-    margin-bottom:16px;
-
-    opacity:.9;
+.global-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    padding: 4px 2px;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
 }
-
-.gameStartBtn{
 
-    margin-top:auto;
+.left-stat { opacity: 0.8; }
+.right-stat { opacity: 0.8; text-align: right; }
+#globalStats { border: none; box-shadow: none; }
 
-    width:100%;
-
-    height:52px;
-
-    border:none;
-
-    border-radius:18px;
-
-    background:#3b82f6;
-
-    color:white;
-
-    font-size:16px;
-
-    font-weight:900;
-
-    cursor:pointer;
-}
-    
-    
+/* Скроллбар */
+.page::-webkit-scrollbar { width: 4px; }
+.page::-webkit-scrollbar-track { background: transparent; }
+.page::-webkit-scrollbar-thumb { background: #2a2b31; border-radius: 4px; }
 </style>
 </head>
 
@@ -846,20 +600,13 @@ input{
 
 <div class="app">
 
-<!-- FAUCET -->
+<!-- FAUCET (без верхнего заголовка) -->
 <div id="faucet" class="page active">
 
-    <div class="card global-stats">
-
-    <div class="left-stat">
-        👥 <span id="usersCount">0</span> users
+    <div class="card global-stats" id="globalStats">
+        <div class="left-stat">👥 <span id="usersCount">0</span> users</div>
+        <div class="right-stat">🦴 <span id="earnedCount">0</span> DOGS</div>
     </div>
-
-    <div class="right-stat">
-        🦴 <span id="earnedCount">0</span> DOGS
-    </div>
-
-</div>
 
     <div class="card">
         <div id="balance1" class="balance">
@@ -867,34 +614,29 @@ input{
                 <span class="num">0</span>
                 <span class="unit">DOGS</span>
             </div>
-
-            <div class="user">
-                <img id="avatar">
-            </div>
+            <div class="user"><img id="avatar"></div>
         </div>
     </div>
+
     <div class="center">
-        <video
-            src="dog.mp4"
-            autoplay
-            loop
-            muted
-            playsinline
-            style="width:400px;border-radius:12px;"
-        ></video>
+        <video src="dog.mp4" autoplay loop muted playsinline
+               style="width: 280px; height: 280px; border-radius: 20px; object-fit: cover;"></video>
     </div>
 
     <div class="support-text">
         Please interact with ads to help maintain the current reward rate ❤️
     </div>
 
-    <button id="claimBtn" class="claim-btn" onclick="claim()">
-        Loading...
-    </button>
+    <button id="claimBtn" class="claim-btn" onclick="claim()">Loading...</button>
 </div>
 
-<!-- WITHDRAW -->
+<!-- WALLET (бывший Withdraw) -->
 <div id="withdraw" class="page">
+
+    <div style="margin-bottom:18px;">
+        <div style="font-size:32px;font-weight:900;">💸 Wallet</div>
+        <div style="margin-top:4px;opacity:.7;font-size:14px;">Withdraw your earnings</div>
+    </div>
 
     <div class="card">
         <div id="balance2" class="balance">
@@ -902,570 +644,209 @@ input{
                 <span class="num">0</span>
                 <span class="unit">DOGS</span>
             </div>
-
-            <div class="user">
-                <img id="avatar2">
-            </div>
+            <div class="user"><img id="avatar2"></div>
         </div>
     </div>
 
     <div class="card">
-
-        <div class="info-title">
-            Minimum withdraw: 14000 DOGS<br>
-            Network fee: 1700 DOGS
-        </div>
-
+        <div class="info-title">Minimum withdraw: 14000 DOGS<br>Network fee: 1700 DOGS</div>
         <input id="wallet" placeholder="TON wallet">
         <input id="memo" placeholder="Memo (optional)">
-        <input
-            id="amount"
-            type="number"
-            placeholder="Amount"
-            oninput="updateWithdrawInfo()"
-        >
-
+        <input id="amount" type="number" placeholder="Amount" oninput="updateWithdrawInfo()">
         <div class="withdraw-info">
-            <div>
-                Withdraw: <span id="withdrawAmount">0</span>
-            </div>
-
-            <div>
-                Receive: <span id="receiveAmount">0</span>
-            </div>
-
-            <div>
-                Fee: <span id="feeAmount">1700</span>
-            </div>
+            <div>Withdraw: <span id="withdrawAmount">0</span></div>
+            <div>Receive: <span id="receiveAmount">0</span></div>
+            <div>Fee: <span id="feeAmount">1700</span></div>
         </div>
-
     </div>
 
-    <button onclick="withdraw()">
-        WITHDRAW
-    </button>
+    <button onclick="withdraw()" style="margin-top: 14px;">WITHDRAW</button>
 
     <div class="card">
-
-        <h3 style="margin-top:0;">
-            📜 Withdraw history
-        </h3>
-
-        <div id="withdrawHistory">
-            No withdraws
-        </div>
-
+        <h3 style="margin-top:0; font-size:18px; font-weight:800;">📜 Withdraw history</h3>
+        <div id="withdrawHistory">No withdraws</div>
     </div>
-
 </div>
 
 <!-- TASKS -->
 <div id="tasks" class="page">
 
-    <!-- DAILY BONUS -->
     <!-- DAILY STREAK -->
-<div class="card daily-box">
+    <div class="card daily-box">
+        <div style="font-size:20px;font-weight:700;">🔥 Daily Streak</div>
+        <div style="opacity:0.7;margin-top:6px;font-size:14px;line-height:1.5;">
+            Login every day and keep your streak alive.<br>
+            Watch ads and earn bigger rewards daily.
+        </div>
 
-    <div style="font-size:20px;font-weight:700;">
-        🔥 Daily Streak
+        <div class="streak-grid">
+            <div class="streak-day" id="day1"><div class="streak-num">1</div><div class="streak-reward">50</div></div>
+            <div class="streak-day" id="day2"><div class="streak-num">2</div><div class="streak-reward">60</div></div>
+            <div class="streak-day" id="day3"><div class="streak-num">3</div><div class="streak-reward">70</div></div>
+            <div class="streak-day" id="day4"><div class="streak-num">4</div><div class="streak-reward">80</div></div>
+            <div class="streak-day" id="day5"><div class="streak-num">5</div><div class="streak-reward">90</div></div>
+            <div class="streak-day" id="day6"><div class="streak-num">6</div><div class="streak-reward">100</div></div>
+            <div class="streak-day special" id="day7"><div class="streak-num">7</div><div class="streak-reward">150</div></div>
+        </div>
+
+        <button id="dailyBtn" class="streak-btn" onclick="dailyBonus()">CLAIM STREAK REWARD</button>
     </div>
 
-    <div style="
-        opacity:0.7;
-        margin-top:6px;
-        font-size:14px;
-        line-height:1.5;
-    ">
-        Login every day and keep your streak alive.<br>
-        Watch ads and earn bigger rewards daily.
-    </div>
-
-    <!-- STREAK DAYS -->
-    <div class="streak-grid">
-
-        <div class="streak-day" id="day1">
-            <div class="streak-num">1</div>
-            <div class="streak-reward">50</div>
-        </div>
-
-        <div class="streak-day" id="day2">
-            <div class="streak-num">2</div>
-            <div class="streak-reward">60</div>
-        </div>
-
-        <div class="streak-day" id="day3">
-            <div class="streak-num">3</div>
-            <div class="streak-reward">70</div>
-        </div>
-
-        <div class="streak-day" id="day4">
-            <div class="streak-num">4</div>
-            <div class="streak-reward">80</div>
-        </div>
-
-        <div class="streak-day" id="day5">
-            <div class="streak-num">5</div>
-            <div class="streak-reward">90</div>
-        </div>
-
-        <div class="streak-day" id="day6">
-            <div class="streak-num">6</div>
-            <div class="streak-reward">100</div>
-        </div>
-
-        <div class="streak-day special" id="day7">
-            <div class="streak-num">7</div>
-            <div class="streak-reward">150</div>
-        </div>
-
-    </div>
-
-    <button
-        id="dailyBtn"
-        class="streak-btn"
-        onclick="dailyBonus()"
-    >
-        CLAIM STREAK REWARD
-    </button>
-
-</div>
-
+    <!-- DAILY QUESTS (исходный дизайн) -->
     <div class="tasksBlock">
-
         <div class="tasksBlockHeader">
-
-            <div class="tasksTitle">
-                ⏳Daily Quests
-            </div>
-
-            <div id="dailyQuestReset">
-                ⏳ Updating...
-            </div>
-
+            <div class="tasksTitle">⏳ Daily Quests</div>
+            <div id="dailyQuestReset">⏳ Updating...</div>
         </div>
-
         <div id="dailyQuests"></div>
-
     </div>
 
     <!-- PROMO -->
     <div class="card">
-
-        <div style="font-size:18px;font-weight:700;">
-            🎟 Promo Code
-        </div>
-
-        <input
-            id="promoInput"
-            placeholder="Enter promo code"
-        >
-
-        <button
-            class="promo-btn"
-            onclick="activatePromo()"
-        >
-            ACTIVATE
-        </button>
-
+        <div style="font-size:18px;font-weight:800;">🎟 Promo Code</div>
+        <input id="promoInput" placeholder="Enter promo code">
+        <button class="promo-btn" onclick="activatePromo()">ACTIVATE</button>
     </div>
 
-    <div class="card">
-        <div style="font-size:20px;font-weight:700;">
-            📋 Tasks
+    <!-- ОБЫЧНЫЕ ЗАДАНИЯ -->
+    <div class="tasksBlock">
+        <div class="tasksBlockHeader">
+            <div class="tasksTitle">📋 Tasks</div>
         </div>
-
-        <div style="opacity:0.7;margin-top:5px;">
-            Subscribe and earn DOGS
-        </div>
+        <div id="tasksList"></div>
     </div>
 
-    <div id="tasksList"></div>
-
+    <!-- SPECIAL OFFERS -->
     <div class="card">
-
-        <div style="font-size:18px;font-weight:700;">
-            🚀 Special Offers (60 Dogs)
-        </div>
-
+        <div style="font-size:18px;font-weight:800;">🚀 Special Offers (60 Dogs)</div>
         <div id="specialOfferWrapper">
-
-            <adsgram-task
-                id="specialOfferTask"
-                data-block-id="task-30046"
-                class="task"
-                style="margin-top:12px;display:block;"
-            ></adsgram-task>
-
-            <div
-                id="specialOfferTimer"
-                style="
-                    display:none;
-                    margin-top:12px;
-                    background:#111;
-                    border-radius:16px;
-                    padding:18px;
-                    text-align:center;
-                    font-weight:700;
-                    font-size:18px;
-                "
-            >
+            <adsgram-task id="specialOfferTask" data-block-id="task-30046" class="task"
+                          style="margin-top:12px;display:block;"></adsgram-task>
+            <div id="specialOfferTimer" style="display:none;margin-top:12px;background:#111;border-radius:16px;padding:18px;text-align:center;font-weight:700;font-size:18px;">
                 ⏳ 30:00
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 <!-- REF -->
 <div id="ref" class="page">
-        <h2 style="margin:0 0 16px 0">Referral</h2>
-        
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="color: #8e8e93; font-size: 14px;">Referral Balance</span>
-                    <h2 id="refBalance" style="margin: 5px 0 0 0; font-size: 28px;">0.00</h2>
-                </div>
-                <div style="text-align: right;">
-                    <span style="color: #8e8e93; font-size: 14px;">Total Friends</span>
-                    <h3 id="refCount" style="margin: 5px 0 0 0;">0</h3>
-                </div>
+    <div style="margin-bottom: 18px;">
+        <div style="font-size: 32px; font-weight: 900;">👥 Referral</div>
+        <div style="margin-top: 4px; opacity: 0.7; font-size: 14px;">Invite friends and earn together</div>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="color: #8e8e93; font-size: 14px;">Referral Balance</span>
+                <h2 id="refBalance" style="margin: 5px 0 0 0; font-size: 28px; font-weight: 900;">0.00</h2>
+            </div>
+            <div style="text-align: right;">
+                <span style="color: #8e8e93; font-size: 14px;">Total Friends</span>
+                <h3 id="refCount" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900;">0</h3>
             </div>
         </div>
+    </div>
 
-        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn-primary" onclick="claimRef()">Claim Reward</button>
-            <button class="btn-primary" onclick="inviteFriend()" style="background:#1c1c1e; color:white; border:1px solid #333">Invite Friends</button>
-        </div>
+    <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
+        <button onclick="claimRef()" style="background:#3b82f6;">Claim Reward</button>
+        <button onclick="inviteFriend()" style="background:#22232a; color:white; border:1px solid #2a2b31;">Invite Friends</button>
+    </div>
 
-        <div class="card" style="background: #111; margin-top: 20px;">
-            <p style="color:#8e8e93; font-size:14px; margin: 0; line-height: 1.5;">
-                Invite your friends and earn <b>10%</b> of their earnings! Tokens are added to your referral balance immediately after they claim.
-            </p>
-        </div>
-
+    <div class="card" style="margin-top: 16px;">
+        <p style="color:#8e8e93; font-size:14px; margin: 0; line-height: 1.6;">
+            Invite your friends and earn <b>10%</b> of their earnings! Tokens are added to your referral balance immediately after they claim.
+        </p>
+    </div>
 </div>
 
+<!-- GAMES (без блока Daily Difficulty) -->
 <div id="games" class="page">
-
-    <!-- HEADER -->
-
     <div style="margin-bottom:18px;">
-
-        <div style="
-            font-size:32px;
-            font-weight:900;
-        ">
-            🎮 GameHub
-        </div>
-
-        <div style="
-            margin-top:4px;
-            opacity:.7;
-            font-size:14px;
-        ">
-            Play games and earn DOGS
-        </div>
-
+        <div style="font-size:32px;font-weight:900;">🎮 GameHub</div>
+        <div style="margin-top:4px;opacity:.7;font-size:14px;">Play games and earn DOGS</div>
     </div>
-
-    <!-- ENERGY -->
-
-    <!-- ENERGY -->
 
     <div class="gameEnergyCard">
-
         <div class="energyTop">
-
-            <div class="energyTitle">
-                🔋 Energy 🔋
-            </div>
-
-            <div
-                class="energyCount"
-                id="gamesEnergy"
-            >
-                15 / 15
-            </div>
-
-            <button
-                id="restoreEnergyBtn"
-                onclick="watchEnergyAd()"
-                style="
-                    display:none;
-                    margin-top:6px;
-                    border:none;
-                    border-radius:8px;
-                    padding:6px 10px;
-                    background:#55ef8b;
-                    color:black;
-                    font-size:11px;
-                    font-weight:800;
-                    cursor:pointer;
-                    width:auto;
-                "
-            >
-                Watch Ad +10 Energy
-            </button>
-
+            <div class="energyTitle">🔋 Energy</div>
+            <div class="energyCount" id="gamesEnergy">15 / 15</div>
         </div>
-
+        <button id="restoreEnergyBtn" onclick="watchEnergyAd()"
+                style="display:none;margin-top:6px;border:none;border-radius:14px;padding:10px 16px;background:#55ef8b;color:black;font-size:13px;font-weight:800;cursor:pointer;width:auto;transition:all 0.2s;">
+            Watch Ad +10 Energy
+        </button>
         <div class="energyBar">
-
-            <div
-                class="energyFill"
-                id="gamesEnergyFill"
-                style="width:100%;"
-            ></div>
-
+            <div class="energyFill" id="gamesEnergyFill" style="width:100%;"></div>
         </div>
-
-        <div
-            class="energyTimer"
-            id="gamesRestore"
-        >
-            Full energy
-        </div>
-
+        <div class="energyTimer" id="gamesRestore">Full energy</div>
     </div>
 
-    <!-- DAILY DIFFICULTY -->
+    <!-- Блок Daily Difficulty удалён -->
 
-    <div class="gameDifficultyCard">
-
-        <div class="difficultyLeft">
-
-            <div class="difficultyIcon">
-                🏆
-            </div>
-
-            <div>
-
-                <div class="difficultyTitle">
-                    Daily Difficulty
-                </div>
-
-                <div class="difficultyWins">
-                    Wins today: 2 / 6
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="difficultyBadge easyBadge">
-            EASY
-        </div>
-
-    </div>
-
-    <!-- GAMES TITLE -->
-
-    <div style="
-        margin-top:24px;
-        margin-bottom:14px;
-        font-size:20px;
-        font-weight:800;
-    ">
-        Available Games
-    </div>
-
-    <!-- GAME CARD -->
+    <div style="margin-top:24px;margin-bottom:14px;font-size:20px;font-weight:800;">Available Games</div>
 
     <div class="gameCard">
-
-        <!-- IMAGE -->
-
-        <div class="gamePreview">
-
-            <img src="games/flappy/preview.png">
-
-        </div>
-
-        <!-- INFO -->
-
+        <div class="gamePreview"><img src="games/flappy/preview.png" alt="Flappy DOGS"></div>
         <div class="gameInfo">
-
             <div class="gameTop">
-
-                <div class="gameName">
-                    Flappy DOGS
-                </div>
-
-                <div class="gameBadge">
-                    EASY
-                </div>
-
+                <div class="gameName">Flappy DOGS</div>
+                <div class="gameBadge">EASY</div>
             </div>
-
-            <div class="gameDescription">
-
-                Survive for 40 seconds
-                and earn DOGS rewards.
-
-            </div>
-
+            <div class="gameDescription">Survive for 40 seconds and earn DOGS rewards.</div>
             <div class="gameMeta">
-
-                <div class="gameReward">
-                    💰 5 DOGS
-                </div>
-
-                <div class="gameTime">
-                    ⏱ 40 SEC
-                </div>
-
+                <div>💰 5 DOGS</div>
+                <div>⏱ 40 SEC</div>
             </div>
-
-            <button
-                class="gameStartBtn"
-                id="playFlappyBtn"
-                onclick="startFlappyGame(this)"
-            >
-                ▶ PLAY
-            </button>
-
+            <button class="gameStartBtn" id="playFlappyBtn" onclick="startFlappyGame(this)">▶ PLAY</button>
         </div>
-
     </div>
-
 </div>
 
 <!-- OFFERWALL -->
 <div id="offerwall" class="page">
-
-    <div class="card">
-
-        <div style="font-size:22px;font-weight:700;">
-            🎁 Offerwalls
-        </div>
-
-        <div style="
-            opacity:0.7;
-            margin-top:6px;
-            line-height:1.5;
-        ">
-            Complete offers, surveys and tasks to earn DOGS rewards
-        </div>
-
+    <div style="margin-bottom:18px;">
+        <div style="font-size:32px;font-weight:900;">🎁 Offerwalls</div>
+        <div style="margin-top:4px;opacity:.7;font-size:14px;">Complete offers and earn DOGS</div>
     </div>
 
-    <!-- BITCOTASKS BLOCK -->
-
-    <div class="card" style="margin-top:14px;">
-
-        <div style="
-            display:flex;
-            align-items:center;
-            gap:14px;
-        ">
-
-            <img
-                src="https://bitcotasks.com/assets/img/logo.png"
-                style="
-                    width:54px;
-                    height:54px;
-                    border-radius:14px;
-                    object-fit:cover;
-                    background:#111;
-                    padding:6px;
-                "
-            >
-
+    <div class="card" style="margin-top:0;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <img src="https://bitcotasks.com/assets/img/logo.png"
+                 style="width:54px;height:54px;border-radius:16px;object-fit:cover;background:#1a1b20;padding:8px;border:1px solid #2a2b31;">
             <div style="flex:1;">
-
-                <div style="
-                    font-size:17px;
-                    font-weight:700;
-                ">
-                    BitcoTasks
-                </div>
-
-                <div style="
-                    opacity:0.7;
-                    font-size:13px;
-                    margin-top:4px;
-                    line-height:1.4;
-                ">
-                    Complete offers and get instant DOGS rewards directly to your balance
-                </div>
-
+                <div style="font-size:17px;font-weight:800;">BitcoTasks</div>
+                <div style="opacity:0.7;font-size:13px;margin-top:4px;line-height:1.4;">Complete offers and get instant DOGS rewards directly to your balance</div>
             </div>
-
         </div>
-
-        <button
-            onclick="openBitcoTasks()"
-            style="margin-top:16px;"
-        >
-            OPEN OFFERWALL
-        </button>
-
+        <button onclick="openBitcoTasks()" style="margin-top:16px;">OPEN OFFERWALL</button>
     </div>
-
 </div>
-    
 
-<!-- NAV -->
+<!-- НАВИГАЦИЯ -->
 <div class="nav">
-
-    <div class="nav-item active" onclick="tab('faucet', this)">
-        <span>🐶</span>
-        Claim
-    </div>
-
-    <div class="nav-item" onclick="tab('withdraw', this)">
-        <span>💸</span>
-        Withdraw
-    </div>
-
-    <div class="nav-item" onclick="tab('tasks', this)">
-        <span>📋</span>
-        Tasks
-    </div>
-
-    <div class="nav-item" onclick="tab('games', this)">
-        <span>🎮</span>
-        Games
-    </div>
-
-    <div class="nav-item" onclick="tab('offerwall', this)">
-        <span>🎁</span>
-        Offerwall
-    </div>
-
-    <div class="nav-item" onclick="tab('ref', this)">
-        <span>👥</span>
-        Ref
-    </div>
-    
+    <div class="nav-item active" onclick="tab('faucet', this)"><span>🐶</span>Faucet</div>
+    <div class="nav-item" onclick="tab('withdraw', this)"><span>💸</span>Wallet</div>
+    <div class="nav-item" onclick="tab('tasks', this)"><span>📋</span>Tasks</div>
+    <div class="nav-item" onclick="tab('games', this)"><span>🎮</span>Games</div>
+    <div class="nav-item" onclick="tab('offerwall', this)"><span>🎁</span>Offerwall</div>
+    <div class="nav-item" onclick="tab('ref', this)"><span>👥</span>Ref</div>
 </div>
 
-<!-- X3 -->
+<!-- X3 MODAL -->
 <div id="x3modal">
-
     <div class="x3box">
-
-        <div style="margin-bottom:15px;font-size:18px;">
-            Multiply reward x3?
-        </div>
-
-        <button id="x3Btn" onclick="watchX3()" style="margin-bottom:10px;">
-            Watch ad x3
-        </button>
-
-        <button onclick="closeX3()" style="background:#333;">
-            No thanks
-        </button>
-
+        <div style="margin-bottom:15px;font-size:18px;font-weight:700;">Multiply reward x3?</div>
+        <button id="x3Btn" onclick="watchX3()" style="margin-bottom:10px;">Watch ad x3</button>
+        <button onclick="closeX3()" style="background:#2a2b31;">No thanks</button>
     </div>
+</div>
 
 </div>
 
 <script>
-
+// Весь JavaScript без изменений
 const tg = window.Telegram.WebApp;
 tg.expand();
 
@@ -1477,681 +858,292 @@ const API = "https://dogs-7ntt.onrender.com";
 const MIN_WITHDRAW = 14000;
 const WITHDRAW_FEE = 1700;
 
-const AdController = window.Adsgram.init({
-    blockId: "29657"
-});
+const AdController = window.Adsgram.init({ blockId: "29657" });
 
 let cooldown = 0;
 let timerInterval = null;
 let specialOfferInterval = null;
 let dailyQuestTimer = null;
 
-// ---------------- TABS ----------------
-
 function tab(id, el){
-
-    document.querySelectorAll(".page")
-        .forEach(p => p.classList.remove("active"));
-
-    document.getElementById(id)
-        .classList.add("active");
-
-    document.querySelectorAll(".nav-item")
-        .forEach(n => n.classList.remove("active"));
-
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
     el.classList.add("active");
-
-    if(id === "withdraw"){
-        loadWithdrawHistory();
-    }
-
-    if(id === "tasks"){
-        loadTasks();
-    }
-
-    if(id === "games"){
-        loadGamesStatus();
-    }
-
+    if(id === "withdraw") loadWithdrawHistory();
+    if(id === "tasks") loadTasks();
+    if(id === "games") loadGamesStatus();
     if(id === 'ref') loadRefInfo();
-
-    
-
 }
 
-// ---------------- X3 ----------------
-
-function showX3(){
-    document.getElementById("x3modal").style.display = "flex";
-}
-
-function closeX3(){
-    document.getElementById("x3modal").style.display = "none";
-}
-
-// ---------------- USER ----------------
+function showX3(){ document.getElementById("x3modal").style.display = "flex"; }
+function closeX3(){ document.getElementById("x3modal").style.display = "none"; }
 
 function loadUser(){
-
     const user = tg.initDataUnsafe?.user;
-
     if(user?.photo_url){
         avatar.src = user.photo_url;
         avatar2.src = user.photo_url;
     }
 }
 
-// ---------------- BALANCE ----------------
-
 function setBalance(id, value){
-
-    document.getElementById(id)
-        .querySelector(".num")
-        .innerText = value;
+    document.getElementById(id).querySelector(".num").innerText = value;
 }
-
-// ---------------- WITHDRAW INFO ----------------
 
 function updateWithdrawInfo(){
-
-    const amount = Number(
-        document.getElementById("amount").value || 0
-    );
-
+    const amount = Number(document.getElementById("amount").value || 0);
     let receive = amount - WITHDRAW_FEE;
-
-    if(receive < 0){
-        receive = 0;
-    }
-
-    document.getElementById("withdrawAmount")
-        .innerText = amount;
-
-    document.getElementById("receiveAmount")
-        .innerText = receive;
-
-    document.getElementById("feeAmount")
-        .innerText = WITHDRAW_FEE;
+    if(receive < 0) receive = 0;
+    document.getElementById("withdrawAmount").innerText = amount;
+    document.getElementById("receiveAmount").innerText = receive;
+    document.getElementById("feeAmount").innerText = WITHDRAW_FEE;
 }
 
-// ---------------- STATUS ----------------
-
 async function loadStatus(){
-
     const r = await fetch(API + "/status", {
         method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            init_data: tg.initData
-        })
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({init_data: tg.initData})
     });
-
     const d = await r.json();
-
     setBalance("balance1", d.balance);
     setBalance("balance2", d.balance);
-
     const btn = claimBtn;
-
     if(d.remaining > 0){
-
         cooldown = d.remaining;
-
         btn.disabled = true;
-
         clearInterval(timerInterval);
-
         timerInterval = setInterval(()=>{
-
             if(cooldown <= 0){
-
                 btn.innerText = "CLAIM";
                 btn.disabled = false;
-
                 clearInterval(timerInterval);
-
                 return;
             }
-
             let m = Math.floor(cooldown / 60);
             let s = cooldown % 60;
-
-            btn.innerText =
-                `${m}:${s.toString().padStart(2,"0")}`;
-
+            btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
             cooldown--;
-
         },1000);
-
     }else{
-
         btn.innerText = "CLAIM";
         btn.disabled = false;
     }
 }
 
-// ---------------- CLAIM ----------------
-
 async function claim(){
-
     const btn = claimBtn;
-
     btn.disabled = true;
     btn.innerText = "Loading...";
-
     try{
-
         const r = await fetch(API + "/claim", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData,
-                device: navigator.userAgent
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData, device: navigator.userAgent})
         });
-
         const d = await r.json();
-
         if(d.ok){
-
-            tg.showPopup?.({
-                message: "+" + d.reward + " DOGS"
-            });
-
+            tg.showPopup?.({message: "+" + d.reward + " DOGS"});
             loadStatus();
-
-            setTimeout(()=>{
-                showX3();
-            },300);
-
+            setTimeout(()=>{ showX3(); },300);
         }else{
-
-            tg.showPopup?.({
-                message: d.error
-            });
-
+            tg.showPopup?.({message: d.error});
             btn.disabled = false;
             btn.innerText = "CLAIM";
         }
-
     }catch(e){
-
         btn.disabled = false;
         btn.innerText = "CLAIM";
     }
 }
 
-// ---------------- DAILY BONUS ----------------
-
-// ---------------- DAILY BONUS ----------------
-
 let dailyTimerInterval = null;
-
 async function dailyBonus(){
-
     const btn = document.getElementById("dailyBtn");
-
-    // если уже идет таймер — не даем нажимать
-    if(btn.dataset.locked === "1"){
-        return;
-    }
-
+    if(btn.dataset.locked === "1") return;
     btn.disabled = true;
     btn.innerText = "Loading...";
-
     try{
-
         await AdController.show();
-
         const r = await fetch(API + "/daily_bonus", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
         });
-
         const d = await r.json();
-
         if(d.ok){
-
-            tg.showPopup?.({
-                message:`+${d.reward} DOGS`
-            });
-
+            tg.showPopup?.({message:`+${d.reward} DOGS`});
             loadStatus();
-
             updateDailyStreak((d.streak_day % 7) + 1);
-
             startDailyCooldown(86400);
-
         }else{
-
-            tg.showPopup?.({
-                message:d.error || "Already claimed"
-            });
-
-            // если уже забрал — тоже запускаем таймер
-            if(d.error === "already_claimed"){
-
-                loadDailyStatus();
-
-            }else{
-
+            tg.showPopup?.({message:d.error || "Already claimed"});
+            if(d.error === "already_claimed") loadDailyStatus();
+            else{
                 btn.disabled = false;
                 btn.innerText = "CLAIM STREAK REWARD";
             }
         }
-
     }catch(e){
-
-        tg.showPopup?.({
-            message:"Ad failed"
-        });
-
+        tg.showPopup?.({message:"Ad failed"});
         btn.disabled = false;
         btn.innerText = "CLAIM STREAK REWARD";
     }
 }
 
-
-// ---------------- DAILY TIMER ----------------
-
 function startDailyCooldown(seconds){
-
     const btn = document.getElementById("dailyBtn");
-
     btn.dataset.locked = "1";
-
     clearInterval(dailyTimerInterval);
-
     let timeLeft = seconds;
-
     function update(){
-
         if(timeLeft <= 0){
-
             clearInterval(dailyTimerInterval);
-
             btn.disabled = false;
             btn.dataset.locked = "0";
             btn.innerText = "CLAIM DAILY BONUS";
-
             return;
         }
-
         const h = Math.floor(timeLeft / 3600);
         const m = Math.floor((timeLeft % 3600) / 60);
         const s = timeLeft % 60;
-
         btn.disabled = true;
-
-        btn.innerText =
-            `${h}h ${m}m ${s}s`;
-
+        btn.innerText = `${h}h ${m}m ${s}s`;
         timeLeft--;
     }
-
     update();
-
     dailyTimerInterval = setInterval(update, 1000);
 }
 
-
-// ---------------- DAILY STREAK UI ----------------
-
 function updateDailyStreak(day){
-
-    // очистка
-    document.querySelectorAll(".streak-day")
-        .forEach(el => {
-            el.classList.remove("active");
-            el.classList.remove("claimed");
-        });
-
-    // предыдущие дни = claimed
+    document.querySelectorAll(".streak-day").forEach(el => {
+        el.classList.remove("active");
+        el.classList.remove("claimed");
+    });
     for(let i = 1; i < day; i++){
-
         const el = document.getElementById(`day${i}`);
-
-        if(el){
-            el.classList.add("claimed");
-        }
+        if(el) el.classList.add("claimed");
     }
-
-    // текущий день
     const current = document.getElementById(`day${day}`);
-
-    if(current){
-        current.classList.add("active");
-    }
+    if(current) current.classList.add("active");
 }
-
-// ---------------- LOAD DAILY STATUS ----------------
 
 async function loadDailyStatus(){
-
     try{
-
         const r = await fetch(API + "/daily_bonus/status", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
         });
-
         const d = await r.json();
-
-        // streak UI
         updateDailyStreak(d.streak_day || 1);
-
         const btn = document.getElementById("dailyBtn");
-
-        // cooldown active
         if(d.ok && d.remaining > 0){
-
             startDailyCooldown(d.remaining);
-
         }else{
-
             btn.disabled = false;
             btn.dataset.locked = "0";
-
-            // текст кнопки с наградой
-            btn.innerText =
-                `CLAIM ${d.reward || 50} DOGS`;
+            btn.innerText = `CLAIM ${d.reward || 50} DOGS`;
         }
-
-    }catch(e){
-
-        console.log(e);
-    }
+    }catch(e){ console.log(e); }
 }
 
-// ---------------- PROMO ----------------
-
 async function activatePromo(){
-
-    const code = document
-        .getElementById("promoInput")
-        .value
-        .trim();
-
-    if(!code){
-
-        tg.showPopup?.({
-            message:"Enter promo code"
-        });
-
-        return;
-    }
-
+    const code = document.getElementById("promoInput").value.trim();
+    if(!code){ tg.showPopup?.({message:"Enter promo code"}); return; }
     try{
-
-        // реклама ДО активации промокода
         await AdController.show();
-
         const r = await fetch(API + "/promo/activate", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData,
-                code
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData, code})
         });
-
         const d = await r.json();
-
         if(d.ok){
-
-            tg.showPopup?.({
-                message:`Promo activated +${d.reward} DOGS`
-            });
-
+            tg.showPopup?.({message:`Promo activated +${d.reward} DOGS`});
             document.getElementById("promoInput").value = "";
-
             loadStatus();
-
         }else{
-
-            tg.showPopup?.({
-                message:d.error || "Promo failed"
-            });
+            tg.showPopup?.({message:d.error || "Promo failed"});
         }
-
-    }catch(e){
-
-        tg.showPopup?.({
-            message:"Ad failed"
-        });
-    }
+    }catch(e){ tg.showPopup?.({message:"Ad failed"}); }
 }
 
 let gamesTimerInterval = null;
 
-// ---------- GAME STATUS ----------
-
 async function loadGamesStatus(){
-
     try{
-
-        const r = await fetch(
-
-            API + "/games/status",
-
-            {
-                method:"POST",
-
-                headers:{
-                    "Content-Type":"application/json"
-                },
-
-                body:JSON.stringify({
-
-                    init_data:
-                        Telegram.WebApp.initData
-                })
-            }
-        );
-
+        const r = await fetch(API + "/games/status", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: Telegram.WebApp.initData})
+        });
         const data = await r.json();
-
         if(!data.ok) return;
-
-        const restoreBtn =
-            document.getElementById("restoreEnergyBtn");
-
-        if(data.energy <= 0){
-
-            restoreBtn.style.display = "block";
-
-        }else{
-
-            restoreBtn.style.display = "none";
-        }
-
-        // ---------- energy text ----------
-
-        document.getElementById(
-            "gamesEnergy"
-        ).innerText =
-
-            `${data.energy} / ${data.max_energy}`;
-
-        // ---------- progress bar ----------
-
-        const percent =
-
-            (data.energy / data.max_energy)
-            * 100;
-
-        document.getElementById(
-            "gamesEnergyFill"
-        ).style.width =
-
-            percent + "%";
-
-        // ---------- timer ----------
-
+        const restoreBtn = document.getElementById("restoreEnergyBtn");
+        if(data.energy <= 0) restoreBtn.style.display = "block";
+        else restoreBtn.style.display = "none";
+        document.getElementById("gamesEnergy").innerText = `${data.energy} / ${data.max_energy}`;
+        const percent = (data.energy / data.max_energy) * 100;
+        document.getElementById("gamesEnergyFill").style.width = percent + "%";
         if(data.energy >= data.max_energy){
-
-            document.getElementById(
-                "gamesRestore"
-            ).innerText =
-                "Full energy";
-
-            if(gamesTimerInterval){
-
-                clearInterval(
-                    gamesTimerInterval
-                );
-            }
-
+            document.getElementById("gamesRestore").innerText = "Full energy";
+            if(gamesTimerInterval) clearInterval(gamesTimerInterval);
         }else{
-
-            startEnergyTimer(
-                data.next_restore
-            );
+            startEnergyTimer(data.next_restore);
         }
-
-    }catch(e){
-
-        console.log(e);
-    }
+    }catch(e){ console.log(e); }
 }
 
-// ---------- ENERGY TIMER ----------
-
 function startEnergyTimer(seconds){
-
-    if(gamesTimerInterval){
-
-        clearInterval(
-            gamesTimerInterval
-        );
-    }
-
+    if(gamesTimerInterval) clearInterval(gamesTimerInterval);
     let remaining = seconds;
-
-    const el =
-        document.getElementById(
-            "gamesRestore"
-        );
-
+    const el = document.getElementById("gamesRestore");
     function render(){
-
-        const m =
-            Math.floor(
-                remaining / 60
-            );
-
-        const s =
-            remaining % 60;
-
-        el.innerText =
-
-            `Next energy in ${m}:${
-                s.toString().padStart(2,"0")
-            }`;
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        el.innerText = `Next energy in ${m}:${s.toString().padStart(2,"0")}`;
     }
-
     render();
-
-    gamesTimerInterval =
-        setInterval(() => {
-
-            remaining--;
-
-            render();
-
-            if(remaining <= 0){
-
-                clearInterval(
-                    gamesTimerInterval
-                );
-
-                loadGamesStatus();
-            }
-
-        },1000);
+    gamesTimerInterval = setInterval(() => {
+        remaining--;
+        render();
+        if(remaining <= 0){
+            clearInterval(gamesTimerInterval);
+            loadGamesStatus();
+        }
+    },1000);
 }
 
 async function startFlappyGame(btn){
-
-    if(btn.dataset.loading === "1"){
-        return;
-    }
-
+    if(btn.dataset.loading === "1") return;
     btn.dataset.loading = "1";
     btn.disabled = true;
-
     const oldText = btn.innerText;
     btn.innerText = "Loading...";
-
     try{
-
         const r = await fetch(API + "/games/flappy/start", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                init_data: tg.initData
-            })
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({init_data: tg.initData})
         });
-
         const d = await r.json();
-
         if(!d.ok){
-
-            if(d.error === "no_energy"){
-                tg.showPopup?.({ message: "No energy. Wait for restore." });
-            }else{
-                tg.showPopup?.({ message: d.error || "Game start failed" });
-            }
-
-            // обновим статус энергии в UI
+            if(d.error === "no_energy") tg.showPopup?.({ message: "No energy. Wait for restore." });
+            else tg.showPopup?.({ message: d.error || "Game start failed" });
             await loadGamesStatus();
-
             return;
         }
-
-        // d.session_token обязателен
         const token = d.session_token;
-
-        if(!token){
-            tg.showPopup?.({ message: "Session error: no token" });
-            await loadGamesStatus();
-            return;
-        }
-
-        // опционально: сразу обновим энергию в UI
+        if(!token){ tg.showPopup?.({ message: "Session error: no token" }); await loadGamesStatus(); return; }
         await loadGamesStatus();
-
         const initData = tg?.initData || "";
-
-        window.location.href =
-            `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
-
+        window.location.href = `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
     }catch(e){
-
         console.log("FLAPPY START CLIENT ERROR:", e);
-
         tg.showPopup?.({ message: "Server error" });
-
     }finally{
-
         btn.dataset.loading = "0";
         btn.disabled = false;
         btn.innerText = oldText;
@@ -2159,480 +1151,165 @@ async function startFlappyGame(btn){
 }
 
 async function watchEnergyAd(){
-
-    const btn =
-        document.getElementById(
-            "restoreEnergyBtn"
-        );
-
-    if(btn.dataset.loading === "1"){
-        return;
-    }
-
+    const btn = document.getElementById("restoreEnergyBtn");
+    if(btn.dataset.loading === "1") return;
     btn.dataset.loading = "1";
-
     btn.disabled = true;
-
     btn.innerText = "Loading...";
-
     try{
-
         await AdController.show();
-
-        const r = await fetch(
-
-            API + "/games/restore-energy",
-
-            {
-                method:"POST",
-
-                headers:{
-                    "Content-Type":"application/json"
-                },
-
-                body:JSON.stringify({
-                    init_data: tg.initData
-                })
-            }
-        );
-
-        const d = await r.json();
-
-        console.log("RESTORE:", d);
-
-        if(d.ok){
-
-            tg.showPopup?.({
-                message:"+10 Energy restored"
-            });
-
-            await loadGamesStatus();
-
-        }else{
-
-            tg.showPopup?.({
-                message:d.error || "Restore failed"
-            });
-        }
-
-    }catch(e){
-
-        console.log(e);
-
-        tg.showPopup?.({
-            message:"Ad failed"
+        const r = await fetch(API + "/games/restore-energy", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
         });
+        const d = await r.json();
+        if(d.ok){
+            tg.showPopup?.({message:"+10 Energy restored"});
+            await loadGamesStatus();
+        }else{
+            tg.showPopup?.({message:d.error || "Restore failed"});
+        }
+    }catch(e){
+        console.log(e);
+        tg.showPopup?.({message:"Ad failed"});
     }
-
     btn.dataset.loading = "0";
-
     btn.disabled = false;
-
     btn.innerText = "Watch Ad +10 Energy";
 }
 
-async function restoreEnergy(){
-
-    try{
-
-        const r = await fetch(
-
-            API + "/games/restore-energy",
-
-            {
-                method:"POST",
-
-                headers:{
-                    "Content-Type":"application/json"
-                },
-
-                body:JSON.stringify({
-                    init_data: tg.initData
-                })
-            }
-        );
-
-        const d = await r.json();
-
-        console.log("RESTORE:", d);
-
-        if(d.ok){
-
-            await loadGamesStatus();
-        }
-
-    }catch(e){
-
-        console.log(e);
-    }
-}
-
-// ---------------- TASKS ----------------
-
 async function loadTasks(){
-
     try{
-
         const r = await fetch(API + "/tasks", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
         });
-
         const d = await r.json();
-
         const box = document.getElementById("tasksList");
-
         box.innerHTML = "";
-
         if(!d.tasks || d.tasks.length === 0){
-
-            box.innerHTML = `
-                <div class="card">
-                    No available tasks
-                </div>
-            `;
-
+            box.innerHTML = `<div class="card" style="margin-top:12px;">No available tasks</div>`;
             return;
         }
-
         d.tasks.forEach(task => {
-
             box.innerHTML += `
-
                 <div class="task-item">
-
                     <div class="task-top">
-
                         <div class="task-left">
-
-                            <img
-                                class="task-avatar"
-                                src="${task.image || 'https://via.placeholder.com/50'}"
-                            >
-
+                            <img class="task-avatar" src="${task.image || 'https://via.placeholder.com/50'}">
                             <div>
-
-                                <div class="task-title">
-                                    ${task.title}
-                                </div>
-
-                                <div class="task-reward">
-                                    +${task.reward} DOGS
-                                </div>
-
+                                <div class="task-title">${task.title}</div>
+                                <div class="task-reward">+${task.reward} DOGS</div>
                             </div>
-
                         </div>
-
                         <div class="task-buttons">
-
-                            <button
-                                onclick="subscribeTask('${task.link}')"
-                            >
-                                Open
-                            </button>
-
-                            <button
-                                onclick="checkTask(${task.id})"
-                            >
-                                Claim
-                            </button>
-
+                            <button onclick="subscribeTask('${task.link}')">Open</button>
+                            <button onclick="checkTask(${task.id})">Claim</button>
                         </div>
-
                     </div>
-
-                </div>
-            `;
+                </div>`;
         });
-
-    }catch(e){
-
-        console.log(e);
-    }
+    }catch(e){ console.log(e); }
 }
-    
-// ---------------- COMPLETE TASK ----------------
 
-function subscribeTask(link){
-
-    try{
-
-        tg.openTelegramLink(link);
-
-    }catch(e){
-
-        console.log(e);
-    }
-}
+function subscribeTask(link){ try{ tg.openTelegramLink(link); }catch(e){ console.log(e); } }
 
 async function checkTask(taskId){
-
     try{
-
         const r = await fetch(API + "/task/complete", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData,
-                task_id: taskId
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData, task_id: taskId})
         });
-
         const d = await r.json();
-
         if(d.ok){
-
-            tg.showPopup?.({
-                message:`+${d.reward} DOGS`
-            });
-
+            tg.showPopup?.({message:`+${d.reward} DOGS`});
             loadStatus();
             loadTasks();
-
         }else{
-
-            tg.showPopup?.({
-                message:d.error || "Task failed"
-            });
+            tg.showPopup?.({message:d.error || "Task failed"});
         }
-
-    }catch(e){
-
-        tg.showPopup?.({
-            message:"Server error"
-        });
-    }
+    }catch(e){ tg.showPopup?.({message:"Server error"}); }
 }
 
-// ---------------- X3 ----------------
-
 async function watchX3(){
-
     const btn = document.getElementById("x3Btn");
-
-    if(btn.dataset.loading === "1"){
-        return;
-    }
-
+    if(btn.dataset.loading === "1") return;
     btn.dataset.loading = "1";
-
     btn.disabled = true;
     btn.innerText = "Loading...";
-
     try{
-
         await AdController.show();
-
-        // закрываем окно x3
         closeX3();
-
-        tg.showPopup?.({
-            message:"Reward will be credited automatically"
-        });
-
-        // обновляем баланс через пару секунд
-        setTimeout(async ()=>{
-
-            await loadStatus();
-
-        }, 2500);
-
+        tg.showPopup?.({message:"Reward will be credited automatically"});
+        setTimeout(async ()=>{ await loadStatus(); }, 2500);
     }catch(e){
-
         console.log(e);
-
-        tg.showPopup?.({
-            message:"Ad failed"
-        });
+        tg.showPopup?.({message:"Ad failed"});
     }
-
     btn.dataset.loading = "0";
-
     btn.disabled = false;
-
     btn.innerText = "Watch ad x3";
 }
 
-// ---------------- WITHDRAW ----------------
-
 async function withdraw(){
-
     const wallet = document.getElementById("wallet").value.trim();
     const memo = document.getElementById("memo").value.trim();
-    const amount = Number(
-        document.getElementById("amount").value.trim()
-    );
-
-    if(wallet.length < 20){
-
-        tg.showPopup?.({
-            message:"Enter valid TON wallet"
-        });
-
-        return;
-    }
-
-    if(!amount || amount <= 0){
-
-        tg.showPopup?.({
-            message:"Enter amount"
-        });
-
-        return;
-    }
-
-    if(amount < MIN_WITHDRAW){
-
-        tg.showPopup?.({
-            message:`Minimum withdraw ${MIN_WITHDRAW}`
-        });
-
-        return;
-    }
-
-    if(amount <= WITHDRAW_FEE){
-
-        tg.showPopup?.({
-            message:"Amount too small"
-        });
-
-        return;
-    }
-
+    const amount = Number(document.getElementById("amount").value.trim());
+    if(wallet.length < 20){ tg.showPopup?.({message:"Enter valid TON wallet"}); return; }
+    if(!amount || amount <= 0){ tg.showPopup?.({message:"Enter amount"}); return; }
+    if(amount < MIN_WITHDRAW){ tg.showPopup?.({message:`Minimum withdraw ${MIN_WITHDRAW}`}); return; }
+    if(amount <= WITHDRAW_FEE){ tg.showPopup?.({message:"Amount too small"}); return; }
     const r = await fetch(API + "/withdraw", {
         method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            init_data: tg.initData,
-            wallet,
-            memo,
-            amount
-        })
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({init_data: tg.initData, wallet, memo, amount})
     });
-
     const d = await r.json();
-
     if(d.ok){
-
-        tg.showPopup?.({
-            message:`You will receive ${d.receive} DOGS`
-        });
-
+        tg.showPopup?.({message:`You will receive ${d.receive} DOGS`});
         document.getElementById("wallet").value = "";
         document.getElementById("memo").value = "";
         document.getElementById("amount").value = "";
-
         updateWithdrawInfo();
-
         loadStatus();
         loadWithdrawHistory();
-
     }else{
-
-        tg.showPopup?.({
-            message:d.error
-        });
+        tg.showPopup?.({message:d.error});
     }
 }
-
-// ---------------- HISTORY ----------------
 
 async function loadWithdrawHistory(){
-
     try{
-
         const r = await fetch(API + "/withdraw/history", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: tg.initData
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
         });
-
         const d = await r.json();
-
         const box = document.getElementById("withdrawHistory");
-
         box.innerHTML = "";
-
-        if(!d.history || d.history.length === 0){
-
-            box.innerHTML = "No withdraws";
-
-            return;
-        }
-
+        if(!d.history || d.history.length === 0){ box.innerHTML = "No withdraws"; return; }
         d.history.forEach(w => {
-
             let statusClass = "pending";
-
-            if(w.status === "paid"){
-                statusClass = "paid";
-            }
-
-            if(w.status === "rejected"){
-                statusClass = "rejected";
-            }
-
+            if(w.status === "paid") statusClass = "paid";
+            if(w.status === "rejected") statusClass = "rejected";
             box.innerHTML += `
                 <div class="history-item">
-
-                    <div>
-                        <b>Withdraw:</b> ${w.amount}
-                    </div>
-
-                    <div>
-                        <b>Receive:</b> ${w.receive_amount}
-                    </div>
-
-                    <div>
-                        <b>Fee:</b> ${w.fee}
-                    </div>
-
-                    <div style="margin-top:6px;">
-                        <b>Wallet:</b><br>
-                        ${w.wallet}
-                    </div>
-
-                    ${
-                        w.memo
-                        ?
-                        `<div style="margin-top:6px;">
-                            <b>Memo:</b> ${w.memo}
-                        </div>`
-                        :
-                        ""
-                    }
-
-                    <div class="status ${statusClass}">
-                        ${w.status}
-                    </div>
-
-                </div>
-            `;
+                    <div><b>Withdraw:</b> ${w.amount}</div>
+                    <div><b>Receive:</b> ${w.receive_amount}</div>
+                    <div><b>Fee:</b> ${w.fee}</div>
+                    <div style="margin-top:6px;"><b>Wallet:</b><br>${w.wallet}</div>
+                    ${w.memo ? `<div style="margin-top:6px;"><b>Memo:</b> ${w.memo}</div>` : ""}
+                    <div class="status ${statusClass}">${w.status}</div>
+                </div>`;
         });
-
-    }catch(e){
-
-        console.log(e);
-    }
+    }catch(e){ console.log(e); }
 }
 
-
 let userRefLink = "";
-
 async function loadRefInfo() {
     try {
         const r = await fetch(API + "/get_ref_info", {
@@ -2642,141 +1319,75 @@ async function loadRefInfo() {
         });
         const d = await r.json();
         if (d.ok) {
-
-            document.getElementById("refCount").innerText =
-                d.referrals_count;
-
-            document.getElementById("refBalance").innerText =
-                d.referral_balance.toFixed(2);
-
+            document.getElementById("refCount").innerText = d.referrals_count;
+            document.getElementById("refBalance").innerText = d.referral_balance.toFixed(2);
             userRefLink = d.ref_link;
-
             const btn = document.querySelector("#ref button");
-
-    // если cooldown активен
             if(d.remaining && d.remaining > 0){
-
                 startRefCooldown(d.remaining);
-
             } else {
-
                 btn.disabled = false;
                 btn.dataset.locked = "0";
-
-                if(d.referral_balance <= 0){
-
-                    btn.innerText = "Balance Empty";
-
-                } else {
-
-                    btn.innerText = "Claim Reward";
-                }
+                if(d.referral_balance <= 0) btn.innerText = "Balance Empty";
+                else btn.innerText = "Claim Reward";
             }
         }
     } catch (e) { console.log("REF INFO ERROR:", e); }
 }
 
 let refTimerInterval = null;
-
 async function claimRef() {
-
     const btn = document.querySelector("#ref button");
-
-    if(btn.dataset.locked === "1"){
-        return;
-    }
-
+    if(btn.dataset.locked === "1") return;
     btn.disabled = true;
     btn.innerText = "Loading...";
-
     try {
-
-        // сначала реклама
         await AdController.show();
-
         const r = await fetch(API + "/ref/claim", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                init_data: initData
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ init_data: initData })
         });
-
         const d = await r.json();
-
         if (d.ok) {
-
-            tg.showPopup?.({
-                message: "Funds successfully transferred to main balance"
-            });
-
+            tg.showPopup?.({ message: "Funds successfully transferred to main balance" });
             loadStatus();
             loadRefInfo();
-
-            // запускаем 24ч таймер
             startRefCooldown(86400);
-
         } else {
-
-            tg.showPopup?.({
-                message: d.error || "Referral balance is empty"
-            });
-
+            tg.showPopup?.({ message: d.error || "Referral balance is empty" });
             btn.disabled = false;
             btn.innerText = "Claim Reward";
         }
-
     } catch(e) {
-
         console.log(e);
-
-        tg.showPopup?.({
-            message: "Ad failed"
-        });
-
+        tg.showPopup?.({ message: "Ad failed" });
         btn.disabled = false;
         btn.innerText = "Claim Reward";
     }
 }
 
 function startRefCooldown(seconds) {
-
     const btn = document.querySelector("#ref button");
-
     btn.dataset.locked = "1";
-
     clearInterval(refTimerInterval);
-
     let timeLeft = seconds;
-
     function update() {
-
         if(timeLeft <= 0){
-
             clearInterval(refTimerInterval);
-
             btn.disabled = false;
             btn.dataset.locked = "0";
             btn.innerText = "Claim Reward";
-
             return;
         }
-
         const h = Math.floor(timeLeft / 3600);
         const m = Math.floor((timeLeft % 3600) / 60);
         const s = timeLeft % 60;
-
         btn.disabled = true;
-
         btn.innerText = `${h}h ${m}m ${s}s`;
-
         timeLeft--;
     }
-
     update();
-
     refTimerInterval = setInterval(update, 1000);
 }
 
@@ -2786,415 +1397,152 @@ function inviteFriend() {
     tg.openTelegramLink(url);
 }
 
-// ---------------- OFFERWALL ----------------
-
 function openBitcoTasks(){
-
-    const userId =
-        tg.initDataUnsafe?.user?.id;
-
-    const url =
-        `https://bitcotasks.com/offerwall/8blopnz472x3du39j0cepxs7twbhc0/${userId}`;
-
+    const userId = tg.initDataUnsafe?.user?.id;
+    const url = `https://bitcotasks.com/offerwall/8blopnz472x3du39j0cepxs7twbhc0/${userId}`;
     tg.openLink(url);
 }
 
 async function auth(){
-
     try{
-
         await fetch(API + "/auth", {
             method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                init_data: initData,
-                start_param: startParam
-            })
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: initData, start_param: startParam})
         });
-
-    }catch(e){
-        console.log(e);
-    }
+    }catch(e){ console.log(e); }
 }
 
-// ------
-
-function formatNumber(num){
-
-    return new Intl.NumberFormat().format(
-        Math.floor(num)
-    );
-}
-    
-// ---------------- GLOBAL STATS ----------------
+function formatNumber(num){ return new Intl.NumberFormat().format(Math.floor(num)); }
 
 async function loadStats(){
-
     try{
-
-        const r = await fetch(API + "/stats", {
-            method:"POST"
-        });
-
+        const r = await fetch(API + "/stats", { method:"POST" });
         const d = await r.json();
-
         if(d.ok){
-
-            document.getElementById("usersCount").innerText =
-                formatNumber(d.users + 28);
-
-            document.getElementById("earnedCount").innerText =
-                formatNumber(d.earned + 17576);
+            document.getElementById("usersCount").innerText = formatNumber(d.users + 28);
+            document.getElementById("earnedCount").innerText = formatNumber(d.earned + 17576);
         }
-
-    }catch(e){
-
-        console.log("STATS ERROR", e);
-    }
+    }catch(e){ console.log("STATS ERROR", e); }
 }
 
-
-// ---------------- SPECIAL OFFER COOLDOWN ----------------
-
 function startSpecialOfferCooldown(seconds){
-
-    const task =
-        document.getElementById("specialOfferTask");
-
-    const timer =
-        document.getElementById("specialOfferTimer");
-
-    // если элементов нет — выходим
-    if(!task || !timer){
-        return;
-    }
-
+    const task = document.getElementById("specialOfferTask");
+    const timer = document.getElementById("specialOfferTimer");
+    if(!task || !timer) return;
     task.style.display = "none";
-
     timer.style.display = "block";
-
     clearInterval(specialOfferInterval);
-
     let timeLeft = seconds;
-
     function update(){
-
         if(timeLeft <= 0){
-
             clearInterval(specialOfferInterval);
-
             timer.style.display = "none";
-
             task.style.display = "block";
-
             return;
         }
-
         const m = Math.floor(timeLeft / 60);
-
         const s = timeLeft % 60;
-
-        timer.innerText =
-            `⏳ ${m}:${s.toString().padStart(2,"0")}`;
-
+        timer.innerText = `⏳ ${m}:${s.toString().padStart(2,"0")}`;
         timeLeft--;
     }
-
     update();
-
-    specialOfferInterval =
-        setInterval(update, 1000);
+    specialOfferInterval = setInterval(update, 1000);
 }
 
 async function loadSpecialOfferStatus(){
-
     try{
-
-        const r = await fetch(
-            API + "/special_offer/status",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    init_data: tg.initData
-                })
-            }
-        );
-
+        const r = await fetch(API + "/special_offer/status", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
+        });
         const d = await r.json();
-
-        if(d.ok && d.remaining > 0){
-
-            startSpecialOfferCooldown(
-                d.remaining
-            );
-        }
-
-    }catch(e){
-
-        console.log(
-            "SPECIAL OFFER STATUS ERROR",
-            e
-        );
-    }
+        if(d.ok && d.remaining > 0) startSpecialOfferCooldown(d.remaining);
+    }catch(e){ console.log("SPECIAL OFFER STATUS ERROR", e); }
 }
 
-
-// ---------------- ADSGRAM TASK REWARD ----------------
-
 const adsTask = document.querySelector("adsgram-task");
-
-adsTask.addEventListener("reward", async () => {
-
-    // visual only
-    tg.showPopup({
-        title: "Reward",
-        message: "✅ Your reward will be credited shortly",
-        buttons: [{ type: "ok" }]
+if(adsTask){
+    adsTask.addEventListener("reward", async () => {
+        tg.showPopup({title: "Reward", message: "✅ Your reward will be credited shortly", buttons: [{ type: "ok" }]});
+        setTimeout(async () => {
+            await loadStatus();
+            tg.showPopup({title: "DOGS", message: "🎉 Balance updated", buttons: [{ type: "ok" }]});
+        }, 3000);
     });
-
-    // wait until backend callback finishes
-    setTimeout(async () => {
-        await loadMe();
-
-        tg.showPopup({
-            title: "DOGS",
-            message: "🎉 Balance updated",
-            buttons: [{ type: "ok" }]
-        });
-
-    }, 3000);
-});
-
-// ------------- Daily Quest ------------
+}
 
 function startDailyQuestResetTimer(){
-
     clearInterval(dailyQuestTimer);
-
     function update(){
-
         const now = new Date();
-
-        const kyivNow = new Date(
-            now.toLocaleString(
-                "en-US",
-                {
-                    timeZone:"Europe/Kiev"
-                }
-            )
-        );
-
+        const kyivNow = new Date(now.toLocaleString("en-US", {timeZone:"Europe/Kiev"}));
         const next = new Date(kyivNow);
-
         next.setHours(24,0,0,0);
-
-        const diff =
-            Math.floor(
-                (next - kyivNow) / 1000
-            );
-
-        const h =
-            Math.floor(diff / 3600);
-
-        const m =
-            Math.floor((diff % 3600)/60);
-
-        const s =
-            diff % 60;
-
-        document.getElementById(
-            "dailyQuestReset"
-        ).innerText =
-            `⏳ Updating in ${h}h ${m}m ${s}s`;
+        const diff = Math.floor((next - kyivNow) / 1000);
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600)/60);
+        const s = diff % 60;
+        document.getElementById("dailyQuestReset").innerText = `⏳ Updating in ${h}h ${m}m ${s}s`;
     }
-
     update();
-
-    dailyQuestTimer =
-        setInterval(update,1000);
+    dailyQuestTimer = setInterval(update,1000);
 }
 
 async function loadDailyQuests(){
-
     try{
-
-        const r = await fetch(
-            API + "/daily_quests",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    init_data: tg.initData
-                })
-            }
-        );
-
-        const d = await r.json();
-
-        if(!d.ok) return;
-
-        const container =
-            document.getElementById(
-                "dailyQuests"
-            );
-
-        container.innerHTML = "";
-
-        d.quests.forEach(q => {
-
-            const completed =
-                q.progress >= q.target;
-
-            let button = "";
-
-            if(q.claimed){
-
-                button = `
-                    <button
-                        class="dailyQuestBtn"
-                        disabled
-                    >
-                        Completed
-                    </button>
-                `;
-
-            }else if(completed){
-
-                button = `
-                    <button
-                        class="dailyQuestBtn"
-                        onclick="claimDailyQuest(${q.id})"
-                    >
-                        Claim
-                    </button>
-                `;
-
-            }else{
-
-                button = `
-                    <button
-                        class="dailyQuestBtn"
-                        disabled
-                    >
-                        In Progress
-                    </button>
-                `;
-            }
-
-            const percent =
-                Math.min(
-                    100,
-                    (q.progress / q.target) * 100
-                );
-
-            container.innerHTML += `
-
-                <div class="dailyQuest">
-
-                    <div class="dailyQuestTop">
-
-                        <div class="dailyQuestTitle">
-                            ${q.title}
-                        </div>
-
-                        <div class="dailyQuestReward">
-                            +${q.reward} DOGS
-                        </div>
-
-                    </div>
-
-                    <div class="dailyQuestProgress">
-
-                        <div
-                            class="dailyQuestBar"
-                            style="
-                                width:${percent}%;
-                            "
-                        ></div>
-
-                    </div>
-
-                    <div class="dailyQuestBottom">
-
-                        <div class="dailyQuestText">
-                            ${q.progress}/${q.target}
-                        </div>
-
-                        ${button}
-
-                    </div>
-
-                </div>
-            `;
+        const r = await fetch(API + "/daily_quests", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData})
         });
-
-    }catch(e){
-
-        console.log(
-            "DAILY QUESTS ERROR",
-            e
-        );
-    }
+        const d = await r.json();
+        if(!d.ok) return;
+        const container = document.getElementById("dailyQuests");
+        container.innerHTML = "";
+        d.quests.forEach(q => {
+            const completed = q.progress >= q.target;
+            let button = "";
+            if(q.claimed) button = `<button class="dailyQuestBtn" disabled>Completed</button>`;
+            else if(completed) button = `<button class="dailyQuestBtn" onclick="claimDailyQuest(${q.id})">Claim</button>`;
+            else button = `<button class="dailyQuestBtn" disabled>In Progress</button>`;
+            const percent = Math.min(100, (q.progress / q.target) * 100);
+            container.innerHTML += `
+                <div class="dailyQuest">
+                    <div class="dailyQuestTop">
+                        <div class="dailyQuestTitle">${q.title}</div>
+                        <div class="dailyQuestReward">+${q.reward} DOGS</div>
+                    </div>
+                    <div class="dailyQuestProgress">
+                        <div class="dailyQuestBar" style="width:${percent}%;"></div>
+                    </div>
+                    <div class="dailyQuestBottom">
+                        <div class="dailyQuestText">${q.progress}/${q.target}</div>
+                        ${button}
+                    </div>
+                </div>`;
+        });
+    }catch(e){ console.log("DAILY QUESTS ERROR", e); }
 }
 
 async function claimDailyQuest(id){
-
     try{
-
-        const r = await fetch(
-            API + "/daily_quests/claim",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    init_data: tg.initData,
-                    quest_id: id
-                })
-            }
-        );
-
+        const r = await fetch(API + "/daily_quests/claim", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({init_data: tg.initData, quest_id: id})
+        });
         const d = await r.json();
-
         if(d.ok){
-
-            tg.showPopup({
-                title:"Reward",
-                message:
-                    `🎉 +${d.reward} DOGS`,
-                buttons:[
-                    {
-                        type:"ok"
-                    }
-                ]
-            });
-
+            tg.showPopup({title:"Reward", message:`🎉 +${d.reward} DOGS`, buttons:[{type:"ok"}]});
             loadStatus();
-
             loadDailyQuests();
         }
-
-    }catch(e){
-
-        console.log(
-            "CLAIM QUEST ERROR",
-            e
-        );
-    }
+    }catch(e){ console.log("CLAIM QUEST ERROR", e); }
 }
 
-
-
-// ---------------- INIT ----------------
-
+// Инициализация
 auth();
 loadUser();
 loadStatus();
@@ -3204,16 +1552,10 @@ loadStats();
 loadDailyStatus();
 updateWithdrawInfo();
 loadSpecialOfferStatus();
-
 loadDailyQuests();
-
 startDailyQuestResetTimer();
 
-setInterval(()=>{
-    loadStatus();
-    loadStats();
-}, 15000);
-
+setInterval(()=>{ loadStatus(); loadStats(); }, 15000);
 </script>
 
 </body>
