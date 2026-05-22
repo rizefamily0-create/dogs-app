@@ -8,6 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             width: 100%; height: 100%; overflow: hidden;
+            overscroll-behavior: none; /* предотвращает свайп-закрытие */
             background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%);
             font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
             color: #f5f5f7;
@@ -124,7 +125,6 @@
             50% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
-        /* цвета плиток */
         .tile-2    { background: #eee4da; color: #776e65; }
         .tile-4    { background: #ede0c8; color: #776e65; }
         .tile-8    { background: #f2b179; color: #f9f6f2; }
@@ -136,6 +136,23 @@
         .tile-512  { background: #edc850; color: #f9f6f2; font-size: 24px; }
         .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 20px; }
         .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 20px; }
+        .waitBox {
+            background: rgba(20, 20, 24, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: #f5f5f7;
+        }
+        #claimTimer {
+            font-size: 32px;
+            font-weight: 900;
+            color: #c0c0c0;
+            margin-top: 8px;
+        }
         #loading {
             position: absolute; inset: 0; background: rgba(0,0,0,0.6);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -185,18 +202,29 @@
         <div class="resultCard">
             <div class="resultTitle" id="resultTitle"></div>
             <div class="resultText" id="resultText"></div>
-            <div class="adBanner">
-                <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+            <div id="winBlock" style="display:none;">
+                <div class="waitBox">
+                    Reward is being credited.<br>Please wait...
+                    <div id="claimTimer">5</div>
+                </div>
             </div>
             <div class="adBanner">
                 <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
             </div>
-            <button class="resultBtn" onclick="goHome()">RETURN HOME</button>
+            <div class="adBanner">
+                <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+            </div>
+            <button class="resultBtn" onclick="goHome()" id="homeBtn">RETURN HOME</button>
         </div>
     </div>
 </div>
 
 <script>
+    // ========== БЛОКИРОВКА СВАЙПА ВНИЗ ДЛЯ TELEGRAM MINI APP ==========
+    document.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+
     const tg = window.Telegram?.WebApp;
     tg?.expand?.();
     const API = "https://dogs-7ntt.onrender.com";
@@ -204,8 +232,7 @@
     const initDataFromUrl = new URLSearchParams(window.location.search).get("init_data");
     let finishSent = false;
 
-    // Данные от сервера
-    let gameDifficulty = 1; // 1-easy,2-medium,3-hard
+    let gameDifficulty = 1;
     let targetScore = 256;
     let timeLimit = 60;
     let currentScore = 0;
@@ -222,7 +249,6 @@
     }
     setTimeout(hideLoading, 1500);
 
-    // Инициализация / стартовый экран
     async function init() {
         if (!sessionToken) {
             document.querySelector(".playBtn").disabled = true;
@@ -306,11 +332,9 @@
         if (!gameActive) return;
         let moved = false;
         let newGrid = JSON.parse(JSON.stringify(grid));
-        // directions: 0-вверх,1-вправо,2-вниз,3-влево
         const vectors = [[-1,0],[0,1],[1,0],[0,-1]];
         const [dr, dc] = vectors[direction];
 
-        // Обход в зависимости от направления
         let rowStart = dr===1 ? 3 : 0, rowEnd = dr===1 ? -1 : 4, rowStep = dr===1 ? -1 : 1;
         let colStart = dc===1 ? 3 : 0, colEnd = dc===1 ? -1 : 4, colStep = dc===1 ? -1 : 1;
 
@@ -347,10 +371,6 @@
     }
 
     function checkGameOver() {
-        if (currentScore >= targetScore) {
-            // Цель достигнута, но игра продолжается до тупика или конца времени
-        }
-        // Проверка на тупик
         for (let i=0; i<4; i++) {
             for (let j=0; j<4; j++) {
                 if (grid[i][j]===0) return;
@@ -358,7 +378,6 @@
                 if (i<3 && grid[i][j]===grid[i+1][j]) return;
             }
         }
-        // Нет ходов - тупик
         endGame(true);
     }
 
@@ -380,11 +399,10 @@
         if (!gameActive || finishSent) return;
         gameActive = false;
         clearInterval(timerInterval);
-        const survived = currentScore >= targetScore; // победа, если достиг цели
+        const survived = currentScore >= targetScore;
         const score = currentScore;
         finishSent = true;
 
-        // Отправка результата
         try {
             const res = await fetch(API + "/games/2048/finish", {
                 method: "POST",
@@ -409,13 +427,32 @@
         document.getElementById("resultScreen").style.display = "flex";
         const titleEl = document.getElementById("resultTitle");
         const textEl = document.getElementById("resultText");
+        const homeBtn = document.getElementById("homeBtn");
+        const winBlock = document.getElementById("winBlock");
+        const claimTimer = document.getElementById("claimTimer");
+
         if (data.ok && data.win) {
             titleEl.innerText = "YOU WON 🎉";
             textEl.innerText = `+${data.reward} DOGS added to your balance!`;
+            winBlock.style.display = "block";
+            homeBtn.style.display = "none";
+            let wait = 5;
+            claimTimer.innerText = wait;
+            const rewardTimer = setInterval(() => {
+                wait--;
+                claimTimer.innerText = wait;
+                if (wait <= 0) {
+                    clearInterval(rewardTimer);
+                    homeBtn.style.display = "block";
+                    winBlock.style.display = "none";
+                }
+            }, 1000);
         } else {
             titleEl.innerText = "YOU LOST (>_<)";
             textEl.innerText = `Score: ${currentScore} / ${targetScore}`;
             if (data.error === "session_expired") textEl.innerText += "\nSession expired.";
+            winBlock.style.display = "none";
+            homeBtn.style.display = "block";
         }
     }
 
@@ -423,7 +460,6 @@
         window.location.href = "../../";
     }
 
-    // Управление: касания и клавиши
     let touchStartX = 0, touchStartY = 0;
     document.addEventListener("touchstart", e => {
         if (!gameActive) return;
@@ -436,9 +472,9 @@
         let dy = e.changedTouches[0].clientY - touchStartY;
         if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
         if (Math.abs(dx) > Math.abs(dy)) {
-            move(dx > 0 ? 1 : 3); // вправо/влево
+            move(dx > 0 ? 1 : 3);
         } else {
-            move(dy > 0 ? 2 : 0); // вниз/вверх
+            move(dy > 0 ? 2 : 0);
         }
     });
     document.addEventListener("keydown", e => {
