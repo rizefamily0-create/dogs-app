@@ -1037,7 +1037,8 @@
         const MIN_WITHDRAW = 14000;
         const WITHDRAW_FEE = 1700;
 
-        const AdController = window.Adsgram.init({ blockId: "29657" });
+        const AdController = window.Adsgram.init({ blockId: "30995" });
+        const AdControllerX3 = window.Adsgram.init({ blockId: "29657" });
 
         let cooldown = 0;
         let timerInterval = null;
@@ -1453,7 +1454,7 @@
             btn.disabled = true;
             btn.innerText = "Loading...";
             try{
-                await AdController.show();
+                await AdControllerX3.show();
                 closeX3();
                 tg.showPopup?.({message:"Reward will be credited automatically"});
                 setTimeout(async ()=>{ await loadStatus(); }, 2500);
