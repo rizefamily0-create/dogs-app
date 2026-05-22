@@ -30,6 +30,15 @@
             position: relative; width: 100vw; height: 100vh; overflow: hidden;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        /* Лапки-декор (добавляются через JS) */
+        .paw-decor {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: 0;
+            font-size: 30px;
+            user-select: none;
+        }
         #topUI {
             position: absolute; top: 14px; left: 14px; right: 14px;
             display: flex; justify-content: space-between; gap: 10px; z-index: 20;
@@ -75,21 +84,52 @@
             display: flex; align-items: center; justify-content: center;
         }
         #gameContainer {
-            display: none; flex-direction: column; align-items: center; gap: 14px;
-            width: 100%; padding: 0 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 0 20px;
+            /* Фоновое изображение */
+            background-image: url('bg.png'); /* замените на путь к вашей картинке */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+        /* Полупрозрачная подложка, чтобы сетка не сливалась */
+        #gameContainer::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 11, 15, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 0;
+            border-radius: 18px;
         }
         .infoRow {
-            display: flex; justify-content: space-between; align-items: center;
-            width: 100%; max-width: 320px; gap: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 320px;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
         }
         .infoBox {
             flex: 1;
             background: rgba(28, 28, 32, 0.6);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 18px; padding: 12px;
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: 18px;
+            padding: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             text-align: center;
-            font-weight: 700; font-size: 14px; color: #c0c0c0;
+            font-weight: 700;
+            font-size: 14px;
+            color: #c0c0c0;
         }
         .infoBox .label { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
         .infoBox .value { font-size: 24px; font-weight: 900; color: #fff; }
@@ -99,10 +139,13 @@
             gap: 10px;
             width: 300px; height: 300px; max-width: 90vw; max-height: 90vw;
             padding: 10px;
-            background: rgba(20,20,24,0.6); border-radius: 18px;
+            background: rgba(20,20,24,0.6);
+            border-radius: 18px;
             border: 1px solid rgba(255,255,255,0.06);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             position: relative;
+            z-index: 2;
             overflow: hidden;
         }
         .tile {
@@ -225,6 +268,24 @@
         e.preventDefault();
     }, { passive: false });
 
+    // Генерация декоративных лапок
+    function createPaws() {
+        const container = document.getElementById('gameWrap');
+        const pawCount = 18;
+        for (let i = 0; i < pawCount; i++) {
+            const paw = document.createElement('div');
+            paw.className = 'paw-decor';
+            paw.textContent = '🐾';
+            paw.style.left = Math.random() * 100 + '%';
+            paw.style.top = Math.random() * 100 + '%';
+            paw.style.fontSize = (20 + Math.random() * 30) + 'px';
+            paw.style.opacity = 0.08 + Math.random() * 0.1;
+            paw.style.transform = `rotate(${Math.random() * 360}deg)`;
+            container.appendChild(paw);
+        }
+    }
+    createPaws();
+
     const tg = window.Telegram?.WebApp;
     tg?.expand?.();
     const API = "https://dogs-7ntt.onrender.com";
@@ -233,7 +294,7 @@
     let finishSent = false;
 
     let gameDifficulty = 1;
-    let targetScore = 256; // это теперь минимальная нужная плитка
+    let targetScore = 256;
     let timeLimit = 60;
     let currentScore = 0;
     let gameActive = false;
@@ -328,13 +389,10 @@
         document.getElementById("score").innerText = currentScore;
     }
 
-    // Проверка наличия плитки нужного номинала
     function hasTargetTile() {
-        for (let i=0; i<4; i++) {
-            for (let j=0; j<4; j++) {
+        for (let i=0; i<4; i++)
+            for (let j=0; j<4; j++)
                 if (grid[i][j] >= targetScore) return true;
-            }
-        }
         return false;
     }
 
@@ -381,7 +439,6 @@
     }
 
     function checkGameOver() {
-        // Проверка на тупик
         for (let i=0; i<4; i++) {
             for (let j=0; j<4; j++) {
                 if (grid[i][j]===0) return;
@@ -389,7 +446,6 @@
                 if (i<3 && grid[i][j]===grid[i+1][j]) return;
             }
         }
-        // Нет ходов - тупик
         endGame(true);
     }
 
@@ -411,7 +467,7 @@
         if (!gameActive || finishSent) return;
         gameActive = false;
         clearInterval(timerInterval);
-        const survived = hasTargetTile(); // победа, если есть плитка >= targetScore
+        const survived = hasTargetTile();
         const score = currentScore;
         finishSent = true;
 
