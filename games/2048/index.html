@@ -101,38 +101,13 @@
             z-index: 0;
             border-radius: 18px;
         }
-        .infoRow {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 320px;
-            gap: 12px;
-            position: relative;
-            z-index: 1;
-            margin-bottom: 10px;
-        }
-        .infoBox {
-            flex: 1;
-            background: rgba(28, 28, 32, 0.6);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 18px;
-            padding: 12px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            text-align: center;
-            font-weight: 700;
-            font-size: 14px;
-            color: #c0c0c0;
-        }
-        .infoBox .label { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
-        .infoBox .value { font-size: 24px; font-weight: 900; color: #fff; }
+        /* Маскот сверху, вплотную к сетке */
         #mascotWrapper {
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 320px;
-            margin-bottom: -5px;
+            max-width: 300px; /* под ширину сетки */
+            margin-bottom: -6px; /* убираем зазор */
             display: flex;
             justify-content: center;
         }
@@ -142,14 +117,17 @@
             display: block;
             object-fit: contain;
             object-position: bottom;
-            transform: scale(0.85);
-            transform-origin: top center;
+            transform: scale(0.8); /* уменьшено на 20% от исходного */
+            transform-origin: bottom center;
         }
+        /* Сетка */
         #grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
             gap: 10px;
-            width: 300px; height: 300px; max-width: 90vw; max-height: 90vw;
+            width: 300px; height: 300px;
+            max-width: 90vw; max-height: 90vw;
             padding: 10px;
             background: rgba(20,20,24,0.6);
             border-radius: 18px;
@@ -169,6 +147,8 @@
             position: relative;
             z-index: 1;
             animation: appear 0.15s ease;
+            width: 100%;
+            height: 100%;
         }
         @keyframes appear {
             from { transform: scale(0); opacity: 0; }
@@ -191,6 +171,33 @@
         .tile-512  { background: #edc850; color: #f9f6f2; font-size: 24px; }
         .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 20px; }
         .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 20px; }
+        /* Блоки Score и Target под сеткой */
+        .infoRow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+            margin-top: 12px;
+        }
+        .infoBox {
+            flex: 1;
+            background: rgba(28, 28, 32, 0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 10px 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #c0c0c0;
+        }
+        .infoBox .label { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
+        .infoBox .value { font-size: 24px; font-weight: 900; color: #fff; }
         .waitBox {
             background: rgba(20, 20, 24, 0.55);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -239,6 +246,15 @@
 
     <!-- GAME UI -->
     <div id="gameContainer">
+        <!-- Маскот -->
+        <div id="mascotWrapper">
+            <img src="dogs-mascot.png" alt="Dogs mascot" />
+        </div>
+
+        <!-- Сетка игры -->
+        <div id="grid"></div>
+
+        <!-- Score и Target под сеткой -->
         <div class="infoRow">
             <div class="infoBox">
                 <div class="label">Score</div>
@@ -249,12 +265,6 @@
                 <div class="value" id="targetVal">≥256</div>
             </div>
         </div>
-
-        <div id="mascotWrapper">
-            <img src="dogs-mascot.png" alt="Dogs mascot" />
-        </div>
-
-        <div id="grid"></div>
     </div>
 
     <!-- RESULT SCREEN -->
