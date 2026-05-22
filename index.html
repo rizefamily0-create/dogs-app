@@ -965,6 +965,23 @@
                     <button class="gameStartBtn" id="playFlappyBtn" onclick="startFlappyGame(this)">▶ PLAY</button>
                 </div>
             </div>
+
+            <div class="gameCard">
+                <div class="gamePreview"><img src="games/2048/preview.png" alt="2048"></div>
+                <div class="gameInfo">
+                    <div class="gameTop">
+                        <div class="gameName">2048</div>
+                        <div class="gameBadge">EASY</div>
+                    </div>
+                    <div class="gameDescription">Reach target tile to earn DOGS. Difficulty rises!</div>
+                    <div class="gameMeta">
+                        <div>💰 5-10 DOGS</div>
+                        <div>⏱ 60-90s</div>
+                    </div>
+                    <button class="gameStartBtn" id="play2048Btn" onclick="start2048Game(this)">▶ PLAY</button>
+                </div>
+            </div>
+            
         </div>
 
         <!-- OFFERWALL (уже margin-top:0) -->
@@ -1304,6 +1321,39 @@
                 window.location.href = `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
             }catch(e){
                 console.log("FLAPPY START CLIENT ERROR:", e);
+                tg.showPopup?.({ message: "Server error" });
+            }finally{
+                btn.dataset.loading = "0";
+                btn.disabled = false;
+                btn.innerText = oldText;
+            }
+        }
+
+        async function start2048Game(btn){
+            if(btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1";
+            btn.disabled = true;
+            const oldText = btn.innerText;
+            btn.innerText = "Loading...";
+            try{
+                const r = await fetch(API + "/games/2048/start", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(!d.ok){
+                    if(d.error === "no_energy") tg.showPopup?.({ message: "No energy. Wait for restore." });
+                    else tg.showPopup?.({ message: d.error || "Game start failed" });
+                    await loadGamesStatus();
+                    return;
+                }
+                const token = d.session_token;
+                if(!token){ tg.showPopup?.({ message: "Session error" }); await loadGamesStatus(); return; }
+                await loadGamesStatus();
+                window.location.href = `games/2048/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(tg?.initData || "")}`;
+            }catch(e){
+                console.log("2048 START CLIENT ERROR:", e);
                 tg.showPopup?.({ message: "Server error" });
             }finally{
                 btn.dataset.loading = "0";
