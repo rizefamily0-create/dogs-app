@@ -200,18 +200,16 @@
         /* ---------------- ADS BANNER ---------------- */
         .adBanner {
             width: 100%;
-            height: 58px;
+            margin-bottom: 12px;
             border-radius: 16px;
             background: rgba(20, 20, 24, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
-            margin-bottom: 12px;
-            font-size: 14px;
         }
 
         /* ---------------- WAIT BOX ---------------- */
@@ -305,9 +303,17 @@
                 <div class="resultTitle" id="resultTitle">YOU LOST (>_<)</div>
                 <div class="resultText" id="resultText">Try again tomorrow.</div>
 
-                <!-- ADS PLACEHOLDERS -->
-                <div class="adBanner">Banner Ad</div>
-                <div class="adBanner">Banner Ad</div>
+                <!-- ADS UNITS -->
+                <div class="adBanner">
+                    <div style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+                        <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0; padding:0; width:70%; height:auto; overflow:hidden; display: block; margin: auto'></iframe>
+                    </div>
+                </div>
+                <div class="adBanner">
+                    <div style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+                        <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0; padding:0; width:70%; height:auto; overflow:hidden; display: block; margin: auto'></iframe>
+                    </div>
+                </div>
 
                 <!-- WIN BLOCK -->
                 <div id="winBlock" style="display:none;">
