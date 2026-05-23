@@ -884,6 +884,7 @@
             btnX3.disabled = false;
         }
 
+        // ========== DAILY STREAK / QUESTS / TASKS / GAMES / WALLET (полные реализации) ==========
         let dailyTimerInterval = null;
         async function dailyBonus(){
             const btn = document.getElementById("dailyBtn");
@@ -1465,6 +1466,7 @@
                     loadSpecialOfferStatus(),
                     loadDailyQuests(),
                     loadGamesStatus(),
+                    loadProfile(),            // ← добавлена загрузка профиля
                     loadWithdrawHistory(),
                     loadTasks()
                 ]);
