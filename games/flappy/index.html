@@ -271,6 +271,7 @@
                     return;
                 }
                 gameDifficulty = data.difficulty;
+                localStorage.setItem('flappy_difficulty', data.difficulty);
                 surviveTimeGoal = data.survive_time;
                 expectedReward = rewardMap[gameDifficulty];
                 document.getElementById('difficulty').innerText = td(gameDifficulty);
