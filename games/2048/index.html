@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>2048 DOGS</title>
+    <!-- Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
@@ -281,6 +283,9 @@
 <script>
     document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
+    // Инициализация рекламы для выхода (блок int-31473)
+    const ExitAdController = window.Adsgram.init({ blockId: "int-31473" });
+
     function createPaws() {
         const container = document.getElementById('gameWrap');
         for (let i = 0; i < 18; i++) {
@@ -313,7 +318,7 @@
     let timeLeft = 0;
     let grid = [];
     let gridContainer = document.getElementById("grid");
-    let goalReached = false;   // ← флаг достижения цели
+    let goalReached = false;
 
     const difficultyNames = {1: "EASY", 2: "MEDIUM", 3: "HARD"};
 
@@ -401,10 +406,8 @@
         }
         document.getElementById("score").innerText = currentScore;
 
-        // Проверяем, не достигнута ли цель прямо сейчас
         if (!goalReached && hasTargetTile()) {
             goalReached = true;
-            // Визуальное оповещение
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:16px;font-weight:bold;z-index:999;';
             toast.textContent = '🎯 Target reached!';
@@ -491,7 +494,6 @@
         if (!gameActive || finishSent) return;
         gameActive = false;
         clearInterval(timerInterval);
-        // Победа, если флаг был поднят или плитка все ещё на поле
         const survived = goalReached || hasTargetTile();
         const score = currentScore;
         finishSent = true;
@@ -549,7 +551,15 @@
         }
     }
 
-    function goHome() {
+    async function goHome() {
+        // Показ рекламы с вероятностью 1/5
+        try {
+            if (Math.random() < 0.2) {
+                await ExitAdController.show();
+            }
+        } catch (e) {
+            // ошибка или отмена – игнорируем
+        }
         window.location.href = "../../";
     }
 
