@@ -138,10 +138,10 @@
 </head>
 <body>
     <div id="gameWrap">
-        <div id="loading">Loading...</div>
+        <div id="loading"></div>
         <div id="topUI">
-            <div class="uiCard"><div id="timer">20</div></div>
-            <div class="uiCard"><div id="difficulty">EASY</div></div>
+            <div class="uiCard"><div id="timer">40</div></div>
+            <div class="uiCard"><div id="difficulty"></div></div>
         </div>
 
         <div id="startScreen">
@@ -152,15 +152,15 @@
             </div>
             <div class="start-card">
                 <div id="logo">Flappy DOGS</div>
-                <div id="subtitle">Survive until timer ends<br>to receive DOGS reward.</div>
-                <button class="playBtn" onclick="startGame()">PLAY</button>
+                <div id="subtitle"></div>
+                <button class="playBtn" onclick="startGame()"></button>
             </div>
         </div>
 
         <div id="resultScreen">
             <div class="resultCard">
-                <div class="resultTitle" id="resultTitle">YOU LOST (>_<)</div>
-                <div class="resultText" id="resultText">Try again tomorrow.</div>
+                <div class="resultTitle" id="resultTitle"></div>
+                <div class="resultText" id="resultText"></div>
                 <div class="adBanner">
                     <div style="width:100%;margin:auto;position:relative;z-index:99998;">
                         <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
@@ -172,12 +172,10 @@
                     </div>
                 </div>
                 <div id="winBlock" style="display:none;">
-                    <div class="waitBox">
-                        Reward is being credited.<br>Please wait...
-                        <div id="claimTimer">5</div>
-                    </div>
+                    <div class="waitBox" id="waitBoxText"></div>
+                    <div id="claimTimer">5</div>
                 </div>
-                <button class="resultBtn" onclick="goHome()" id="homeBtn">RETURN HOME</button>
+                <button class="resultBtn" onclick="goHome()" id="homeBtn"></button>
             </div>
         </div>
 
@@ -185,6 +183,56 @@
     </div>
 
     <script>
+        // ========== ЛОКАЛИЗАЦИЯ ==========
+        const currentLang = localStorage.getItem('lang') || 'en';
+        const LOCALE = {
+            ru: {
+                loading: "Загрузка...",
+                play: "ИГРАТЬ",
+                difficulty: {1:"ЛЕГКО",2:"СРЕДНЕ",3:"СЛОЖНО"},
+                survive: "Продержитесь",
+                reward: "Награда",
+                sec: "с",
+                lost_title: "ВЫ ПРОИГРАЛИ (>_<)",
+                lost_text: "Вы не смогли выжить.",
+                win_title: "ВЫ ВЫИГРАЛИ 🎉",
+                win_text: "Вы выжили! Награда:",
+                session_expired: "Сессия истекла.",
+                invalid_session: "Неверная игровая сессия.",
+                already_completed: "Забег уже завершён.",
+                wait_text: "Награда начисляется.<br>Пожалуйста, подождите...",
+                home_btn: "ВЕРНУТЬСЯ ДОМОЙ",
+                open_from_hub: "ОТКРОЙТЕ ИЗ GAMEHUB"
+            },
+            en: {
+                loading: "Loading...",
+                play: "PLAY",
+                difficulty: {1:"EASY",2:"MEDIUM",3:"HARD"},
+                survive: "Survive",
+                reward: "Reward",
+                sec: "s",
+                lost_title: "YOU LOST (>_<)",
+                lost_text: "You failed to survive.",
+                win_title: "YOU WON 🎉",
+                win_text: "You survived! Reward:",
+                session_expired: "Session expired.",
+                invalid_session: "Invalid game session.",
+                already_completed: "Run already completed.",
+                wait_text: "Reward is being credited.<br>Please wait...",
+                home_btn: "RETURN HOME",
+                open_from_hub: "OPEN FROM GAMEHUB"
+            }
+        };
+        function t(key) { return LOCALE[currentLang]?.[key] ?? key; }
+        function td(key) { return LOCALE[currentLang]?.difficulty?.[key] ?? key; }
+
+        // Применяем язык сразу
+        document.getElementById('loading').innerText = t('loading');
+        document.querySelector('.playBtn').innerText = t('play');
+        document.getElementById('homeBtn').innerText = t('home_btn');
+        // Сложность будет обновлена после установки difficultyLevel
+        document.getElementById('waitBoxText').innerHTML = t('wait_text');
+
         const tg = window.Telegram?.WebApp;
         tg?.expand?.();
 
@@ -232,7 +280,7 @@
             const playBtn = document.querySelector(".playBtn");
             if (playBtn) {
                 playBtn.disabled = true;
-                playBtn.innerText = "OPEN FROM GAMEHUB";
+                playBtn.innerText = t('open_from_hub');
             }
         }
 
@@ -240,12 +288,16 @@
         let difficulty = { pipeGap: 230, pipeSpeed: 2.8, gravity: 0.38, survive: 40 };
         if (difficultyLevel >= 3) {
             difficulty = { pipeGap: 205, pipeSpeed: 3.5, gravity: 0.4, survive: 45 };
-            document.getElementById("difficulty").innerText = "MEDIUM";
-        }
-        if (difficultyLevel >= 6) {
+            document.getElementById("difficulty").innerText = td(2);
+        } else if (difficultyLevel >= 6) {
             difficulty = { pipeGap: 185, pipeSpeed: 4.2, gravity: 0.43, survive: 50 };
-            document.getElementById("difficulty").innerText = "HARD";
+            document.getElementById("difficulty").innerText = td(3);
+        } else {
+            document.getElementById("difficulty").innerText = td(1);
         }
+
+        // Устанавливаем текст подсказки на стартовом экране
+        document.getElementById('subtitle').innerHTML = `${t('survive')} ${difficulty.survive}${t('sec')}<br>${t('reward')}: 5 DOGS`;
 
         const canvas = document.getElementById("game");
         const ctx = canvas.getContext("2d");
@@ -370,12 +422,12 @@
             gameEnded = true;
             clearInterval(timerInterval);
             document.getElementById("resultScreen").style.display = "flex";
-            document.getElementById("resultTitle").innerText = "YOU LOST (>_<)";
-            document.getElementById("resultText").innerText = "You failed to survive.";
+            document.getElementById("resultTitle").innerText = t('lost_title');
+            document.getElementById("resultText").innerText = t('lost_text');
             const res = await sendFinish(false);
             if (!res.ok) {
-                if (res.error === "session_expired") document.getElementById("resultText").innerText = "Session expired.";
-                else if (res.error === "invalid_session") document.getElementById("resultText").innerText = "Invalid game session.";
+                if (res.error === "session_expired") document.getElementById("resultText").innerText = t('session_expired');
+                else if (res.error === "invalid_session") document.getElementById("resultText").innerText = t('invalid_session');
             }
         }
 
@@ -384,7 +436,7 @@
             gameEnded = true;
             clearInterval(timerInterval);
             document.getElementById("resultScreen").style.display = "flex";
-            document.getElementById("resultTitle").innerText = "YOU WON 🎉";
+            document.getElementById("resultTitle").innerText = t('win_title');
             document.getElementById("resultText").innerText = "DOGS reward will be credited shortly.";
             document.getElementById("winBlock").style.display = "block";
             document.getElementById("homeBtn").style.display = "none";
@@ -392,13 +444,13 @@
             if (!res.ok) {
                 document.getElementById("winBlock").style.display = "none";
                 document.getElementById("homeBtn").style.display = "block";
-                if (res.error === "already_completed") document.getElementById("resultText").innerText = "Run already completed.";
-                else if (res.error === "session_expired") document.getElementById("resultText").innerText = "Session expired.";
-                else if (res.error === "invalid_session") document.getElementById("resultText").innerText = "Invalid session.";
+                if (res.error === "already_completed") document.getElementById("resultText").innerText = t('already_completed');
+                else if (res.error === "session_expired") document.getElementById("resultText").innerText = t('session_expired');
+                else if (res.error === "invalid_session") document.getElementById("resultText").innerText = t('invalid_session');
                 return;
             }
             if (res.win && typeof res.reward !== "undefined") {
-                document.getElementById("resultText").innerText = `You survived! Reward: +${res.reward} DOGS`;
+                document.getElementById("resultText").innerText = `${t('win_text')} +${res.reward} DOGS`;
             }
             let wait = 5;
             document.getElementById("claimTimer").innerText = wait;
