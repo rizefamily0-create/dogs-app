@@ -226,17 +226,15 @@
         function t(key) { return LOCALE[currentLang]?.[key] ?? key; }
         function td(key) { return LOCALE[currentLang]?.difficulty?.[key] ?? key; }
 
-        // Применяем язык сразу
+        // Установка начальных текстов
         document.getElementById('loading').innerText = t('loading');
         document.querySelector('.playBtn').innerText = t('play');
         document.getElementById('homeBtn').innerText = t('home_btn');
-        // Сложность будет обновлена после установки difficultyLevel
         document.getElementById('waitBoxText').innerHTML = t('wait_text');
 
         const tg = window.Telegram?.WebApp;
         tg?.expand?.();
 
-        // Инициализация рекламы для выхода (блок int-31473)
         const ExitAdController = window.Adsgram.init({ blockId: "int-31473" });
 
         const API = "https://dogs-7ntt.onrender.com";
@@ -244,6 +242,61 @@
         const initDataFromUrl = new URLSearchParams(window.location.search).get("init_data");
         let finishSent = false;
 
+        // Игровые переменные, которые получим от сервера
+        let gameDifficulty = 1;
+        let surviveTimeGoal = 40;
+        let expectedReward = 5;
+        const rewardMap = {1:5, 2:7, 3:10};
+
+        // Параметры труб будут назначены после загрузки
+        let difficulty = { pipeGap: 230, pipeSpeed: 2.8, gravity: 0.38 };
+
+        // ========== ИНИЦИАЛИЗАЦИЯ С СЕРВЕРА ==========
+        async function init() {
+            if (!sessionToken) {
+                document.querySelector(".playBtn").disabled = true;
+                document.querySelector(".playBtn").innerText = t('open_from_hub');
+                return;
+            }
+            try {
+                const res = await fetch(API + "/games/flappy/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: initDataFromUrl || tg?.initData || "" })
+                });
+                const data = await res.json();
+                if (!data.ok) {
+                    document.querySelector(".playBtn").disabled = true;
+                    document.querySelector(".playBtn").innerText = data.error || "Error";
+                    return;
+                }
+                gameDifficulty = data.difficulty;
+                surviveTimeGoal = data.survive_time;
+                expectedReward = rewardMap[gameDifficulty];
+                document.getElementById('difficulty').innerText = td(gameDifficulty);
+                document.getElementById('subtitle').innerHTML = `
+                    ${t('survive')}: <b>${surviveTimeGoal}${t('sec')}</b><br>
+                    ${t('reward')}: <b>${expectedReward} DOGS</b>
+                `;
+                // Установка параметров сложности для игры
+                const diffSettings = {
+                    1: { pipeGap: 230, pipeSpeed: 2.8, gravity: 0.38 },
+                    2: { pipeGap: 205, pipeSpeed: 3.5, gravity: 0.4 },
+                    3: { pipeGap: 185, pipeSpeed: 4.2, gravity: 0.43 }
+                };
+                difficulty = diffSettings[gameDifficulty];
+                // Скрываем экран загрузки после успешной инициализации
+                hideLoading();
+            } catch (e) {
+                console.error("Init error:", e);
+                hideLoading(); // всё равно скрываем, чтобы не висло
+            }
+        }
+
+        // Запускаем инициализацию сразу
+        init();
+
+        // Изображения и их предзагрузка
         const birdImg = new Image();
         const pipeImg = new Image();
         const bgImg = new Image();
@@ -260,7 +313,9 @@
 
         function imageLoaded() {
             loadedImages++;
-            if (loadedImages >= TOTAL_IMAGES) hideLoading();
+            if (loadedImages >= TOTAL_IMAGES) {
+                // изображения загружены, но игру пока не запускаем, экран загрузки скроется после инициализации с сервера
+            }
         }
 
         birdImg.onload = imageLoaded;
@@ -274,31 +329,10 @@
         pipeImg.src = "pipe.png";
         bgImg.src = "bg.png";
 
+        // Таймаут на случай, если изображения или сервер долго грузятся
         setTimeout(hideLoading, 3000);
 
-        if (!sessionToken) {
-            const playBtn = document.querySelector(".playBtn");
-            if (playBtn) {
-                playBtn.disabled = true;
-                playBtn.innerText = t('open_from_hub');
-            }
-        }
-
-        const difficultyLevel = 0;
-        let difficulty = { pipeGap: 230, pipeSpeed: 2.8, gravity: 0.38, survive: 40 };
-        if (difficultyLevel >= 3) {
-            difficulty = { pipeGap: 205, pipeSpeed: 3.5, gravity: 0.4, survive: 45 };
-            document.getElementById("difficulty").innerText = td(2);
-        } else if (difficultyLevel >= 6) {
-            difficulty = { pipeGap: 185, pipeSpeed: 4.2, gravity: 0.43, survive: 50 };
-            document.getElementById("difficulty").innerText = td(3);
-        } else {
-            document.getElementById("difficulty").innerText = td(1);
-        }
-
-        // Устанавливаем текст подсказки на стартовом экране
-        document.getElementById('subtitle').innerHTML = `${t('survive')} ${difficulty.survive}${t('sec')}<br>${t('reward')}: 5 DOGS`;
-
+        // Canvas
         const canvas = document.getElementById("game");
         const ctx = canvas.getContext("2d");
 
@@ -311,7 +345,7 @@
 
         let gameStarted = false;
         let gameEnded = false;
-        let surviveTime = difficulty.survive;
+        let surviveTime = surviveTimeGoal;
         let timerInterval;
 
         const bird = { x: 90, y: 300, width: 92, height: 38, velocity: 0, jump: -7 };
@@ -336,7 +370,7 @@
         }
 
         function startTimer() {
-            surviveTime = difficulty.survive;
+            surviveTime = surviveTimeGoal;
             document.getElementById("timer").innerText = surviveTime;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
