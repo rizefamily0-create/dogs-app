@@ -49,14 +49,69 @@
         .nav { position: fixed; bottom: 10px; left: 10px; right: 10px; display: flex; background: rgba(28, 28, 34, 0.78); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 5px 6px 9px; backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); z-index: 100; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 1px 0 rgba(255, 255, 255, 0.06) inset; transition: all 0.3s ease; }
         .nav-item { flex: 1; text-align: center; color: #6e6e73; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; padding: 5px 0 3px; letter-spacing: 0.2px; border-radius: 18px; position: relative; }
         .nav-item span { display: block; font-size: 22px; margin-bottom: 3px; transition: transform 0.2s ease; }
-        /* фикс размера для текста навигации */
         .nav-label { font-size: 10px !important; font-weight: 600; display: block; }
         .nav-item.active { color: #c0c0c0; }
         .nav-item.active span { transform: scale(1.08); }
         .nav-item:active { opacity: 0.7; }
-        #x3modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 9999; justify-content: center; align-items: center; }
-        .x3box { background: rgba(28, 28, 34, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); padding: 28px 24px; border-radius: 26px; text-align: center; width: 85%; max-width: 330px; backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset; }
-        .x3box button:last-child { background: rgba(50, 50, 56, 0.6); color: #aaa; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: none; }
+        /* ========== НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ НАГРАДЫ ========== */
+        #claimModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .claimBox {
+            background: rgba(28, 28, 34, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 28px 24px;
+            border-radius: 26px;
+            text-align: center;
+            width: 85%;
+            max-width: 330px;
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+        .claimBox .rewardAmount {
+            font-size: 28px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+        .claimBox .x3Prompt {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        .claimBox .btnRow {
+            display: flex;
+            gap: 10px;
+        }
+        .claimBox .btnRow button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .btn-x3 {
+            background: #c0c0c0;
+            color: #1a1a1d;
+        }
+        .btn-nothanks {
+            background: rgba(50, 50, 56, 0.6);
+            color: #aaa;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: none;
+        }
+        /* ========== ОСТАЛЬНЫЕ СТИЛИ (без изменений) ========== */
         .history-item { background: rgba(22, 22, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 18px; padding: 14px; margin-top: 10px; font-size: 14px; line-height: 1.6; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         .status { margin-top: 10px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
         .pending { color: #f59e0b; } .paid { color: #55ef8b; } .rejected { color: #ef4444; }
@@ -135,7 +190,6 @@
     </style>
 </head>
 <body>
-
     <div id="splash">
         <img src="dogs.png" alt="loading">
         <div id="loadingText">
@@ -144,7 +198,6 @@
     </div>
 
     <div class="app" id="mainApp">
-
         <!-- FAUCET -->
         <div id="faucet" class="page active">
             <div id="globalStats" style="display: flex; justify-content: space-between; align-items: center; padding: 0 2px 6px 2px; margin: 0; font-size: 13px; font-weight: 600;">
@@ -347,12 +400,15 @@
             <div class="nav-item" onclick="tab('profile', this)"><span>👤</span><span class="nav-label"></span></div>
         </div>
 
-        <!-- X3 MODAL -->
-        <div id="x3modal">
-            <div class="x3box">
-                <div id="x3Title"></div>
-                <button id="x3Btn" onclick="watchX3()" style="margin-bottom:10px;"></button>
-                <button onclick="closeX3()" style="background:rgba(50,50,56,0.6);color:#aaa;box-shadow:none;" id="x3NoBtn"></button>
+        <!-- НОВОЕ МОДАЛЬНОЕ ОКНО НАГРАДЫ -->
+        <div id="claimModal">
+            <div class="claimBox">
+                <div class="rewardAmount" id="claimRewardText"></div>
+                <div class="x3Prompt" id="claimPromptText"></div>
+                <div class="btnRow">
+                    <button class="btn-x3" id="claimX3Btn" onclick="watchX3()"></button>
+                    <button class="btn-nothanks" id="claimNoThanksBtn" onclick="closeClaimModal()"></button>
+                </div>
             </div>
         </div>
 
@@ -453,6 +509,11 @@
                 reward: "Награда",
                 alreadyClaimed: "Уже получено",
                 refClaimCooldown: "Кулдаун",
+                collected: "Собрано {0} DOGS",
+                x3_prompt: "Посмотрите рекламу, чтобы утроить ваше вознаграждение",
+                x3_btn: "Смотреть X3",
+                no_thanks: "Нет, спасибо",
+                final_reward: "Ваша награда {0} DOGS"
             },
             en: {
                 faucet: "Faucet",
@@ -544,6 +605,11 @@
                 reward: "Reward",
                 alreadyClaimed: "Already claimed",
                 refClaimCooldown: "Cooldown",
+                collected: "Collected {0} DOGS",
+                x3_prompt: "Watch ad to triple your reward",
+                x3_btn: "Watch X3",
+                no_thanks: "No thanks",
+                final_reward: "Your reward {0} DOGS"
             }
         };
 
@@ -554,15 +620,12 @@
         }
 
         function applyAllLanguage() {
-            // Навигация
             document.querySelectorAll('.nav-label').forEach((el, i) => {
                 const keys = ['faucet','wallet','tasks','games','offerwall','profile'];
                 el.textContent = t(keys[i]);
             });
-            // Faucet
             document.getElementById('supportText').textContent = t('supportText');
             document.getElementById('claimBtn').textContent = t('claim');
-            // Wallet
             document.getElementById('walletHeader').innerHTML = `<div style="font-size:32px;font-weight:900;letter-spacing:-0.5px;">${t('walletTitle')}</div><div style="margin-top:4px;opacity:0.55;font-size:14px;">${t('walletSubtitle')}</div>`;
             document.getElementById('withdrawInfoTitle').innerHTML = `${t('minWithdraw')}<br>${t('networkFee')}`;
             document.getElementById('wallet').placeholder = t('walletPlaceholder');
@@ -572,7 +635,6 @@
             document.getElementById('withdrawBtn').textContent = t('withdrawBtn');
             document.getElementById('historyTitle').textContent = t('historyTitle');
             document.getElementById('withdrawHistory').innerHTML = t('noWithdraws');
-            // Tasks
             document.getElementById('tasksHeader').innerHTML = `<div style="font-size:32px;font-weight:900;letter-spacing:-0.5px;">${t('tasksTitle')}</div><div style="margin-top:4px;opacity:0.55;font-size:14px;">${t('tasksSubtitle')}</div>`;
             document.getElementById('dailyStreakTitle').innerHTML = `<div style="font-size:20px;font-weight:700;">${t('dailyStreak')}</div>`;
             document.getElementById('dailyStreakDesc').innerHTML = `<div style="opacity:0.55;margin-top:6px;font-size:14px;line-height:1.5;">${t('streakDesc')}</div>`;
@@ -584,7 +646,6 @@
             document.getElementById('promoBtn').textContent = t('activate');
             document.getElementById('tasksBlockTitle').textContent = t('tasksBlock');
             document.getElementById('specialOfferTitle').innerHTML = `<div style="font-size:18px;font-weight:800;">${t('specialOffers')}</div>`;
-            // Games
             document.getElementById('gamesHeader').innerHTML = `<div style="font-size:32px;font-weight:900;letter-spacing:-0.5px;">${t('gamesTitle')}</div><div style="margin-top:4px;opacity:0.55;font-size:14px;">${t('gamesSubtitle')}</div>`;
             document.getElementById('energyTitle').textContent = t('energy');
             document.getElementById('restoreEnergyBtn').textContent = t('watchAdEnergy');
@@ -594,11 +655,9 @@
             document.getElementById('game2048Desc').textContent = t('game2048Desc');
             document.getElementById('playFlappyBtn').textContent = t('play');
             document.getElementById('play2048Btn').textContent = t('play');
-            // Offerwall
             document.getElementById('offerwallHeader').innerHTML = `<div style="font-size:32px;font-weight:900;letter-spacing:-0.5px;">${t('offerwallTitle')}</div><div style="margin-top:4px;opacity:0.55;font-size:14px;">${t('offerwallSubtitle')}</div>`;
             document.getElementById('bitcotasksDesc').textContent = t('bitcotasksDesc');
             document.getElementById('offerwallOpenBtn').textContent = t('offerwallOpen');
-            // Profile
             document.getElementById('profileTitle').textContent = t('profileTitle');
             document.getElementById('statEarnedLabel').textContent = t('statEarned');
             document.getElementById('statWithdrawnLabel').textContent = t('statWithdrawn');
@@ -609,10 +668,9 @@
             document.getElementById('refCountLabel').textContent = t('refCount');
             document.getElementById('inviteBtn').textContent = t('inviteBtn');
             document.getElementById('refDescription').textContent = t('refDesc');
-            // X3 modal
-            document.getElementById('x3Title').textContent = t('x3Title');
-            document.getElementById('x3Btn').textContent = t('x3Watch');
-            document.getElementById('x3NoBtn').textContent = t('x3No');
+            // Новые кнопки модалки
+            document.getElementById('claimX3Btn').textContent = t('x3_btn');
+            document.getElementById('claimNoThanksBtn').textContent = t('no_thanks');
         }
 
         function setLang(lang) {
@@ -686,6 +744,7 @@
         let dailyQuestTimer = null;
         let refTimerInterval = null;
         let userRefLink = "";
+        let lastClaimReward = 0; // для нового окна
 
         function tab(id, el){
             document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
@@ -701,8 +760,21 @@
             }
         }
 
-        function showX3(){ document.getElementById("x3modal").style.display = "flex"; }
-        function closeX3(){ document.getElementById("x3modal").style.display = "none"; }
+        function showClaimModal(reward) {
+            document.getElementById('claimModal').style.display = 'flex';
+            document.getElementById('claimRewardText').innerText = t('collected', reward);
+            document.getElementById('claimPromptText').innerText = t('x3_prompt');
+            document.getElementById('claimX3Btn').innerText = t('x3_btn');
+            document.getElementById('claimNoThanksBtn').innerText = t('no_thanks');
+            document.getElementById('claimX3Btn').disabled = false;
+            document.getElementById('claimX3Btn').style.display = 'inline-block';
+            document.getElementById('claimNoThanksBtn').style.display = 'inline-block';
+            lastClaimReward = reward;
+        }
+
+        function closeClaimModal() {
+            document.getElementById('claimModal').style.display = 'none';
+        }
 
         function loadUser(){
             const user = tg.initDataUnsafe?.user;
@@ -769,9 +841,8 @@
                 });
                 const d = await r.json();
                 if(d.ok){
-                    tg.showPopup?.({message: "+" + d.reward + " DOGS"});
                     loadStatus();
-                    setTimeout(()=>{ showX3(); },300);
+                    showClaimModal(d.reward); // кастомное окно
                 }else{
                     tg.showPopup?.({message: d.error});
                     btn.disabled = false;
@@ -781,6 +852,32 @@
                 btn.disabled = false;
                 btn.innerText = t('claim');
             }
+        }
+
+        async function watchX3(){
+            const btnX3 = document.getElementById('claimX3Btn');
+            if(btnX3.dataset.loading === "1") return;
+            btnX3.dataset.loading = "1";
+            btnX3.disabled = true;
+            btnX3.innerText = t('loading');
+            try{
+                await AdControllerX3.show();
+                // успех
+                document.getElementById('claimRewardText').innerText = t('final_reward', lastClaimReward * 3);
+                document.getElementById('claimPromptText').style.display = 'none';
+                btnX3.style.display = 'none';
+                document.getElementById('claimNoThanksBtn').style.display = 'none';
+                setTimeout(() => {
+                    closeClaimModal();
+                    loadStatus(); // обновим баланс после callback x3
+                }, 2500);
+            }catch(e){
+                console.log(e);
+                tg.showPopup?.({message: t('adFailed')});
+                closeClaimModal();
+            }
+            btnX3.dataset.loading = "0";
+            btnX3.disabled = false;
         }
 
         let dailyTimerInterval = null;
@@ -1090,26 +1187,6 @@
                     tg.showPopup?.({message:d.error || t('taskFailed')});
                 }
             }catch(e){ tg.showPopup?.({message:t('serverError')}); }
-        }
-
-        async function watchX3(){
-            const btn = document.getElementById("x3Btn");
-            if(btn.dataset.loading === "1") return;
-            btn.dataset.loading = "1";
-            btn.disabled = true;
-            btn.innerText = t('loading');
-            try{
-                await AdControllerX3.show();
-                closeX3();
-                tg.showPopup?.({message:t('rewardCredited')});
-                setTimeout(async ()=>{ await loadStatus(); }, 2500);
-            }catch(e){
-                console.log(e);
-                tg.showPopup?.({message:t('adFailed')});
-            }
-            btn.dataset.loading = "0";
-            btn.disabled = false;
-            btn.innerText = t('x3Watch');
         }
 
         async function withdraw(){
