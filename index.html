@@ -53,7 +53,8 @@
         .nav-item.active { color: #c0c0c0; }
         .nav-item.active span { transform: scale(1.08); }
         .nav-item:active { opacity: 0.7; }
-        /* ========== НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ НАГРАДЫ ========== */
+
+        /* ========== МОДАЛЬНОЕ ОКНО НАГРАДЫ ========== */
         #claimModal {
             display: none;
             position: fixed;
@@ -68,26 +69,32 @@
         .claimBox {
             background: rgba(28, 28, 34, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px 20px;
+            padding: 24px 20px;
             border-radius: 26px;
             text-align: center;
             width: 85%;
-            max-width: 280px;
+            max-width: 290px;
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
+        .claimBox .rewardLabel {
+            font-size: 15px;
+            font-weight: 600;
+            color: #c0c0c0;
+            margin-bottom: 6px;
+        }
         .claimBox .rewardAmount {
-            font-size: 22px;
+            font-size: 30px;
             font-weight: 900;
             color: #ffffff;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             word-break: break-word;
         }
         .claimBox .x3Prompt {
             font-size: 13px;
             opacity: 0.7;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             line-height: 1.4;
         }
         .claimBox .btnRow {
@@ -112,6 +119,7 @@
             -webkit-backdrop-filter: blur(10px);
             box-shadow: none;
         }
+
         /* ========== ОСТАЛЬНЫЕ СТИЛИ (без изменений) ========== */
         .history-item { background: rgba(22, 22, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 18px; padding: 14px; margin-top: 10px; font-size: 14px; line-height: 1.6; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         .status { margin-top: 10px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -401,9 +409,10 @@
             <div class="nav-item" onclick="tab('profile', this)"><span>👤</span><span class="nav-label"></span></div>
         </div>
 
-        <!-- НОВОЕ МОДАЛЬНОЕ ОКНО НАГРАДЫ -->
+        <!-- МОДАЛЬНОЕ ОКНО НАГРАДЫ -->
         <div id="claimModal">
             <div class="claimBox">
+                <div class="rewardLabel" id="claimRewardLabel"></div>
                 <div class="rewardAmount" id="claimRewardText"></div>
                 <div class="x3Prompt" id="claimPromptText"></div>
                 <div class="btnRow">
@@ -412,7 +421,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -510,11 +518,12 @@
                 reward: "Награда",
                 alreadyClaimed: "Уже получено",
                 refClaimCooldown: "Кулдаун",
-                collected: "Собрано {0} DOGS",
+                collected_label: "Вы получили:",
+                collected: "{0} DOGS",
                 x3_prompt: "Посмотрите рекламу, чтобы утроить ваше вознаграждение",
                 x3_btn: "Смотреть X3",
                 no_thanks: "Нет, спасибо",
-                final_reward: "Ваша награда {0} DOGS"
+                final_reward: "{0} DOGS"
             },
             en: {
                 faucet: "Faucet",
@@ -606,11 +615,12 @@
                 reward: "Reward",
                 alreadyClaimed: "Already claimed",
                 refClaimCooldown: "Cooldown",
-                collected: "Collected {0} DOGS",
+                collected_label: "You received:",
+                collected: "{0} DOGS",
                 x3_prompt: "Watch ad to triple your reward",
                 x3_btn: "Watch X3",
                 no_thanks: "No thanks",
-                final_reward: "Your reward {0} DOGS"
+                final_reward: "{0} DOGS"
             }
         };
 
@@ -762,6 +772,7 @@
 
         function showClaimModal(reward) {
             document.getElementById('claimModal').style.display = 'flex';
+            document.getElementById('claimRewardLabel').innerText = t('collected_label');
             document.getElementById('claimRewardText').innerText = t('collected', reward);
             document.getElementById('claimPromptText').innerText = t('x3_prompt');
             document.getElementById('claimX3Btn').innerText = t('x3_btn');
@@ -862,6 +873,7 @@
             btnX3.innerText = t('loading');
             try{
                 await AdControllerX3.show();
+                document.getElementById('claimRewardLabel').innerText = t('collected_label');
                 document.getElementById('claimRewardText').innerText = t('final_reward', lastClaimReward * 3);
                 document.getElementById('claimPromptText').style.display = 'none';
                 btnX3.style.display = 'none';
