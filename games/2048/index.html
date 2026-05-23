@@ -223,11 +223,11 @@
 </head>
 <body>
 <div id="gameWrap">
-    <div id="loading">Loading...</div>
+    <div id="loading"></div>
 
     <div id="topUI">
         <div class="uiCard"><div id="timer">60</div></div>
-        <div class="uiCard"><div id="difficulty">EASY</div></div>
+        <div class="uiCard"><div id="difficulty"></div></div>
     </div>
 
     <div id="startScreen">
@@ -237,7 +237,7 @@
         <div class="start-card">
             <div style="font-size:36px; font-weight:900; margin-bottom:12px;">2048</div>
             <div id="startInfo" style="margin-bottom:16px; line-height:1.5; color:#8e8e93;"></div>
-            <button class="playBtn" onclick="startGame()">PLAY</button>
+            <button class="playBtn" onclick="startGame()"></button>
         </div>
     </div>
 
@@ -248,11 +248,11 @@
         <div id="grid"></div>
         <div class="infoRow">
             <div class="infoBox">
-                <div class="label">Score</div>
+                <div class="label"></div>
                 <div class="value" id="score">0</div>
             </div>
             <div class="infoBox">
-                <div class="label">Target tile</div>
+                <div class="label"></div>
                 <div class="value" id="targetVal">≥256</div>
             </div>
         </div>
@@ -263,8 +263,7 @@
             <div class="resultTitle" id="resultTitle"></div>
             <div class="resultText" id="resultText"></div>
             <div id="winBlock" style="display:none;">
-                <div class="waitBox">
-                    Reward is being credited.<br>Please wait...
+                <div class="waitBox" id="waitBoxText">
                     <div id="claimTimer">5</div>
                 </div>
             </div>
@@ -274,12 +273,70 @@
             <div class="adBanner">
                 <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
             </div>
-            <button class="resultBtn" onclick="goHome()" id="homeBtn">RETURN HOME</button>
+            <button class="resultBtn" onclick="goHome()" id="homeBtn"></button>
         </div>
     </div>
 </div>
 
 <script>
+    // ========== ЛОКАЛИЗАЦИЯ ==========
+    const currentLang = localStorage.getItem('lang') || 'en';
+    const LOCALE = {
+        ru: {
+            loading: "Загрузка...",
+            play: "ИГРАТЬ",
+            difficulty: {1:"ЛЕГКО",2:"СРЕДНЕ",3:"СЛОЖНО"},
+            score: "Очки",
+            target: "Целевая плитка",
+            time: "Время",
+            sec: "с",
+            reward: "Награда",
+            target_tile: "Целевая плитка",
+            difficulty_title: "Сложность",
+            lost_title: "ВЫ ПРОИГРАЛИ (>_<)",
+            lost_text: "Вы не достигли плитки ≥",
+            win_title: "ВЫ ВЫИГРАЛИ 🎉",
+            win_text: "DOGS добавлены на ваш баланс!",
+            session_expired: "Сессия истекла.",
+            wait_text: "Награда начисляется.<br>Пожалуйста, подождите...",
+            home_btn: "ВЕРНУТЬСЯ ДОМОЙ",
+            open_from_hub: "ОТКРОЙТЕ ИЗ GAMEHUB",
+            target_reached: "🎯 Цель достигнута!"
+        },
+        en: {
+            loading: "Loading...",
+            play: "PLAY",
+            difficulty: {1:"EASY",2:"MEDIUM",3:"HARD"},
+            score: "Score",
+            target: "Target tile",
+            time: "Time",
+            sec: "s",
+            reward: "Reward",
+            target_tile: "Target tile",
+            difficulty_title: "Difficulty",
+            lost_title: "YOU LOST (>_<)",
+            lost_text: "You didn't reach tile ≥",
+            win_title: "YOU WON 🎉",
+            win_text: "DOGS added to your balance!",
+            session_expired: "Session expired.",
+            wait_text: "Reward is being credited.<br>Please wait...",
+            home_btn: "RETURN HOME",
+            open_from_hub: "OPEN FROM GAMEHUB",
+            target_reached: "🎯 Target reached!"
+        }
+    };
+    function t(key) { return LOCALE[currentLang]?.[key] ?? key; }
+    function td(key) { return LOCALE[currentLang]?.difficulty?.[key] ?? key; }
+
+    // Применяем язык ко всем статическим элементам
+    document.getElementById('loading').innerText = t('loading');
+    document.querySelector('.playBtn').innerText = t('play');
+    document.getElementById('homeBtn').innerText = t('home_btn');
+    document.querySelectorAll('.infoBox .label')[0].innerText = t('score');
+    document.querySelectorAll('.infoBox .label')[1].innerText = t('target');
+    document.getElementById('waitBoxText').innerHTML = t('wait_text') + '<div id="claimTimer">5</div>';
+
+    // Блокировка свайпа вниз
     document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
     // Реклама при выходе (блок int-31473)
@@ -319,8 +376,6 @@
     let gridContainer = document.getElementById("grid");
     let goalReached = false;
 
-    const difficultyNames = {1: "EASY", 2: "MEDIUM", 3: "HARD"};
-
     function hideLoading() {
         document.getElementById("loading").style.display = "none";
     }
@@ -329,7 +384,7 @@
     async function init() {
         if (!sessionToken) {
             document.querySelector(".playBtn").disabled = true;
-            document.querySelector(".playBtn").innerText = "OPEN FROM GAMEHUB";
+            document.querySelector(".playBtn").innerText = t('open_from_hub');
             return;
         }
         try {
@@ -347,12 +402,13 @@
             gameDifficulty = data.difficulty;
             targetScore = data.target_score;
             timeLimit = data.time_limit;
-            document.getElementById("difficulty").innerText = difficultyNames[gameDifficulty];
+            document.getElementById("difficulty").innerText = td(gameDifficulty);
+            const rewardMap = {1:5,2:7,3:10};
             document.getElementById("startInfo").innerHTML = `
-                Difficulty: <b>${difficultyNames[gameDifficulty]}</b><br>
-                Target tile: <b>≥${targetScore}</b><br>
-                Time: <b>${timeLimit}s</b><br>
-                Reward: <b>${ {1:5,2:7,3:10}[gameDifficulty] } DOGS</b>
+                ${t('difficulty_title')}: <b>${td(gameDifficulty)}</b><br>
+                ${t('target_tile')}: <b>≥${targetScore}</b><br>
+                ${t('time')}: <b>${timeLimit}${t('sec')}</b><br>
+                ${t('reward')}: <b>${rewardMap[gameDifficulty]} DOGS</b>
             `;
             hideLoading();
         } catch(e) {
@@ -409,7 +465,7 @@
             goalReached = true;
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:16px;font-weight:bold;z-index:999;';
-            toast.textContent = '🎯 Target reached!';
+            toast.textContent = t('target_reached');
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 1500);
         }
@@ -526,8 +582,8 @@
         const claimTimer = document.getElementById("claimTimer");
 
         if (data.ok && data.win) {
-            titleEl.innerText = "YOU WON 🎉";
-            textEl.innerText = `+${data.reward} DOGS added to your balance!`;
+            titleEl.innerText = t('win_title');
+            textEl.innerText = `+${data.reward} DOGS ${t('win_text')}`;
             winBlock.style.display = "block";
             homeBtn.style.display = "none";
             let wait = 5;
@@ -542,23 +598,20 @@
                 }
             }, 1000);
         } else {
-            titleEl.innerText = "YOU LOST (>_<)";
-            textEl.innerText = `You didn't reach tile ≥ ${targetScore}. Score: ${currentScore}`;
-            if (data.error === "session_expired") textEl.innerText += "\nSession expired.";
+            titleEl.innerText = t('lost_title');
+            textEl.innerText = `${t('lost_text')} ≥ ${targetScore}. ${t('score')}: ${currentScore}`;
+            if (data.error === "session_expired") textEl.innerText += "\n" + t('session_expired');
             winBlock.style.display = "none";
             homeBtn.style.display = "block";
         }
     }
 
     async function goHome() {
-        // Показ рекламы с вероятностью 1/3
         try {
             if (Math.random() < 1/3) {
                 await ExitAdController.show();
             }
-        } catch (e) {
-            // ошибка или отмена – ничего не делаем
-        }
+        } catch (e) {}
         window.location.href = "../../";
     }
 
