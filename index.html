@@ -884,7 +884,7 @@
             btnX3.disabled = false;
         }
 
-        // ========== DAILY STREAK / QUESTS / TASKS / GAMES / WALLET (полные реализации) ==========
+        // ========== DAILY STREAK / QUESTS / TASKS / GAMES / WALLET ==========
         let dailyTimerInterval = null;
         async function dailyBonus(){
             const btn = document.getElementById("dailyBtn");
@@ -1392,7 +1392,7 @@
                 const now = new Date();
                 const kyivNow = new Date(now.toLocaleString("en-US", {timeZone:"Europe/Kiev"}));
                 const next = new Date(kyivNow);
-                next.setHours(24,0,0,0);
+                next.setHours(25,0,0,0);  // 01:00 следующих суток (синхронизация с daily streak)
                 const diff = Math.floor((next - kyivNow) / 1000);
                 const h = Math.floor(diff / 3600);
                 const m = Math.floor((diff % 3600)/60);
@@ -1466,7 +1466,7 @@
                     loadSpecialOfferStatus(),
                     loadDailyQuests(),
                     loadGamesStatus(),
-                    loadProfile(),            // ← добавлена загрузка профиля
+                    loadProfile(),            // профиль грузится сразу
                     loadWithdrawHistory(),
                     loadTasks()
                 ]);
