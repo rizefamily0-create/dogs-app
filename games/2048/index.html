@@ -419,6 +419,8 @@
                 return;
             }
             gameDifficulty = data.difficulty;
+            // Сохраняем сложность для отображения в GameHub
+            localStorage.setItem('2048_difficulty', data.difficulty);
             targetScore = data.target_score;
             timeLimit = data.time_limit;
             document.getElementById("difficulty").innerText = td(gameDifficulty);
