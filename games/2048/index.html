@@ -101,13 +101,12 @@
             z-index: 0;
             border-radius: 18px;
         }
-        /* Маскот сверху, вплотную к сетке */
         #mascotWrapper {
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 300px; /* под ширину сетки */
-            margin-bottom: -6px; /* убираем зазор */
+            max-width: 300px;
+            margin-bottom: -6px;
             display: flex;
             justify-content: center;
         }
@@ -117,10 +116,9 @@
             display: block;
             object-fit: contain;
             object-position: bottom;
-            transform: scale(0.8); /* уменьшено на 20% от исходного */
+            transform: scale(0.8);
             transform-origin: bottom center;
         }
-        /* Сетка */
         #grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -171,7 +169,6 @@
         .tile-512  { background: #edc850; color: #f9f6f2; font-size: 24px; }
         .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 20px; }
         .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 20px; }
-        /* Блоки Score и Target под сеткой */
         .infoRow {
             display: flex;
             justify-content: center;
@@ -232,7 +229,6 @@
         <div class="uiCard"><div id="difficulty">EASY</div></div>
     </div>
 
-    <!-- START SCREEN -->
     <div id="startScreen">
         <div class="adBanner" style="width:300px;max-width:90vw;">
             <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
@@ -244,17 +240,11 @@
         </div>
     </div>
 
-    <!-- GAME UI -->
     <div id="gameContainer">
-        <!-- Маскот -->
         <div id="mascotWrapper">
             <img src="dogs-mascot.png" alt="Dogs mascot" />
         </div>
-
-        <!-- Сетка игры -->
         <div id="grid"></div>
-
-        <!-- Score и Target под сеткой -->
         <div class="infoRow">
             <div class="infoBox">
                 <div class="label">Score</div>
@@ -267,7 +257,6 @@
         </div>
     </div>
 
-    <!-- RESULT SCREEN -->
     <div id="resultScreen" style="display:none;">
         <div class="resultCard">
             <div class="resultTitle" id="resultTitle"></div>
@@ -290,14 +279,11 @@
 </div>
 
 <script>
-    document.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-    }, { passive: false });
+    document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
     function createPaws() {
         const container = document.getElementById('gameWrap');
-        const pawCount = 18;
-        for (let i = 0; i < pawCount; i++) {
+        for (let i = 0; i < 18; i++) {
             const paw = document.createElement('div');
             paw.className = 'paw-decor';
             paw.textContent = '🐾';
@@ -327,6 +313,7 @@
     let timeLeft = 0;
     let grid = [];
     let gridContainer = document.getElementById("grid");
+    let goalReached = false;   // ← флаг достижения цели
 
     const difficultyNames = {1: "EASY", 2: "MEDIUM", 3: "HARD"};
 
@@ -376,6 +363,7 @@
         document.getElementById("targetVal").innerText = "≥" + targetScore;
         resetGame();
         gameActive = true;
+        goalReached = false;
         startTimer();
     }
 
@@ -412,6 +400,17 @@
             }
         }
         document.getElementById("score").innerText = currentScore;
+
+        // Проверяем, не достигнута ли цель прямо сейчас
+        if (!goalReached && hasTargetTile()) {
+            goalReached = true;
+            // Визуальное оповещение
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:16px;font-weight:bold;z-index:999;';
+            toast.textContent = '🎯 Target reached!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1500);
+        }
     }
 
     function hasTargetTile() {
@@ -492,7 +491,8 @@
         if (!gameActive || finishSent) return;
         gameActive = false;
         clearInterval(timerInterval);
-        const survived = hasTargetTile();
+        // Победа, если флаг был поднят или плитка все ещё на поле
+        const survived = goalReached || hasTargetTile();
         const score = currentScore;
         finishSent = true;
 
