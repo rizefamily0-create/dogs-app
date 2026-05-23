@@ -253,7 +253,7 @@
             </div>
             <div class="infoBox">
                 <div class="label"></div>
-                <div class="value" id="targetVal">≥256</div>
+                <div class="value" id="targetVal">≥128</div>
             </div>
         </div>
     </div>
@@ -296,7 +296,7 @@
             lost_title: "ВЫ ПРОИГРАЛИ (>_<)",
             lost_text: "Вы не достигли плитки ≥",
             win_title: "ВЫ ВЫИГРАЛИ 🎉",
-            win_text: "DOGS добавлены на ваш баланс!",
+            win_text: "Вы собрали нужную плитку! +{0} DOGS будут начислены.",
             session_expired: "Сессия истекла.",
             wait_text: "Награда начисляется.<br>Пожалуйста, подождите...",
             home_btn: "ВЕРНУТЬСЯ ДОМОЙ",
@@ -317,7 +317,7 @@
             lost_title: "YOU LOST (>_<)",
             lost_text: "You didn't reach tile ≥",
             win_title: "YOU WON 🎉",
-            win_text: "DOGS added to your balance!",
+            win_text: "You collected the target tile! +{0} DOGS will be credited.",
             session_expired: "Session expired.",
             wait_text: "Reward is being credited.<br>Please wait...",
             home_btn: "RETURN HOME",
@@ -325,10 +325,14 @@
             target_reached: "🎯 Target reached!"
         }
     };
-    function t(key) { return LOCALE[currentLang]?.[key] ?? key; }
+    function t(key, ...args) {
+        let str = LOCALE[currentLang]?.[key] || key;
+        args.forEach((arg, i) => { str = str.replace(`{${i}}`, arg); });
+        return str;
+    }
     function td(key) { return LOCALE[currentLang]?.difficulty?.[key] ?? key; }
 
-    // Применяем язык ко всем статическим элементам
+    // Статическая локализация
     document.getElementById('loading').innerText = t('loading');
     document.querySelector('.playBtn').innerText = t('play');
     document.getElementById('homeBtn').innerText = t('home_btn');
@@ -336,12 +340,11 @@
     document.querySelectorAll('.infoBox .label')[1].innerText = t('target');
     document.getElementById('waitBoxText').innerHTML = t('wait_text') + '<div id="claimTimer">5</div>';
 
-    // Блокировка свайпа вниз
     document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
-    // Реклама при выходе (блок int-31473)
     const ExitAdController = window.Adsgram.init({ blockId: "int-31473" });
 
+    // Лапки
     function createPaws() {
         const container = document.getElementById('gameWrap');
         for (let i = 0; i < 18; i++) {
@@ -366,7 +369,7 @@
     let finishSent = false;
 
     let gameDifficulty = 1;
-    let targetScore = 256;
+    let targetScore = 128;   // целевая плитка (переопределится сервером)
     let timeLimit = 60;
     let currentScore = 0;
     let gameActive = false;
@@ -402,8 +405,9 @@
             gameDifficulty = data.difficulty;
             targetScore = data.target_score;
             timeLimit = data.time_limit;
+
             document.getElementById("difficulty").innerText = td(gameDifficulty);
-            const rewardMap = {1:5,2:7,3:10};
+            const rewardMap = {1:5, 2:7, 3:10};
             document.getElementById("startInfo").innerHTML = `
                 ${t('difficulty_title')}: <b>${td(gameDifficulty)}</b><br>
                 ${t('target_tile')}: <b>≥${targetScore}</b><br>
@@ -583,7 +587,7 @@
 
         if (data.ok && data.win) {
             titleEl.innerText = t('win_title');
-            textEl.innerText = `+${data.reward} DOGS ${t('win_text')}`;
+            textEl.innerHTML = t('win_text', data.reward);
             winBlock.style.display = "block";
             homeBtn.style.display = "none";
             let wait = 5;
