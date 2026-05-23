@@ -68,37 +68,38 @@
         .claimBox {
             background: rgba(28, 28, 34, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 28px 24px;
+            padding: 20px 20px;
             border-radius: 26px;
             text-align: center;
             width: 85%;
-            max-width: 330px;
+            max-width: 280px;
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
         .claimBox .rewardAmount {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 900;
             color: #ffffff;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            word-break: break-word;
         }
         .claimBox .x3Prompt {
-            font-size: 14px;
+            font-size: 13px;
             opacity: 0.7;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             line-height: 1.4;
         }
         .claimBox .btnRow {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         .claimBox .btnRow button {
             flex: 1;
-            padding: 12px;
-            border-radius: 16px;
+            padding: 10px 12px;
+            border-radius: 14px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 14px;
         }
         .btn-x3 {
             background: #c0c0c0;
@@ -668,7 +669,6 @@
             document.getElementById('refCountLabel').textContent = t('refCount');
             document.getElementById('inviteBtn').textContent = t('inviteBtn');
             document.getElementById('refDescription').textContent = t('refDesc');
-            // Новые кнопки модалки
             document.getElementById('claimX3Btn').textContent = t('x3_btn');
             document.getElementById('claimNoThanksBtn').textContent = t('no_thanks');
         }
@@ -744,7 +744,7 @@
         let dailyQuestTimer = null;
         let refTimerInterval = null;
         let userRefLink = "";
-        let lastClaimReward = 0; // для нового окна
+        let lastClaimReward = 0;
 
         function tab(id, el){
             document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
@@ -842,7 +842,7 @@
                 const d = await r.json();
                 if(d.ok){
                     loadStatus();
-                    showClaimModal(d.reward); // кастомное окно
+                    showClaimModal(d.reward);
                 }else{
                     tg.showPopup?.({message: d.error});
                     btn.disabled = false;
@@ -862,14 +862,13 @@
             btnX3.innerText = t('loading');
             try{
                 await AdControllerX3.show();
-                // успех
                 document.getElementById('claimRewardText').innerText = t('final_reward', lastClaimReward * 3);
                 document.getElementById('claimPromptText').style.display = 'none';
                 btnX3.style.display = 'none';
                 document.getElementById('claimNoThanksBtn').style.display = 'none';
                 setTimeout(() => {
                     closeClaimModal();
-                    loadStatus(); // обновим баланс после callback x3
+                    loadStatus();
                 }, 2500);
             }catch(e){
                 console.log(e);
