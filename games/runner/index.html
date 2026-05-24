@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>DOGS RIDER</title>
+    <title>RUNNER DOGS</title>
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -266,6 +266,7 @@
     let obstacles = [];
     let spawnCooldown = 0;
     let roadScroll = 0;
+    let animTime = 0; // для анимаций
 
     function getRoadEdges(depth) {
         const p = Math.min(1, Math.max(0, depth));
@@ -319,30 +320,41 @@
     function drawPlayer() {
         if (!playerImg.complete || !playerImg.naturalWidth) return;
         let x = laneX(playerLane, 0.22);
-        // Визуально сдвигаем игрока дальше от центра на крайних полосах
         if (playerLane === -1) x -= 18;
         else if (playerLane === 1) x += 18;
 
         const baseY = H * 0.83;
         const slide = slideTimer > 0;
 
+        // Анимация покачивания и вибрации
+        const bounce = Math.sin(animTime * 15) * 3;
+        const shake = Math.sin(animTime * 20) * 2;
+        const drawY = baseY - 60 + bounce;
+        const drawX = x + shake;
+
         const playerHeight = 120;
         const playerWidth = playerHeight * (playerImg.width / playerImg.height);
         const drawW = slide ? playerWidth * 1.1 : playerWidth;
         const drawH = slide ? playerHeight * 0.8 : playerHeight;
-        const drawX = x - drawW / 2;
-        const drawY = baseY - drawH / 2;
 
         ctx.save();
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 15 + Math.sin(animTime * 10) * 5;
         ctx.shadowColor = '#0ff';
-        ctx.drawImage(playerImg, drawX, drawY, drawW, drawH);
+        ctx.drawImage(playerImg, drawX - drawW / 2, drawY - drawH / 2, drawW, drawH);
+        
+        // Эффект свечения снизу
+        const gradient = ctx.createRadialGradient(drawX, drawY + drawH/2, 5, drawX, drawY + drawH/2, drawH * 0.6);
+        gradient.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(drawX - drawW, drawY + drawH/2 - 10, drawW * 2, drawH);
+        
         ctx.restore();
     }
 
     function drawObstacle(o) {
         const p = 1 - o.z;
-        if (p < 0 || p > 1.2) return; // не рисуем, если за пределами
+        if (p < 0 || p > 1.2) return;
         const x = laneX(o.lane, p);
         const y = roadY(p);
         const scale = 0.5 + p * 1.6;
@@ -350,13 +362,13 @@
         let w, h;
         if (o.type === 'car' || o.type === 'truck') {
             if (!enemyImg.complete || !enemyImg.naturalWidth) return;
-            const baseH = 55 * 0.7;   // уменьшено на 30%
+            const baseH = 55 * 0.7;
             const baseW = baseH * (enemyImg.width / enemyImg.height);
             h = baseH * scale;
             w = baseW * scale;
         } else if (o.type === 'barrier') {
             if (!barrierImg.complete || !barrierImg.naturalWidth) return;
-            const baseH = 45 * 0.7;   // уменьшено на 30%
+            const baseH = 45 * 0.7;
             const baseW = baseH * (barrierImg.width / barrierImg.height);
             h = baseH * scale;
             w = baseW * scale;
@@ -364,9 +376,17 @@
 
         ctx.save();
         ctx.translate(x, y - h * 0.5);
+        
+        // Мигание фар для машин
         if (o.type === 'car' || o.type === 'truck') {
+            const flicker = Math.sin(animTime * 25 + o.z * 50) * 0.3 + 0.7;
+            ctx.globalAlpha = flicker;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ffff00';
             ctx.drawImage(enemyImg, -w/2, -h/2, w, h);
-        } else if (o.type === 'barrier') {
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+        } else {
             ctx.drawImage(barrierImg, -w/2, -h/2, w, h);
         }
         ctx.restore();
@@ -450,6 +470,7 @@
 
     function updateGame(dt) {
         if (!gameRunning) return;
+        animTime += dt;
 
         if (safeTimer > 0) {
             safeTimer -= dt;
@@ -555,6 +576,7 @@
         obstacles = [];
         spawnCooldown = 0.5;
         safeTimer = 0.8;
+        animTime = 0;
         document.getElementById('timer').innerText = timeLeft.toFixed(1);
     }
 
