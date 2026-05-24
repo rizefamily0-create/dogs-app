@@ -129,24 +129,30 @@
             opacity: 0.7;
         }
 
-        /* Анимация плавания */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
 
-/* Конфетти и косточки */
+        @keyframes confettiBurst {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) rotate(720deg) scale(0.2);
+            }
+        }
+
         .confetti-particle {
             position: fixed;
             pointer-events: none;
             z-index: 99999;
-            animation: confettiFall 0.8s ease-out forwards;
+            animation: confettiBurst 0.9s ease-out forwards;
         }
-        @keyframes confettiFall {
-            0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
-            100% { opacity: 0; transform: translateY(200px) rotate(720deg) scale(0.2); }
-        }
+        
         /* ========== ОСТАЛЬНЫЕ СТИЛИ (без изменений) ========== */
         .history-item { background: rgba(22, 22, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 18px; padding: 14px; margin-top: 10px; font-size: 14px; line-height: 1.6; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         .status { margin-top: 10px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -848,14 +854,21 @@
 
         function spawnConfetti(x, y) {
             const emojis = ['🎉', '🎊', '🦴', '🦴', '✨', '🐾', '🎈', '💫', '🦴'];
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 18; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'confetti-particle';
                 particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
-                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
                 particle.style.fontSize = (20 + Math.random() * 30) + 'px';
-                particle.style.animationDuration = (0.6 + Math.random() * 0.8) + 's';
+
+                // Случайное направление и расстояние
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = 60 + Math.random() * 120;
+                particle.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+                particle.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+
+                particle.style.animationDuration = (0.6 + Math.random() * 0.6) + 's';
                 document.body.appendChild(particle);
                 setTimeout(() => particle.remove(), 1000);
             }
