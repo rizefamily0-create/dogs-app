@@ -760,7 +760,7 @@
             if(id === "tasks") loadTasks();
             if(id === "games") {
                 loadGamesStatus();
-                updateGameBadges();
+                loadGameDifficulties();
             }
             if(id === "profile") {
                 loadProfile();
@@ -1000,28 +1000,38 @@
             }catch(e){ tg.showPopup?.({message:t('adFailed')}); }
         }
         
-        function updateGameBadges() {
-            const diffNames = {1: 'EASY', 2: 'MEDIUM', 3: 'HARD'};
-            const diffColors = {
-                1: { bg: 'rgba(168,85,247,0.25)', text: '#c084fc' },   // фиолетовый
-                2: { bg: 'rgba(255,165,0,0.25)', text: '#ffa500' },     // оранжевый
-                3: { bg: 'rgba(255,0,0,0.25)', text: '#ff4444' }        // красный
-            };
-            const flappyDiff = localStorage.getItem('flappy_difficulty') || 1;
-            const diff2048 = localStorage.getItem('2048_difficulty') || 1;
+       async function loadGameDifficulties() {
+            try {
+                const r = await fetch(API + "/games/difficulty", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const d = await r.json();
+                if (!d.ok) return;
 
-            const flappyBadge = document.querySelector('#games .gameCard:first-child .gameBadge');
-            if (flappyBadge) {
-                flappyBadge.textContent = diffNames[flappyDiff];
-                flappyBadge.style.backgroundColor = diffColors[flappyDiff].bg;
-                flappyBadge.style.color = diffColors[flappyDiff].text;
-            }
-            const badge2048 = document.querySelector('#games .gameCard:last-child .gameBadge');
-            if (badge2048) {
-                badge2048.textContent = diffNames[diff2048];
-                badge2048.style.backgroundColor = diffColors[diff2048].bg;
-                badge2048.style.color = diffColors[diff2048].text;
-            }
+                const diffNames = {1: 'EASY', 2: 'MEDIUM', 3: 'HARD'};
+                const diffColors = {
+                    1: { bg: 'rgba(168,85,247,0.25)', text: '#c084fc' },
+                    2: { bg: 'rgba(255,165,0,0.25)', text: '#ffa500' },
+                    3: { bg: 'rgba(255,0,0,0.25)', text: '#ff4444' }
+                };
+
+                const flappyBadge = document.querySelector('#games .gameCard:first-child .gameBadge');
+                if (flappyBadge) {
+                    const diff = d.flappy_difficulty || 1;
+                    flappyBadge.textContent = diffNames[diff];
+                    flappyBadge.style.backgroundColor = diffColors[diff].bg;
+                    flappyBadge.style.color = diffColors[diff].text;
+                }
+                const badge2048 = document.querySelector('#games .gameCard:last-child .gameBadge');
+                if (badge2048) {
+                    const diff = d['2048_difficulty'] || 1;
+                    badge2048.textContent = diffNames[diff];
+                    badge2048.style.backgroundColor = diffColors[diff].bg;
+                    badge2048.style.color = diffColors[diff].text;
+                }
+            } catch(e) { console.error(e); }
         }
 
         let gamesTimerInterval = null;
@@ -1496,7 +1506,7 @@
                     loadProfile(),            // профиль грузится сразу
                     loadWithdrawHistory(),
                     loadTasks(),
-                    updateGameBadges()
+                    loadGameDifficulties()
                 ]);
 
                 startDailyQuestResetTimer();
