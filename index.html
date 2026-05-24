@@ -292,7 +292,7 @@
             <div class="gameEnergyCard">
                 <div class="energyTop">
                     <div class="energyTitle" id="energyTitle"></div>
-                    <div class="energyCount" id="gamesEnergy">15 / 15</div>
+                    <div class="energyCount" id="gamesEnergy">12 / 12</div>
                 </div>
                 <button id="restoreEnergyBtn" onclick="watchEnergyAd()" style="display:none;margin-top:6px;"></button>
                 <div class="energyBar"><div class="energyFill" id="gamesEnergyFill" style="width:100%;"></div></div>
@@ -463,7 +463,7 @@
                 specialOffers: "🚀 Специальные предложения (60 DOGS)",
                 energy: "🔋 Энергия",
                 fullEnergy: "Полная энергия",
-                watchAdEnergy: "Смотреть рекламу +10 энергии",
+                watchAdEnergy: "Смотреть рекламу +12 энергии",
                 availableGames: "Доступные игры",
                 flappyDesc: "Продержитесь 40-50 секунд и получите DOGS.",
                 game2048Desc: "Соберите нужную плитку, чтобы заработать DOGS.",
@@ -559,7 +559,7 @@
                 specialOffers: "🚀 Special Offers (60 Dogs)",
                 energy: "🔋 Energy",
                 fullEnergy: "Full energy",
-                watchAdEnergy: "Watch Ad +10 Energy",
+                watchAdEnergy: "Watch Ad +12 Energy",
                 availableGames: "Available Games",
                 flappyDesc: "Survive for 40-50 seconds and earn DOGS rewards.",
                 game2048Desc: "Reach target tile to earn DOGS. Difficulty rises!",
@@ -1168,7 +1168,7 @@
                 });
                 const d = await r.json();
                 if(d.ok){
-                    tg.showPopup?.({message:"+10 Energy restored"});
+                    tg.showPopup?.({message:"+12 Energy restored"});
                     await loadGamesStatus();
                 }else{
                     tg.showPopup?.({message:d.error || "Restore failed"});
