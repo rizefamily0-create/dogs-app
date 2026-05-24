@@ -359,6 +359,15 @@
                     <button class="gameStartBtn" id="play2048Btn" onclick="start2048Game(this)">▶ PLAY</button>
                 </div>
             </div>
+            <div class="gameCard">
+                <div class="gamePreview"><img src="games/runner/preview.png" alt="TEST"></div>
+                <div class="gameInfo">
+                    <div class="gameTop"><div class="gameName">Runner DOGS</div><div class="gameBadge">EASY</div></div>
+                    <div class="gameDescription" id="runnerDesc">Dodge traffic and survive to earn DOGS!</div>
+                    <div class="gameMeta"><div>💰 5-10 DOGS</div><div>⏱ 40-55ы</div></div>
+                    <button class="gameStartBtn" id="playRunnerBtn" onclick="startRunnerGame(this)">▶ PLAY</button>
+                </div>
+            </div>
         </div>
 
         <!-- OFFERWALL -->
@@ -1124,6 +1133,15 @@
                     flappyBadge.style.color = diffColors[diff].text;
                 }
 
+
+                const runnerBadge = gameCards[2]?.querySelector('.gameBadge');
+                if (runnerBadge) {
+                    const diff = d['runner_difficulty'] || 1;
+                    runnerBadge.textContent = diffNames[diff];
+                    runnerBadge.style.backgroundColor = diffColors[diff].bg;
+                    runnerBadge.style.color = diffColors[diff].text;
+                }
+
         // 2048 – вторая карточка (индекс 1)
                 const badge2048 = gameCards[1]?.querySelector('.gameBadge');
                 if (badge2048) {
@@ -1179,6 +1197,40 @@
                     loadGamesStatus();
                 }
             },1000);
+        }
+
+        async function startRunnerGame(btn){
+            if(btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1";
+            btn.disabled = true;
+            const oldText = btn.innerText;
+            btn.innerText = t('loading');
+            try{
+                const r = await fetch(API + "/games/runner/start", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(!d.ok){
+                    if(d.error === "no_energy") tg.showPopup?.({ message: t('noEnergy') });
+                    else tg.showPopup?.({ message: d.error || t('gameStartFailed') });
+                    await loadGamesStatus();
+                    return;
+                }
+                const token = d.session_token;
+                if(!token){ tg.showPopup?.({ message: t('sessionError') }); await loadGamesStatus(); return; }
+                await loadGamesStatus();
+                const initData = tg?.initData || "";
+                window.location.href = `games/runner/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
+            }catch(e){
+                console.log("RUNNER START CLIENT ERROR:", e);
+                tg.showPopup?.({ message: t('serverError') });
+            }finally{
+                btn.dataset.loading = "0";
+                btn.disabled = false;
+                btn.innerText = oldText;
+            }
         }
 
         async function startFlappyGame(btn){
