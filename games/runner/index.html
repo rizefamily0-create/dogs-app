@@ -318,11 +318,14 @@
 
     function drawPlayer() {
         if (!playerImg.complete || !playerImg.naturalWidth) return;
-        const x = laneX(playerLane, 0.22);
+        let x = laneX(playerLane, 0.22);
+        // Визуально сдвигаем игрока дальше от центра на крайних полосах
+        if (playerLane === -1) x -= 18;
+        else if (playerLane === 1) x += 18;
+
         const baseY = H * 0.83;
         const slide = slideTimer > 0;
 
-        // Пропорциональные размеры: высота 120px, ширина из отношения сторон
         const playerHeight = 120;
         const playerWidth = playerHeight * (playerImg.width / playerImg.height);
         const drawW = slide ? playerWidth * 1.1 : playerWidth;
@@ -339,7 +342,7 @@
 
     function drawObstacle(o) {
         const p = 1 - o.z;
-        if (p < 0) return;
+        if (p < 0 || p > 1.2) return; // не рисуем, если за пределами
         const x = laneX(o.lane, p);
         const y = roadY(p);
         const scale = 0.5 + p * 1.6;
@@ -347,13 +350,13 @@
         let w, h;
         if (o.type === 'car' || o.type === 'truck') {
             if (!enemyImg.complete || !enemyImg.naturalWidth) return;
-            const baseH = 55;
+            const baseH = 55 * 0.7;   // уменьшено на 30%
             const baseW = baseH * (enemyImg.width / enemyImg.height);
             h = baseH * scale;
             w = baseW * scale;
         } else if (o.type === 'barrier') {
             if (!barrierImg.complete || !barrierImg.naturalWidth) return;
-            const baseH = 45;
+            const baseH = 45 * 0.7;   // уменьшено на 30%
             const baseW = baseH * (barrierImg.width / barrierImg.height);
             h = baseH * scale;
             w = baseW * scale;
@@ -463,7 +466,7 @@
 
         for (let i = 0; i < obstacles.length; i++) {
             obstacles[i].z -= dt * 1.1;
-            if (obstacles[i].z < -0.12) {
+            if (obstacles[i].z < -0.3) {
                 obstacles.splice(i, 1);
                 i--;
             }
@@ -550,7 +553,7 @@
         timeLeft = surviveTimeGoal;
         playerLane = 0; targetLane = 0; slideTimer = 0;
         obstacles = [];
-        spawnCooldown = 0.5;  // небольшая задержка перед первым врагом
+        spawnCooldown = 0.5;
         safeTimer = 0.8;
         document.getElementById('timer').innerText = timeLeft.toFixed(1);
     }
