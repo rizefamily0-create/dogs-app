@@ -1509,9 +1509,8 @@
                     ;
                 ]);
 
-                localStorage.removeItem('flappy_difficulty');
-                localStorage.removeItem('2048_difficulty');
-                await loadGameDifficulties()
+                await loadGameDifficulties();
+                
                 startDailyQuestResetTimer();
 
                 document.getElementById("splash").style.display = "none";
