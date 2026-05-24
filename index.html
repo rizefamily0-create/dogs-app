@@ -1505,12 +1505,13 @@
                     loadGamesStatus(),
                     loadProfile(),            // профиль грузится сразу
                     loadWithdrawHistory(),
-                    localStorage.removeItem('flappy_difficulty'),
-                    localStorage.removeItem('2048_difficulty'),
                     loadTasks(),
-                    await loadGameDifficulties(),
+                    ;
                 ]);
 
+                localStorage.removeItem('flappy_difficulty');
+                localStorage.removeItem('2048_difficulty');
+                await loadGameDifficulties()
                 startDailyQuestResetTimer();
 
                 document.getElementById("splash").style.display = "none";
