@@ -1003,9 +1003,9 @@
         function updateGameBadges() {
             const diffNames = {1: 'EASY', 2: 'MEDIUM', 3: 'HARD'};
             const diffColors = {
-                1: 'rgba(168,85,247,0.12)',   // фиолетовый
-                2: 'rgba(255,165,0,0.2)',     // оранжевый
-                3: 'rgba(255,0,0,0.2)'        // красный
+                1: { bg: 'rgba(168,85,247,0.25)', text: '#c084fc' },   // фиолетовый
+                2: { bg: 'rgba(255,165,0,0.25)', text: '#ffa500' },     // оранжевый
+                3: { bg: 'rgba(255,0,0,0.25)', text: '#ff4444' }        // красный
             };
             const flappyDiff = localStorage.getItem('flappy_difficulty') || 1;
             const diff2048 = localStorage.getItem('2048_difficulty') || 1;
@@ -1013,12 +1013,14 @@
             const flappyBadge = document.querySelector('#games .gameCard:first-child .gameBadge');
             if (flappyBadge) {
                 flappyBadge.textContent = diffNames[flappyDiff];
-                flappyBadge.style.backgroundColor = diffColors[flappyDiff];
+                flappyBadge.style.backgroundColor = diffColors[flappyDiff].bg;
+                flappyBadge.style.color = diffColors[flappyDiff].text;
             }
             const badge2048 = document.querySelector('#games .gameCard:last-child .gameBadge');
             if (badge2048) {
                 badge2048.textContent = diffNames[diff2048];
-                badge2048.style.backgroundColor = diffColors[diff2048];
+                badge2048.style.backgroundColor = diffColors[diff2048].bg;
+                badge2048.style.color = diffColors[diff2048].text;
             }
         }
 
