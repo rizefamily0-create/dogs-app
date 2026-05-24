@@ -1017,16 +1017,20 @@
                     3: { bg: 'rgba(255,0,0,0.25)', text: '#ff4444' }
                 };
 
-        // Правильный селектор для Flappy – первая .gameCard внутри #games
-                const flappyBadge = document.querySelector('#games .gameCard:nth-of-type(1) .gameBadge');
+        // Получаем все карточки игр
+                const gameCards = document.querySelectorAll('#games .gameCard');
+
+        // Flappy – первая карточка (индекс 0)
+                const flappyBadge = gameCards[0]?.querySelector('.gameBadge');
                 if (flappyBadge) {
                     const diff = d['flappy_difficulty'] || 1;
                     flappyBadge.textContent = diffNames[diff];
                     flappyBadge.style.backgroundColor = diffColors[diff].bg;
                     flappyBadge.style.color = diffColors[diff].text;
                 }
-        // Для 2048 – вторая .gameCard
-                const badge2048 = document.querySelector('#games .gameCard:nth-of-type(2) .gameBadge');
+
+        // 2048 – вторая карточка (индекс 1)
+                const badge2048 = gameCards[1]?.querySelector('.gameBadge');
                 if (badge2048) {
                     const diff = d['2048_difficulty'] || 1;
                     badge2048.textContent = diffNames[diff];
