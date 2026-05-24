@@ -751,7 +751,7 @@
         let userRefLink = "";
         let lastClaimReward = 0;
 
-        function tab(id, el){
+        async function tab(id, el){
             document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
             document.getElementById(id).classList.add("active");
             document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
@@ -759,11 +759,11 @@
             if(id === "withdraw") loadWithdrawHistory();
             if(id === "tasks") loadTasks();
             if(id === "games") {
-                loadGamesStatus();
-                loadGameDifficulties();
+                await loadGamesStatus();
+                await loadGameDifficulties();   // ← теперь дожидается ответа
             }
             if(id === "profile") {
-                loadProfile();
+                await loadProfile();
                 applyAllLanguage();
             }
         }
@@ -1508,7 +1508,7 @@
                     localStorage.removeItem('flappy_difficulty'),
                     localStorage.removeItem('2048_difficulty'),
                     loadTasks(),
-                    loadGameDifficulties()
+                    await loadGameDifficulties(),
                 ]);
 
                 startDailyQuestResetTimer();
