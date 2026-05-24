@@ -128,6 +128,25 @@
         .nav-item:not(.active) .nav-icon {
             opacity: 0.7;
         }
+
+        /* Анимация плавания */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+/* Конфетти и косточки */
+        .confetti-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            animation: confettiFall 0.8s ease-out forwards;
+        }
+        @keyframes confettiFall {
+            0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+            100% { opacity: 0; transform: translateY(200px) rotate(720deg) scale(0.2); }
+        }
         /* ========== ОСТАЛЬНЫЕ СТИЛИ (без изменений) ========== */
         .history-item { background: rgba(22, 22, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 18px; padding: 14px; margin-top: 10px; font-size: 14px; line-height: 1.6; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         .status { margin-top: 10px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -228,7 +247,9 @@
                 </div>
             </div>
             <div class="center">
-                <img src="dogs.png" style="width: 260px; height: 260px; border-radius: 24px; object-fit: cover; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                <div id="mainCharacterWrapper" style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+                    <img id="mainCharacter" src="dogs.png" style="width: 260px; height: 260px; border-radius: 24px; object-fit: cover; box-shadow: 0 20px 50px rgba(0,0,0,0.5); cursor: pointer; animation: float 3s ease-in-out infinite;" />
+                </div>
             </div>
             <div class="support-text" id="supportText"></div>
             <button id="claimBtn" class="claim-btn" onclick="claim()"></button>
@@ -824,6 +845,34 @@
                 avatar2.src = user.photo_url;
             }
         }
+
+        function spawnConfetti(x, y) {
+            const emojis = ['🎉', '🎊', '🦴', '🦴', '✨', '🐾', '🎈', '💫', '🦴'];
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'confetti-particle';
+                particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                particle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
+                particle.style.fontSize = (20 + Math.random() * 30) + 'px';
+                particle.style.animationDuration = (0.6 + Math.random() * 0.8) + 's';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        document.getElementById('mainCharacter').addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            spawnConfetti(x, y);
+        });
+
+        document.getElementById('mainCharacter').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            spawnConfetti(touch.clientX, touch.clientY);
+        });
 
         function setBalance(id, value){
             document.getElementById(id).querySelector(".num").innerText = value;
