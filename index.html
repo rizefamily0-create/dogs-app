@@ -1019,7 +1019,7 @@
 
                 const flappyBadge = document.querySelector('#games .gameCard:first-child .gameBadge');
                 if (flappyBadge) {
-                    const diff = d.flappy_difficulty || 1;
+                    const diff = d['flappy_difficulty'] || 1;
                     flappyBadge.textContent = diffNames[diff];
                     flappyBadge.style.backgroundColor = diffColors[diff].bg;
                     flappyBadge.style.color = diffColors[diff].text;
