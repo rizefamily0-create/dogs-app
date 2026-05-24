@@ -255,7 +255,7 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const HORIZON_Y = 0.38;
+    const HORIZON_Y = 0.25;          // удлинённая дорога
     const ROAD_TOP_WIDTH = 0.50;
     const ROAD_BOTTOM_WIDTH = 0.90;
 
@@ -266,7 +266,6 @@
     let obstacles = [];
     let spawnCooldown = 0;
     let roadScroll = 0;
-    let animTime = 0; // для анимаций
 
     function getRoadEdges(depth) {
         const p = Math.min(1, Math.max(0, depth));
@@ -298,23 +297,28 @@
     // ========== ОТРИСОВКА ==========
     function drawBackground() {
         if (!bgImg.complete || !bgImg.naturalWidth) {
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(0, 0, W, H * HORIZON_Y);
             return;
         }
         const bgAspect = bgImg.width / bgImg.height;
-        const canvasAspect = W / H;
+        const canvasAspect = W / (H * HORIZON_Y);
         let drawWidth, drawHeight;
         if (bgAspect > canvasAspect) {
-            drawHeight = H;
-            drawWidth = H * bgAspect;
+            drawHeight = H * HORIZON_Y;
+            drawWidth = drawHeight * bgAspect;
         } else {
             drawWidth = W;
-            drawHeight = W / bgAspect;
+            drawHeight = drawWidth / bgAspect;
         }
         const x = (W - drawWidth) / 2;
         const y = 0;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, W, H * HORIZON_Y);
+        ctx.clip();
         ctx.drawImage(bgImg, x, y, drawWidth, drawHeight);
+        ctx.restore();
     }
 
     function drawPlayer() {
@@ -323,32 +327,20 @@
         if (playerLane === -1) x -= 18;
         else if (playerLane === 1) x += 18;
 
-        const baseY = H * 0.83;
+        const baseY = H * 0.88;
         const slide = slideTimer > 0;
-
-        // Анимация покачивания и вибрации
-        const bounce = Math.sin(animTime * 15) * 3;
-        const shake = Math.sin(animTime * 20) * 2;
-        const drawY = baseY - 60 + bounce;
-        const drawX = x + shake;
+        const bob = Math.sin(Date.now() * 0.015) * 2.5;  // лёгкое покачивание
 
         const playerHeight = 120;
         const playerWidth = playerHeight * (playerImg.width / playerImg.height);
         const drawW = slide ? playerWidth * 1.1 : playerWidth;
         const drawH = slide ? playerHeight * 0.8 : playerHeight;
+        const drawX = x - drawW / 2;
+        const drawY = baseY - drawH / 2 + bob;
 
         ctx.save();
-        ctx.shadowBlur = 15 + Math.sin(animTime * 10) * 5;
-        ctx.shadowColor = '#0ff';
-        ctx.drawImage(playerImg, drawX - drawW / 2, drawY - drawH / 2, drawW, drawH);
-        
-        // Эффект свечения снизу
-        const gradient = ctx.createRadialGradient(drawX, drawY + drawH/2, 5, drawX, drawY + drawH/2, drawH * 0.6);
-        gradient.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
-        gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(drawX - drawW, drawY + drawH/2 - 10, drawW * 2, drawH);
-        
+        ctx.shadowBlur = 0;               // убрано голубое свечение
+        ctx.drawImage(playerImg, drawX, drawY, drawW, drawH);
         ctx.restore();
     }
 
@@ -376,17 +368,9 @@
 
         ctx.save();
         ctx.translate(x, y - h * 0.5);
-        
-        // Мигание фар для машин
         if (o.type === 'car' || o.type === 'truck') {
-            const flicker = Math.sin(animTime * 25 + o.z * 50) * 0.3 + 0.7;
-            ctx.globalAlpha = flicker;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#ffff00';
             ctx.drawImage(enemyImg, -w/2, -h/2, w, h);
-            ctx.globalAlpha = 1;
-            ctx.shadowBlur = 0;
-        } else {
+        } else if (o.type === 'barrier') {
             ctx.drawImage(barrierImg, -w/2, -h/2, w, h);
         }
         ctx.restore();
@@ -399,32 +383,26 @@
         const botW = W * ROAD_BOTTOM_WIDTH;
         const cx = W * 0.5;
 
-        ctx.fillStyle = '#0a0a0a';
+        // обочина – зелёная
+        ctx.fillStyle = '#4a5a3a';
         ctx.fillRect(0, horizon, W, bottom - horizon);
 
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.beginPath();
-        ctx.moveTo(cx - botW * 0.53, bottom); ctx.lineTo(cx + botW * 0.53, bottom);
-        ctx.lineTo(cx + topW * 0.53, horizon); ctx.lineTo(cx - topW * 0.53, horizon); ctx.fill();
-
+        // асфальт
         const grad = ctx.createLinearGradient(0, horizon, 0, bottom);
-        grad.addColorStop(0, '#2a2a2a'); grad.addColorStop(0.5, '#3a3a3a'); grad.addColorStop(1, '#4a4a4a');
+        grad.addColorStop(0, '#3a3a3a');
+        grad.addColorStop(1, '#5a5a5a');
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.moveTo(cx - botW * 0.5, bottom); ctx.lineTo(cx + botW * 0.5, bottom);
-        ctx.lineTo(cx + topW * 0.5, horizon); ctx.lineTo(cx - topW * 0.5, horizon); ctx.fill();
+        ctx.lineTo(cx + topW * 0.5, horizon); ctx.lineTo(cx - topW * 0.5, horizon);
+        ctx.fill();
 
-        ctx.strokeStyle = '#0ff'; ctx.lineWidth = 5; ctx.shadowBlur = 12; ctx.shadowColor = '#0ff';
-        ctx.beginPath();
-        ctx.moveTo(cx - botW * 0.5, bottom); ctx.lineTo(cx - topW * 0.5, horizon);
-        ctx.moveTo(cx + botW * 0.5, bottom); ctx.lineTo(cx + topW * 0.5, horizon);
-        ctx.stroke();
-
+        // разделительные полосы (двигаются вместе с дорогой)
         for (let divider = 1; divider <= 2; divider++) {
-            const dashCount = 22;
-            for (let d = 0; d < dashCount; d++) {
-                const p = d / dashCount;
-                const p2 = (d + 0.55) / dashCount;
+            const dashLen = 0.06;
+            for (let d = 0; d < 1; d += dashLen) {
+                const p = (d + roadScroll * 0.04) % 1;
+                const p2 = (p + dashLen * 0.8) % 1;
                 const y1 = horizon + (bottom - horizon) * p;
                 const y2 = horizon + (bottom - horizon) * p2;
                 const leftEdge = cx - (topW + (botW - topW) * p) * 0.5;
@@ -432,23 +410,22 @@
                 const fraction = divider / 3;
                 const x1 = leftEdge + (rightEdge - leftEdge) * fraction;
                 const x2 = leftEdge + (rightEdge - leftEdge) * fraction;
-                ctx.strokeStyle = '#f0f'; ctx.shadowColor = '#f0f';
-                ctx.lineWidth = 6 * (1 - p * 0.5);
+                ctx.strokeStyle = '#888';
+                ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
             }
         }
 
-        ctx.globalAlpha = 0.08;
-        ctx.shadowBlur = 0;
-        for (let i = 0; i < 45; i++) {
-            const p = ((i / 45) + roadScroll * 0.04) % 1;
+        // лёгкие штрихи текстуры
+        ctx.globalAlpha = 0.05;
+        for (let i = 0; i < 30; i++) {
+            const p = ((i / 30) + roadScroll * 0.04) % 1;
             const y = horizon + (bottom - horizon) * p;
             const w = topW + (botW - topW) * p;
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(cx - w * 0.45, y, w * 0.9, 1);
         }
         ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
     }
 
     // ========== ЛОГИКА ==========
@@ -470,7 +447,6 @@
 
     function updateGame(dt) {
         if (!gameRunning) return;
-        animTime += dt;
 
         if (safeTimer > 0) {
             safeTimer -= dt;
@@ -576,7 +552,6 @@
         obstacles = [];
         spawnCooldown = 0.5;
         safeTimer = 0.8;
-        animTime = 0;
         document.getElementById('timer').innerText = timeLeft.toFixed(1);
     }
 
