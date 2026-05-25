@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>MATCH-3</title>
+    <title>MATCH-3 DOGS</title>
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -88,9 +88,12 @@
             position: relative; z-index: 2;
         }
         .cell {
-            background: rgba(60,60,70,0.4); border-radius: 10px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 24px; font-weight: bold; cursor: pointer;
+            cursor: pointer;
             transition: transform 0.2s ease, opacity 0.2s ease;
         }
         .cell.selected { transform: scale(0.9); opacity: 0.8; }
@@ -231,7 +234,6 @@
     }
     function td(key) { return LOCALE[currentLang]?.difficulty?.[key] ?? key; }
 
-    // Статическая локализация
     document.getElementById('loading').innerText = t('loading');
     document.querySelector('.playBtn').innerText = t('play');
     document.getElementById('homeBtn').innerText = t('home_btn');
@@ -279,13 +281,39 @@
     let busy = false;
 
     const gridSize = 8;
-    const gems = ['🔴','🟠','🟡','🟢','🔵','🟣'];
-    let board = [];
+    // Имена файлов картинок (без расширения)
+    const gemNames = ['purple', 'red', 'yellow', 'orange', 'blue', 'green'];
+    const gemImages = {};   // словарь: имя → Image
+    let imagesLoaded = 0;
+    const totalImages = gemNames.length;
+
+    // Предзагрузка всех изображений
+    gemNames.forEach(name => {
+        const img = new Image();
+        img.src = name + '.png';
+        img.onload = () => {
+            imagesLoaded++;
+            if (imagesLoaded === totalImages && document.getElementById('loading').style.display !== 'none') {
+                document.getElementById('loading').style.display = 'none';
+            }
+        };
+        img.onerror = () => {
+            imagesLoaded++;
+        };
+        gemImages[name] = img;
+    });
+
+    // Генерация случайного имени картинки
+    function randomGemName() {
+        return gemNames[Math.floor(Math.random() * gemNames.length)];
+    }
+
+    let board = [];                     // board[r][c] = 'purple' / 'red' / ...
     let selectedCell = null;
     let gridElement = document.getElementById('grid');
 
     function hideLoading() { document.getElementById("loading").style.display = "none"; }
-    setTimeout(hideLoading, 1500);
+    setTimeout(hideLoading, 3000);   // чуть больше, чтобы картинки точно загрузились
 
     async function init() {
         if (!sessionToken) {
@@ -317,7 +345,7 @@
                 ${t('time')}: <b>${timeLimit}${t('sec')}</b><br>
                 ${t('reward')}: <b>${rewardMap[gameDifficulty]} DOGS</b>
             `;
-            hideLoading();
+            if (imagesLoaded >= totalImages) hideLoading();
         } catch(e) { console.error(e); }
     }
     init();
@@ -335,21 +363,23 @@
     }
 
     function initBoard() {
-        board = Array(gridSize).fill().map(() => Array(gridSize).fill().map(() => gems[Math.floor(Math.random() * gems.length)]));
+        board = Array(gridSize).fill().map(() => Array(gridSize).fill().map(() => randomGemName()));
         while (findMatches().length > 0) {
             for (let r=0; r<gridSize; r++)
                 for (let c=0; c<gridSize; c++)
-                    board[r][c] = gems[Math.floor(Math.random() * gems.length)];
+                    board[r][c] = randomGemName();
         }
     }
 
+    // Визуализация: в каждую ячейку ставим background-image
     function renderBoard() {
         gridElement.innerHTML = '';
         for (let r=0; r<gridSize; r++) {
             for (let c=0; c<gridSize; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                cell.textContent = board[r][c];
+                cell.style.backgroundImage = `url(${board[r][c]}.png)`;
+                cell.style.backgroundSize = 'contain';
                 cell.dataset.row = r;
                 cell.dataset.col = c;
                 cell.addEventListener('click', () => onCellClick(r, c));
@@ -474,7 +504,7 @@
                 }
             }
             for (let r=emptyRow; r>=0; r--) {
-                board[r][c] = gems[Math.floor(Math.random() * gems.length)];
+                board[r][c] = randomGemName();
                 moves.push({ row: r, col: c, fromRow: r - (emptyRow + 1) });
             }
         }
