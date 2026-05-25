@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>MATCH-3</title>
+    <title>MATCH-3 DOGS</title>
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -156,7 +156,7 @@
             </div>
             <div class="infoBox">
                 <div class="label"></div>
-                <div class="value" id="targetScoreDisplay">500</div>
+                <div class="value" id="targetScoreDisplay">0</div>
             </div>
         </div>
     </div>
@@ -309,6 +309,7 @@
             targetScore = data.target_score;
             timeLimit = data.time_limit;
             document.getElementById("difficulty").innerText = td(gameDifficulty);
+            document.getElementById("targetScoreDisplay").innerText = targetScore;
             const rewardMap = {1:5,2:7,3:10};
             document.getElementById("startInfo").innerHTML = `
                 ${t('difficulty_title')}: <b>${td(gameDifficulty)}</b><br>
