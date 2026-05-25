@@ -359,6 +359,15 @@
                     <button class="gameStartBtn" id="play2048Btn" onclick="start2048Game(this)">▶ PLAY</button>
                 </div>
             </div>
+            <div class="gameCard">
+                <div class="gamePreview"><img src="games/match3/preview.png" alt="Match‑3 DOGS"></div>
+                <div class="gameInfo">
+                    <div class="gameTop"><div class="gameName">Match‑3 DOGS</div><div class="gameBadge">EASY</div></div>
+                    <div class="gameDescription" id="match3Desc">Match gems to earn DOGS!</div>
+                    <div class="gameMeta"><div>💰 5 DOGS</div><div>⏱ 60 SEC</div></div>
+                    <button class="gameStartBtn" id="playMatch3Btn" onclick="startMatch3Game(this)">▶ PLAY</button>
+                </div>
+            </div>
             
             
         </div>
@@ -1143,6 +1152,15 @@
                     badge2048.style.backgroundColor = diffColors[diff].bg;
                     badge2048.style.color = diffColors[diff].text;
                 }
+
+                // Match‑3 – четвёртая карточка (индекс 3), если порядок: Flappy, 2048, Runner, Match‑3
+                const match3Badge = gameCards[3]?.querySelector('.gameBadge');
+                if (match3Badge) {
+                    const diff = d['match3_difficulty'] || 1;
+                    match3Badge.textContent = diffNames[diff];
+                    match3Badge.style.backgroundColor = diffColors[diff].bg;
+                    match3Badge.style.color = diffColors[diff].text;
+                }
             } catch(e) { console.error(e); }
         }
 
@@ -1218,6 +1236,39 @@
                 window.location.href = `games/runner/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
             }catch(e){
                 console.log("RUNNER START CLIENT ERROR:", e);
+                tg.showPopup?.({ message: t('serverError') });
+            }finally{
+                btn.dataset.loading = "0";
+                btn.disabled = false;
+                btn.innerText = oldText;
+            }
+        }
+
+        async function startMatch3Game(btn){
+            if(btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1";
+            btn.disabled = true;
+            const oldText = btn.innerText;
+            btn.innerText = t('loading');
+            try{
+                const r = await fetch(API + "/games/match3/start", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({init_data: tg.initData})
+                });
+                const d = await r.json();
+                if(!d.ok){
+                    if(d.error === "no_energy") tg.showPopup?.({ message: t('noEnergy') });
+                    else tg.showPopup?.({ message: d.error || t('gameStartFailed') });
+                    await loadGamesStatus();
+                    return;
+                }
+                const token = d.session_token;
+                if(!token){ tg.showPopup?.({ message: t('sessionError') }); await loadGamesStatus(); return; }
+                await loadGamesStatus();
+                window.location.href = `games/match3/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(tg?.initData || "")}`;
+            }catch(e){
+                console.log("MATCH3 START CLIENT ERROR:", e);
                 tg.showPopup?.({ message: t('serverError') });
             }finally{
                 btn.dataset.loading = "0";
