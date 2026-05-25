@@ -1135,15 +1135,6 @@
                     flappyBadge.style.color = diffColors[diff].text;
                 }
 
-
-                const runnerBadge = gameCards[2]?.querySelector('.gameBadge');
-                if (runnerBadge) {
-                    const diff = d['runner_difficulty'] || 1;
-                    runnerBadge.textContent = diffNames[diff];
-                    runnerBadge.style.backgroundColor = diffColors[diff].bg;
-                    runnerBadge.style.color = diffColors[diff].text;
-                }
-
         // 2048 – вторая карточка (индекс 1)
                 const badge2048 = gameCards[1]?.querySelector('.gameBadge');
                 if (badge2048) {
@@ -1154,7 +1145,7 @@
                 }
 
                 // Match‑3 – четвёртая карточка (индекс 3), если порядок: Flappy, 2048, Runner, Match‑3
-                const match3Badge = gameCards[3]?.querySelector('.gameBadge');
+                const match3Badge = gameCards[2]?.querySelector('.gameBadge');
                 if (match3Badge) {
                     const diff = d['match3_difficulty'] || 1;
                     match3Badge.textContent = diffNames[diff];
