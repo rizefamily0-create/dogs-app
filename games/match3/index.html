@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>MATCH-3 DOGS</title>
+    <title>MATCH-3</title>
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -244,7 +244,6 @@
     }
     document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
-    // Лапки-декор
     function createPaws() {
         const container = document.getElementById('gameWrap');
         for (let i = 0; i < 18; i++) {
@@ -288,7 +287,6 @@
     function hideLoading() { document.getElementById("loading").style.display = "none"; }
     setTimeout(hideLoading, 1500);
 
-    // Инициализация с API
     async function init() {
         if (!sessionToken) {
             document.querySelector(".playBtn").disabled = true;
@@ -511,11 +509,34 @@
         gameActive = false;
         clearInterval(timerInterval);
         finishSent = true;
+
+        let reward = 0;
+        let serverWin = false;
+        try {
+            const res = await fetch(API + "/games/match3/finish", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    init_data: initDataFromUrl || tg?.initData || "",
+                    session_token: sessionToken,
+                    score: currentScore,
+                    survived: win
+                })
+            });
+            const data = await res.json();
+            if (data.ok && data.win) {
+                serverWin = true;
+                reward = data.reward || 0;
+            } else {
+                serverWin = false;
+            }
+        } catch (e) { console.error(e); }
+
         document.getElementById("gameContainer").style.display = "none";
         document.getElementById("resultScreen").style.display = "flex";
-        if (win) {
+        if (serverWin) {
             document.getElementById("resultTitle").innerText = t('win_title');
-            document.getElementById("resultText").innerHTML = t('win_text', currentScore, 5);
+            document.getElementById("resultText").innerHTML = t('win_text', currentScore, reward);
             document.getElementById("winBlock").style.display = "block";
             document.getElementById("homeBtn").style.display = "none";
             let wait = 5;
