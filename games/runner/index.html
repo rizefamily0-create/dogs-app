@@ -255,9 +255,9 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const HORIZON_Y = 0.25;
-    const ROAD_TOP_WIDTH = 0.35;       // сужена в конце
-    const ROAD_BOTTOM_WIDTH = 0.90;
+    const HORIZON_Y = 0.18;          // фон выше, дорога длиннее
+    const ROAD_TOP_WIDTH = 0.50;
+    const ROAD_BOTTOM_WIDTH = 0.54;  // дорога уже на 40% внизу
 
     let gameRunning = false;
     let timeLeft = 40;
@@ -324,8 +324,8 @@
     function drawPlayer() {
         if (!playerImg.complete || !playerImg.naturalWidth) return;
         let x = laneX(playerLane, 0.22);
-        if (playerLane === -1) x -= 14;
-        else if (playerLane === 1) x += 14;
+        if (playerLane === -1) x -= 18;
+        else if (playerLane === 1) x += 18;
 
         const baseY = H * 0.88;
         const slide = slideTimer > 0;
@@ -339,6 +339,7 @@
         const drawY = baseY - drawH / 2 + bob;
 
         ctx.save();
+        ctx.shadowBlur = 0;
         ctx.drawImage(playerImg, drawX, drawY, drawW, drawH);
         ctx.restore();
     }
@@ -353,13 +354,13 @@
         let w, h;
         if (o.type === 'car' || o.type === 'truck') {
             if (!enemyImg.complete || !enemyImg.naturalWidth) return;
-            const baseH = 55 * 0.7;
+            const baseH = 55 * 0.6;   // уменьшено на 40%
             const baseW = baseH * (enemyImg.width / enemyImg.height);
             h = baseH * scale;
             w = baseW * scale;
         } else if (o.type === 'barrier') {
             if (!barrierImg.complete || !barrierImg.naturalWidth) return;
-            const baseH = 45 * 0.7;
+            const baseH = 45 * 0.6;   // уменьшено на 40%
             const baseW = baseH * (barrierImg.width / barrierImg.height);
             h = baseH * scale;
             w = baseW * scale;
@@ -382,16 +383,13 @@
         const botW = W * ROAD_BOTTOM_WIDTH;
         const cx = W * 0.5;
 
-        // трава (тёмная)
-        ctx.fillStyle = '#3a4a2a';
+        // обочина – серая
+        ctx.fillStyle = '#5a5a5a';
         ctx.fillRect(0, horizon, W, bottom - horizon);
 
-        // тёмная линия горизонта
-        ctx.strokeStyle = '#111';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(0, horizon); ctx.lineTo(W, horizon);
-        ctx.stroke();
+        // тёмная линия вдоль горизонта
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(0, horizon - 2, W, 4);
 
         // асфальт
         const grad = ctx.createLinearGradient(0, horizon, 0, bottom);
@@ -403,15 +401,7 @@
         ctx.lineTo(cx + topW * 0.5, horizon); ctx.lineTo(cx - topW * 0.5, horizon);
         ctx.fill();
 
-        // серая обочина
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(cx - botW * 0.5, bottom); ctx.lineTo(cx - topW * 0.5, horizon);
-        ctx.moveTo(cx + botW * 0.5, bottom); ctx.lineTo(cx + topW * 0.5, horizon);
-        ctx.stroke();
-
-        // разделительные полосы
+        // разделительные полосы (двигаются)
         for (let divider = 1; divider <= 2; divider++) {
             const dashLen = 0.06;
             for (let d = 0; d < 1; d += dashLen) {
@@ -429,6 +419,17 @@
                 ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
             }
         }
+
+        // лёгкие штрихи текстуры
+        ctx.globalAlpha = 0.05;
+        for (let i = 0; i < 30; i++) {
+            const p = ((i / 30) + roadScroll * 0.04) % 1;
+            const y = horizon + (bottom - horizon) * p;
+            const w = topW + (botW - topW) * p;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(cx - w * 0.45, y, w * 0.9, 1);
+        }
+        ctx.globalAlpha = 1;
     }
 
     // ========== ЛОГИКА ==========
@@ -477,7 +478,7 @@
 
         if (safeTimer <= 0) {
             for (let o of obstacles) {
-                if (o.lane === playerLane && o.z < 0.14 && o.z > 0.00) {
+                if (o.lane === playerLane && o.z < 0.11 && o.z > 0.00) {
                     const canPass = (o.type === 'truck' && slideTimer > 0);
                     if (!canPass) {
                         gameRunning = false;
@@ -490,8 +491,8 @@
 
         if (spawnCooldown > 0) {
             spawnCooldown -= dt;
-        } else if (obstacles.length < 6 && safeTimer <= 0) {
-            spawnCooldown = 0.8 + Math.random() * 0.6;
+        } else if (obstacles.length < 7 && safeTimer <= 0) {
+            spawnCooldown = 0.9 + Math.random() * 0.6;
             spawnObstacle();
         }
 
@@ -549,7 +550,9 @@
 
     function startGame() {
         document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('resultScreen').style.display = 'none';
         gameRunning = true;
+        finishSent = false;
         timeLeft = surviveTimeGoal;
         playerLane = 0; targetLane = 0; slideTimer = 0;
         obstacles = [];
@@ -589,7 +592,8 @@
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); touchMoved = true; });
     canvas.addEventListener('touchend', (e) => {
         e.preventDefault();
-        if (!gameRunning) { startGame(); return; }
+        // Убрана автоматическая перезагрузка при !gameRunning
+        if (!gameRunning) return;
         if (!touchMoved) return;
         const dx = e.changedTouches[0].clientX - touchStartX;
         const dy = e.changedTouches[0].clientY - touchStartY;
@@ -601,7 +605,7 @@
     canvas.addEventListener('mousedown', (e) => { e.preventDefault(); mouseStartX = e.clientX; mouseStartY = e.clientY; mouseMoved = false; });
     canvas.addEventListener('mousemove', (e) => { if (e.buttons === 1) mouseMoved = true; });
     canvas.addEventListener('mouseup', (e) => {
-        if (!gameRunning) { startGame(); return; }
+        if (!gameRunning) return;   // больше не запускаем игру заново
         if (!mouseMoved) return;
         const dx = e.clientX - mouseStartX;
         const dy = e.clientY - mouseStartY;
