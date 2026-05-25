@@ -255,9 +255,9 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const HORIZON_Y = 0.18;          // фон выше, дорога длиннее
+    const HORIZON_Y = 0.25;
     const ROAD_TOP_WIDTH = 0.50;
-    const ROAD_BOTTOM_WIDTH = 0.54;  // дорога уже на 40% внизу
+    const ROAD_BOTTOM_WIDTH = 0.78;
 
     let gameRunning = false;
     let timeLeft = 40;
@@ -327,7 +327,7 @@
         if (playerLane === -1) x -= 18;
         else if (playerLane === 1) x += 18;
 
-        const baseY = H * 0.88;
+        const baseY = H * 0.85;
         const slide = slideTimer > 0;
         const bob = Math.sin(Date.now() * 0.015) * 2.5;
 
@@ -339,7 +339,6 @@
         const drawY = baseY - drawH / 2 + bob;
 
         ctx.save();
-        ctx.shadowBlur = 0;
         ctx.drawImage(playerImg, drawX, drawY, drawW, drawH);
         ctx.restore();
     }
@@ -354,13 +353,13 @@
         let w, h;
         if (o.type === 'car' || o.type === 'truck') {
             if (!enemyImg.complete || !enemyImg.naturalWidth) return;
-            const baseH = 55 * 0.6;   // уменьшено на 40%
+            const baseH = 55 * 0.7;
             const baseW = baseH * (enemyImg.width / enemyImg.height);
             h = baseH * scale;
             w = baseW * scale;
         } else if (o.type === 'barrier') {
             if (!barrierImg.complete || !barrierImg.naturalWidth) return;
-            const baseH = 45 * 0.6;   // уменьшено на 40%
+            const baseH = 45 * 0.7;
             const baseW = baseH * (barrierImg.width / barrierImg.height);
             h = baseH * scale;
             w = baseW * scale;
@@ -383,15 +382,9 @@
         const botW = W * ROAD_BOTTOM_WIDTH;
         const cx = W * 0.5;
 
-        // обочина – серая
-        ctx.fillStyle = '#5a5a5a';
+        ctx.fillStyle = '#4a5a3a';
         ctx.fillRect(0, horizon, W, bottom - horizon);
 
-        // тёмная линия вдоль горизонта
-        ctx.fillStyle = '#2a2a2a';
-        ctx.fillRect(0, horizon - 2, W, 4);
-
-        // асфальт
         const grad = ctx.createLinearGradient(0, horizon, 0, bottom);
         grad.addColorStop(0, '#3a3a3a');
         grad.addColorStop(1, '#5a5a5a');
@@ -401,7 +394,6 @@
         ctx.lineTo(cx + topW * 0.5, horizon); ctx.lineTo(cx - topW * 0.5, horizon);
         ctx.fill();
 
-        // разделительные полосы (двигаются)
         for (let divider = 1; divider <= 2; divider++) {
             const dashLen = 0.06;
             for (let d = 0; d < 1; d += dashLen) {
@@ -420,7 +412,6 @@
             }
         }
 
-        // лёгкие штрихи текстуры
         ctx.globalAlpha = 0.05;
         for (let i = 0; i < 30; i++) {
             const p = ((i / 30) + roadScroll * 0.04) % 1;
@@ -592,7 +583,6 @@
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); touchMoved = true; });
     canvas.addEventListener('touchend', (e) => {
         e.preventDefault();
-        // Убрана автоматическая перезагрузка при !gameRunning
         if (!gameRunning) return;
         if (!touchMoved) return;
         const dx = e.changedTouches[0].clientX - touchStartX;
@@ -605,7 +595,7 @@
     canvas.addEventListener('mousedown', (e) => { e.preventDefault(); mouseStartX = e.clientX; mouseStartY = e.clientY; mouseMoved = false; });
     canvas.addEventListener('mousemove', (e) => { if (e.buttons === 1) mouseMoved = true; });
     canvas.addEventListener('mouseup', (e) => {
-        if (!gameRunning) return;   // больше не запускаем игру заново
+        if (!gameRunning) return;
         if (!mouseMoved) return;
         const dx = e.clientX - mouseStartX;
         const dy = e.clientY - mouseStartY;
