@@ -255,9 +255,9 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const HORIZON_Y = 0.25;
+    const HORIZON_Y = 0.18;
     const ROAD_TOP_WIDTH = 0.50;
-    const ROAD_BOTTOM_WIDTH = 0.78;
+    const ROAD_BOTTOM_WIDTH = 0.54;
 
     let gameRunning = false;
     let timeLeft = 40;
@@ -327,18 +327,28 @@
         if (playerLane === -1) x -= 18;
         else if (playerLane === 1) x += 18;
 
-        const baseY = H * 0.85;
+        const baseY = H * 0.88;
         const slide = slideTimer > 0;
         const bob = Math.sin(Date.now() * 0.015) * 2.5;
 
-        const playerHeight = 120;
+        const playerHeight = 130;
         const playerWidth = playerHeight * (playerImg.width / playerImg.height);
         const drawW = slide ? playerWidth * 1.1 : playerWidth;
         const drawH = slide ? playerHeight * 0.8 : playerHeight;
         const drawX = x - drawW / 2;
         const drawY = baseY - drawH / 2 + bob;
 
+        // тень под машиной
         ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(x, baseY + 5, drawW * 0.5, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#0ff';
         ctx.drawImage(playerImg, drawX, drawY, drawW, drawH);
         ctx.restore();
     }
@@ -353,23 +363,29 @@
         let w, h;
         if (o.type === 'car' || o.type === 'truck') {
             if (!enemyImg.complete || !enemyImg.naturalWidth) return;
-            const baseH = 55 * 0.7;
+            const baseH = 55 * 0.6;
             const baseW = baseH * (enemyImg.width / enemyImg.height);
             h = baseH * scale;
             w = baseW * scale;
         } else if (o.type === 'barrier') {
             if (!barrierImg.complete || !barrierImg.naturalWidth) return;
-            const baseH = 45 * 0.7;
+            const baseH = 45 * 0.6;
             const baseW = baseH * (barrierImg.width / barrierImg.height);
             h = baseH * scale;
             w = baseW * scale;
         }
 
         ctx.save();
+        // свечение фар
+        if (o.type === 'car' || o.type === 'truck') {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ff0';
+        }
         ctx.translate(x, y - h * 0.5);
         if (o.type === 'car' || o.type === 'truck') {
             ctx.drawImage(enemyImg, -w/2, -h/2, w, h);
         } else if (o.type === 'barrier') {
+            ctx.shadowColor = '#f00';
             ctx.drawImage(barrierImg, -w/2, -h/2, w, h);
         }
         ctx.restore();
@@ -382,18 +398,26 @@
         const botW = W * ROAD_BOTTOM_WIDTH;
         const cx = W * 0.5;
 
-        ctx.fillStyle = '#4a5a3a';
+        // небо / фон уже отрисован
+
+        // обочина (трава)
+        const grassGrad = ctx.createLinearGradient(0, horizon, 0, bottom);
+        grassGrad.addColorStop(0, '#2d3e1f');
+        grassGrad.addColorStop(1, '#1b2a0e');
+        ctx.fillStyle = grassGrad;
         ctx.fillRect(0, horizon, W, bottom - horizon);
 
-        const grad = ctx.createLinearGradient(0, horizon, 0, bottom);
-        grad.addColorStop(0, '#3a3a3a');
-        grad.addColorStop(1, '#5a5a5a');
-        ctx.fillStyle = grad;
+        // асфальт
+        const roadGrad = ctx.createLinearGradient(0, horizon, 0, bottom);
+        roadGrad.addColorStop(0, '#3a3a3a');
+        roadGrad.addColorStop(1, '#4a4a4a');
+        ctx.fillStyle = roadGrad;
         ctx.beginPath();
         ctx.moveTo(cx - botW * 0.5, bottom); ctx.lineTo(cx + botW * 0.5, bottom);
         ctx.lineTo(cx + topW * 0.5, horizon); ctx.lineTo(cx - topW * 0.5, horizon);
         ctx.fill();
 
+        // разделительные линии (неоновые)
         for (let divider = 1; divider <= 2; divider++) {
             const dashLen = 0.06;
             for (let d = 0; d < 1; d += dashLen) {
@@ -406,19 +430,23 @@
                 const fraction = divider / 3;
                 const x1 = leftEdge + (rightEdge - leftEdge) * fraction;
                 const x2 = leftEdge + (rightEdge - leftEdge) * fraction;
-                ctx.strokeStyle = '#888';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#f0f';
+                ctx.lineWidth = 2.5 * (1 - p * 0.3);
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#f0f';
                 ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                ctx.shadowBlur = 0;
             }
         }
 
-        ctx.globalAlpha = 0.05;
-        for (let i = 0; i < 30; i++) {
-            const p = ((i / 30) + roadScroll * 0.04) % 1;
+        // световые полосы от фонарей (эффект скорости)
+        ctx.globalAlpha = 0.1;
+        for (let i = 0; i < 20; i++) {
+            const p = ((i / 20) + roadScroll * 0.02) % 1;
             const y = horizon + (bottom - horizon) * p;
             const w = topW + (botW - topW) * p;
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(cx - w * 0.45, y, w * 0.9, 1);
+            ctx.fillRect(cx - w * 0.3, y, w * 0.6, 2);
         }
         ctx.globalAlpha = 1;
     }
