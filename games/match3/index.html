@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MATCH-3 DOGS</title>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%);
+            font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            color: #f5f5f7;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .glass-card {
+            background: rgba(28, 28, 32, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            padding: 18px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.03) inset;
+        }
+        #gameWrap {
+            position: relative; width: 100vw; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .paw-decor {
+            position: absolute; pointer-events: none; opacity: 0.1; z-index: 0;
+            font-size: 30px; user-select: none;
+        }
+        #topUI {
+            position: absolute; top: 14px; left: 14px; right: 14px;
+            display: flex; justify-content: space-between; gap: 10px; z-index: 20;
+        }
+        .uiCard {
+            background: rgba(28, 28, 32, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px; padding: 10px 18px;
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 900; min-width: 70px;
+        }
+        #timer { color: #fff; }
+        #difficulty { font-size: 14px; color: #c0c0c0; font-weight: 800; }
+        #startScreen, #resultScreen {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 50; padding: 20px; gap: 16px;
+        }
+        .start-card, .resultCard {
+            background: rgba(28,28,32,0.7); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px; padding: 32px 24px; backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center; width: 340px; max-width: 90vw;
+        }
+        .playBtn, .resultBtn {
+            width: 100%; border: none; border-radius: 18px; padding: 16px;
+            background: #c0c0c0; color: #1a1a1d; font-size: 18px; font-weight: 800;
+            cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 18px rgba(192,192,192,0.25);
+            margin-top: 16px; letter-spacing: 0.5px;
+        }
+        .playBtn:active, .resultBtn:active { transform: scale(0.96); opacity: 0.85; }
+        .adBanner {
+            width: 100%; margin-bottom: 12px; border-radius: 16px;
+            background: rgba(20,20,24,0.5); border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        #gameContainer {
+            display: none; flex-direction: column; align-items: center; gap: 12px;
+            width: 100%; padding: 0 20px;
+        }
+        #grid {
+            display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+            gap: 4px; width: min(360px, 90vw); height: min(360px, 90vw);
+            background: rgba(20,20,24,0.6); border-radius: 18px; padding: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            position: relative; z-index: 2;
+        }
+        .cell {
+            background: rgba(60,60,70,0.4); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: bold; cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .cell.selected { transform: scale(0.9); opacity: 0.8; }
+        .infoRow {
+            display: flex; justify-content: center; align-items: center;
+            width: min(360px, 90vw); gap: 12px; margin-top: 12px;
+        }
+        .infoBox {
+            flex: 1; background: rgba(28,28,32,0.6);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 10px 12px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            text-align: center; font-weight: 700; font-size: 14px; color: #c0c0c0;
+        }
+        .infoBox .label { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
+        .infoBox .value { font-size: 24px; font-weight: 900; color: #fff; }
+        .resultTitle { font-size: 30px; font-weight: 900; margin-bottom: 8px; color: #ffffff; }
+        .resultText { color: #8e8e93; line-height: 1.5; margin-bottom: 18px; font-size: 16px; font-weight: 700; }
+        .waitBox {
+            background: rgba(20,20,24,0.55); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 18px; padding: 18px; text-align: center; margin-bottom: 16px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: #f5f5f7;
+        }
+        #claimTimer { font-size: 32px; font-weight: 900; color: #c0c0c0; margin-top: 8px; }
+        #loading {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; font-size: 22px; font-weight: 800; color: #c0c0c0;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); } 20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); } 60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); } 100% { transform: translateX(0); }
+        }
+        #grid.shake { animation: shake 0.4s ease; }
+    </style>
+</head>
+<body>
+<div id="gameWrap">
+    <div id="loading"></div>
+    <div id="topUI">
+        <div class="uiCard"><div id="timer">60</div></div>
+        <div class="uiCard"><div id="difficulty"></div></div>
+    </div>
+
+    <div id="startScreen">
+        <div class="adBanner" style="width:300px;max-width:90vw;">
+            <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+        </div>
+        <div class="start-card">
+            <div style="font-size:36px;font-weight:900;margin-bottom:12px;">Match‑3 DOGS</div>
+            <div id="startInfo" style="margin-bottom:16px;line-height:1.5;color:#8e8e93;"></div>
+            <button class="playBtn" onclick="startGame()"></button>
+        </div>
+    </div>
+
+    <div id="gameContainer">
+        <div id="grid"></div>
+        <div class="infoRow">
+            <div class="infoBox">
+                <div class="label"></div>
+                <div class="value" id="score">0</div>
+            </div>
+            <div class="infoBox">
+                <div class="label"></div>
+                <div class="value" id="targetScoreDisplay">500</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultScreen" style="display:none;">
+        <div class="resultCard">
+            <div class="resultTitle" id="resultTitle"></div>
+            <div class="resultText" id="resultText"></div>
+            <div id="winBlock" style="display:none;">
+                <div class="waitBox" id="waitBoxText">
+                    <div id="claimTimer">5</div>
+                </div>
+            </div>
+            <div class="adBanner">
+                <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+            </div>
+            <div class="adBanner">
+                <iframe data-aa='2438445' src='//acceptable.a-ads.com/2438445/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+            </div>
+            <button class="resultBtn" onclick="goHome()" id="homeBtn"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== ЛОКАЛИЗАЦИЯ ==========
+    const currentLang = localStorage.getItem('lang') || 'en';
+    const LOCALE = {
+        ru: {
+            loading: "Загрузка...",
+            play: "ИГРАТЬ",
+            difficulty: {1:"ЛЕГКО",2:"СРЕДНЕ",3:"СЛОЖНО"},
+            score: "Очки",
+            target: "Цель",
+            time: "Время",
+            sec: "с",
+            reward: "Награда",
+            difficulty_title: "Сложность",
+            lost_title: "ВРЕМЯ ВЫШЛО",
+            lost_text: "Вы набрали {0} из {1} очков",
+            win_title: "ВЫ ВЫИГРАЛИ 🎉",
+            win_text: "Вы набрали {0} очков! +{1} DOGS будут начислены.",
+            session_expired: "Сессия истекла.",
+            wait_text: "Награда начисляется.<br>Пожалуйста, подождите...",
+            home_btn: "ВЕРНУТЬСЯ ДОМОЙ",
+            open_from_hub: "ОТКРОЙТЕ ИЗ GAMEHUB"
+        },
+        en: {
+            loading: "Loading...",
+            play: "PLAY",
+            difficulty: {1:"EASY",2:"MEDIUM",3:"HARD"},
+            score: "Score",
+            target: "Target",
+            time: "Time",
+            sec: "s",
+            reward: "Reward",
+            difficulty_title: "Difficulty",
+            lost_title: "TIME IS UP",
+            lost_text: "You scored {0} / {1}",
+            win_title: "YOU WON 🎉",
+            win_text: "You scored {0}! +{1} DOGS will be credited.",
+            session_expired: "Session expired.",
+            wait_text: "Reward is being credited.<br>Please wait...",
+            home_btn: "RETURN HOME",
+            open_from_hub: "OPEN FROM GAMEHUB"
+        }
+    };
+    function t(key, ...args) {
+        let str = LOCALE[currentLang]?.[key] || key;
+        args.forEach((arg, i) => { str = str.replace(`{${i}}`, arg); });
+        return str;
+    }
+    function td(key) { return LOCALE[currentLang]?.difficulty?.[key] ?? key; }
+
+    // Статическая локализация
+    document.getElementById('loading').innerText = t('loading');
+    document.querySelector('.playBtn').innerText = t('play');
+    document.getElementById('homeBtn').innerText = t('home_btn');
+    document.querySelectorAll('.infoBox .label')[0].innerText = t('score');
+    document.querySelectorAll('.infoBox .label')[1].innerText = t('target');
+    document.getElementById('waitBoxText').innerHTML = t('wait_text') + '<div id="claimTimer">5</div>';
+
+    if (window.Telegram?.WebApp?.disableVerticalSwipes) {
+        window.Telegram.WebApp.disableVerticalSwipes();
+    }
+    document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+
+    // Лапки-декор
+    function createPaws() {
+        const container = document.getElementById('gameWrap');
+        for (let i = 0; i < 18; i++) {
+            const paw = document.createElement('div');
+            paw.className = 'paw-decor';
+            paw.textContent = '🐾';
+            paw.style.left = Math.random() * 100 + '%';
+            paw.style.top = Math.random() * 100 + '%';
+            paw.style.fontSize = (20 + Math.random() * 30) + 'px';
+            paw.style.opacity = 0.08 + Math.random() * 0.1;
+            paw.style.transform = `rotate(${Math.random() * 360}deg)`;
+            container.appendChild(paw);
+        }
+    }
+    createPaws();
+
+    const tg = window.Telegram?.WebApp;
+    tg?.expand?.();
+    const ExitAdController = window.Adsgram.init({ blockId: "int-31473" });
+
+    const API = "https://dogs-7ntt.onrender.com";
+    const sessionToken = new URLSearchParams(window.location.search).get("session_token");
+    const initDataFromUrl = new URLSearchParams(window.location.search).get("init_data");
+    let finishSent = false;
+
+    let gameDifficulty = 1;
+    let targetScore = 500;
+    let timeLimit = 60;
+    let currentScore = 0;
+    let gameActive = false;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let busy = false;
+
+    const gridSize = 8;
+    const gems = ['🔴','🟠','🟡','🟢','🔵','🟣'];
+    let board = [];
+    let selectedCell = null;
+    let gridElement = document.getElementById('grid');
+
+    function hideLoading() { document.getElementById("loading").style.display = "none"; }
+    setTimeout(hideLoading, 1500);
+
+    // Инициализация с API
+    async function init() {
+        if (!sessionToken) {
+            document.querySelector(".playBtn").disabled = true;
+            document.querySelector(".playBtn").innerText = t('open_from_hub');
+            return;
+        }
+        try {
+            const res = await fetch(API + "/games/match3/start", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({init_data: initDataFromUrl || tg?.initData || ""})
+            });
+            const data = await res.json();
+            if (!data.ok) {
+                document.querySelector(".playBtn").disabled = true;
+                document.querySelector(".playBtn").innerText = data.error || "Error";
+                return;
+            }
+            gameDifficulty = data.difficulty;
+            targetScore = data.target_score;
+            timeLimit = data.time_limit;
+            document.getElementById("difficulty").innerText = td(gameDifficulty);
+            const rewardMap = {1:5,2:7,3:10};
+            document.getElementById("startInfo").innerHTML = `
+                ${t('difficulty_title')}: <b>${td(gameDifficulty)}</b><br>
+                ${t('target')}: <b>${targetScore} ${t('score').toLowerCase()}</b><br>
+                ${t('time')}: <b>${timeLimit}${t('sec')}</b><br>
+                ${t('reward')}: <b>${rewardMap[gameDifficulty]} DOGS</b>
+            `;
+            hideLoading();
+        } catch(e) { console.error(e); }
+    }
+    init();
+
+    function startGame() {
+        document.getElementById("startScreen").style.display = "none";
+        document.getElementById("gameContainer").style.display = "flex";
+        document.getElementById("resultScreen").style.display = "none";
+        currentScore = 0;
+        updateScore();
+        initBoard();
+        renderBoard();
+        gameActive = true;
+        startTimer();
+    }
+
+    function initBoard() {
+        board = Array(gridSize).fill().map(() => Array(gridSize).fill().map(() => gems[Math.floor(Math.random() * gems.length)]));
+        while (findMatches().length > 0) {
+            for (let r=0; r<gridSize; r++)
+                for (let c=0; c<gridSize; c++)
+                    board[r][c] = gems[Math.floor(Math.random() * gems.length)];
+        }
+    }
+
+    function renderBoard() {
+        gridElement.innerHTML = '';
+        for (let r=0; r<gridSize; r++) {
+            for (let c=0; c<gridSize; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = board[r][c];
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                cell.addEventListener('click', () => onCellClick(r, c));
+                cell.addEventListener('touchstart', (e) => { e.preventDefault(); onCellClick(r, c); });
+                gridElement.appendChild(cell);
+            }
+        }
+    }
+
+    function onCellClick(row, col) {
+        if (!gameActive || busy) return;
+        if (selectedCell) {
+            const [sr, sc] = selectedCell;
+            if (Math.abs(sr-row) + Math.abs(sc-col) === 1) {
+                swapGems(sr, sc, row, col);
+            }
+            clearSelection();
+        } else {
+            selectedCell = [row, col];
+            highlightCell(row, col, true);
+        }
+    }
+
+    function clearSelection() {
+        if (selectedCell) { highlightCell(selectedCell[0], selectedCell[1], false); selectedCell = null; }
+    }
+
+    function highlightCell(row, col, state) {
+        const cell = gridElement.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        if (cell) cell.classList.toggle('selected', state);
+    }
+
+    function swapGems(r1, c1, r2, c2) {
+        busy = true;
+        [board[r1][c1], board[r2][c2]] = [board[r2][c2], board[r1][c1]];
+        animateSwap(r1, c1, r2, c2, () => {
+            const matches = findMatches();
+            if (matches.length === 0) {
+                [board[r1][c1], board[r2][c2]] = [board[r2][c2], board[r1][c1]];
+                animateSwap(r1, c1, r2, c2, () => { busy = false; renderBoard(); });
+                return;
+            }
+            processMatches(matches);
+        });
+    }
+
+    function animateSwap(r1, c1, r2, c2, callback) {
+        const cell1 = gridElement.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
+        const cell2 = gridElement.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
+        if (!cell1 || !cell2) { callback(); return; }
+        const dx = (c2 - c1) * cell1.offsetWidth;
+        const dy = (r2 - r1) * cell1.offsetHeight;
+        cell1.style.transform = `translate(${dx}px, ${dy}px)`;
+        cell2.style.transform = `translate(${-dx}px, ${-dy}px)`;
+        setTimeout(() => { cell1.style.transform = ''; cell2.style.transform = ''; callback(); }, 200);
+    }
+
+    function findMatches() {
+        const toRemove = new Set();
+        for (let r=0; r<gridSize; r++) {
+            for (let c=0; c<gridSize-2; c++) {
+                if (board[r][c] === null) continue;
+                let count = 1;
+                while (c+count < gridSize && board[r][c+count] === board[r][c]) count++;
+                if (count >= 3) {
+                    if (count >= 4) for (let i=0; i<gridSize; i++) toRemove.add(`${r},${i}`);
+                    else for (let i=0; i<count; i++) toRemove.add(`${r},${c+i}`);
+                    c += count - 1;
+                }
+            }
+        }
+        for (let c=0; c<gridSize; c++) {
+            for (let r=0; r<gridSize-2; r++) {
+                if (board[r][c] === null) continue;
+                let count = 1;
+                while (r+count < gridSize && board[r+count][c] === board[r][c]) count++;
+                if (count >= 3) {
+                    if (count >= 4) for (let i=0; i<gridSize; i++) toRemove.add(`${i},${c}`);
+                    else for (let i=0; i<count; i++) toRemove.add(`${r+i},${c}`);
+                    r += count - 1;
+                }
+            }
+        }
+        return [...toRemove].map(s => s.split(',').map(Number));
+    }
+
+    function processMatches(matches) {
+        const isSuper = matches.length >= gridSize;
+        if (navigator.vibrate) {
+            if (isSuper) { navigator.vibrate([30,50,30,50,30]); gridElement.classList.add('shake'); setTimeout(() => gridElement.classList.remove('shake'), 500); }
+            else navigator.vibrate(20);
+        } else if (isSuper) { gridElement.classList.add('shake'); setTimeout(() => gridElement.classList.remove('shake'), 500); }
+
+        for (let [r,c] of matches) board[r][c] = null;
+        currentScore += matches.length * 10;
+        updateScore();
+        renderBoard();
+        setTimeout(() => {
+            applyGravityWithAnimation(() => {
+                renderBoard();
+                setTimeout(() => {
+                    const chain = findMatches();
+                    if (chain.length > 0) processMatches(chain);
+                    else { busy = false; checkWin(); }
+                }, 300);
+            });
+        }, 200);
+    }
+
+    function applyGravityWithAnimation(callback) {
+        const moves = [];
+        for (let c=0; c<gridSize; c++) {
+            let emptyRow = gridSize - 1;
+            for (let r=gridSize-1; r>=0; r--) {
+                if (board[r][c] !== null) {
+                    if (r !== emptyRow) {
+                        moves.push({ row: emptyRow, col: c, fromRow: r });
+                        board[emptyRow][c] = board[r][c];
+                        board[r][c] = null;
+                    }
+                    emptyRow--;
+                }
+            }
+            for (let r=emptyRow; r>=0; r--) {
+                board[r][c] = gems[Math.floor(Math.random() * gems.length)];
+                moves.push({ row: r, col: c, fromRow: r - (emptyRow + 1) });
+            }
+        }
+        const cells = gridElement.querySelectorAll('.cell');
+        moves.forEach(m => {
+            const cell = gridElement.querySelector(`[data-row="${m.row}"][data-col="${m.col}"]`);
+            if (cell) {
+                const dy = (m.fromRow - m.row) * cell.offsetHeight;
+                cell.style.transform = `translateY(${dy}px)`; cell.style.transition = 'none';
+                setTimeout(() => { cell.style.transition = 'transform 0.3s ease'; cell.style.transform = ''; }, 10);
+            }
+        });
+        setTimeout(callback, 350);
+    }
+
+    function updateScore() { document.getElementById('score').innerText = currentScore; }
+
+    function checkWin() { if (currentScore >= targetScore) endGame(true); }
+
+    function startTimer() {
+        timeLeft = timeLimit;
+        document.getElementById("timer").innerText = timeLeft;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById("timer").innerText = timeLeft;
+            if (timeLeft <= 0) { clearInterval(timerInterval); endGame(false); }
+        }, 1000);
+    }
+
+    async function endGame(win) {
+        if (!gameActive || finishSent) return;
+        gameActive = false;
+        clearInterval(timerInterval);
+        finishSent = true;
+        document.getElementById("gameContainer").style.display = "none";
+        document.getElementById("resultScreen").style.display = "flex";
+        if (win) {
+            document.getElementById("resultTitle").innerText = t('win_title');
+            document.getElementById("resultText").innerHTML = t('win_text', currentScore, 5);
+            document.getElementById("winBlock").style.display = "block";
+            document.getElementById("homeBtn").style.display = "none";
+            let wait = 5;
+            document.getElementById("claimTimer").innerText = wait;
+            const rewardTimer = setInterval(() => {
+                wait--;
+                document.getElementById("claimTimer").innerText = wait;
+                if (wait <= 0) { clearInterval(rewardTimer); document.getElementById("homeBtn").style.display = "block"; document.getElementById("winBlock").style.display = "none"; }
+            }, 1000);
+        } else {
+            document.getElementById("resultTitle").innerText = t('lost_title');
+            document.getElementById("resultText").innerText = t('lost_text', currentScore, targetScore);
+            document.getElementById("homeBtn").style.display = "block";
+        }
+    }
+
+    async function goHome() {
+        try { if (Math.random() < 1/3) await ExitAdController.show(); } catch (e) {}
+        window.location.href = "../../";
+    }
+</script>
+</body>
+</html>
