@@ -198,6 +198,31 @@
             font-weight: 700;
             color: #c0c0c0;
         }
+        /* Стили для инструкции */
+        .guide-step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+            align-items: flex-start;
+        }
+        .guide-step-num {
+            background: rgba(192, 192, 192, 0.15);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #c0c0c0;
+            flex-shrink: 0;
+        }
+        .guide-step-text {
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.85;
+        }
     </style>
 </head>
 <body>
@@ -208,6 +233,13 @@
 
     <h2 id="pageTitle">📢 Create Task</h2>
 
+    <!-- Инструкция -->
+    <div class="card" id="guideCard">
+        <h3 id="guideTitle">📋 How to create a task</h3>
+        <div id="guideContent"></div>
+    </div>
+
+    <!-- Проверка канала -->
     <div class="card">
         <label for="channelInput" id="channelLabel">Channel link / @username / ID</label>
         <input id="channelInput" placeholder="@username or -100..." />
@@ -215,6 +247,7 @@
         <div id="channelPreview"></div>
     </div>
 
+    <!-- Форма создания заявки -->
     <div class="card" id="createForm" style="display: none;">
         <label for="inviteLink" id="inviteLabel">Invite link (required for private channels)</label>
         <input id="inviteLink" placeholder="https://t.me/+..." />
@@ -235,6 +268,7 @@
         <button onclick="createRequest()" id="createBtn" disabled>Create Task</button>
     </div>
 
+    <!-- Мои заявки -->
     <div class="card">
         <h3 id="myRequestsTitle">My Requests</h3>
         <div id="myRequests"></div>
@@ -249,6 +283,16 @@
         const LOCALE = {
             en: {
                 pageTitle: "📢 Create Task",
+                guideTitle: "📋 How to create a task",
+                guideSteps: [
+                    "Add the bot to your channel as an administrator (required for subscription verification).",
+                    "Get your channel link, @username, or numeric ID (for private channels use the ID, e.g., -100...).",
+                    "Paste it below and click «Check Channel».",
+                    "If the channel is private, you must also provide an invite link.",
+                    "Select how many subscribers you want to attract (min 100, cost 100 DOGS each).",
+                    "Click «Create Task» – the total amount will be deducted from your balance.",
+                    "Once approved by the admin, your task will appear in the general list and users will start subscribing."
+                ],
                 channelLabel: "Channel link / @username / ID",
                 checkBtn: "Check Channel",
                 inviteLabel: "Invite link (required for private channels)",
@@ -267,6 +311,16 @@
             },
             ru: {
                 pageTitle: "📢 Создать задание",
+                guideTitle: "📋 Как создать задание",
+                guideSteps: [
+                    "Добавьте бота в администраторы вашего канала (это нужно для проверки подписки).",
+                    "Получите ссылку на канал, @username или числовой ID (для приватных каналов используйте ID, например, -100…).",
+                    "Вставьте его ниже и нажмите «Проверить канал».",
+                    "Если канал приватный, обязательно укажите пригласительную ссылку.",
+                    "Выберите, сколько подписчиков вы хотите привлечь (минимум 100, стоимость 100 DOGS за каждого).",
+                    "Нажмите «Создать задание» – с вашего баланса спишется итоговая сумма.",
+                    "После одобрения администратором ваше задание появится в общем списке, и пользователи начнут подписываться."
+                ],
                 channelLabel: "Ссылка / @username / ID канала",
                 checkBtn: "Проверить канал",
                 inviteLabel: "Ссылка-приглашение (обязательно для приватных)",
@@ -293,8 +347,21 @@
             return str;
         }
 
+        function renderGuide() {
+            const steps = LOCALE[currentLang].guideSteps;
+            const container = document.getElementById('guideContent');
+            container.innerHTML = steps.map((step, i) => `
+                <div class="guide-step">
+                    <div class="guide-step-num">${i + 1}</div>
+                    <div class="guide-step-text">${step}</div>
+                </div>
+            `).join('');
+        }
+
         function applyLanguage() {
             document.getElementById('pageTitle').innerText = t('pageTitle');
+            document.getElementById('guideTitle').innerText = t('guideTitle');
+            renderGuide();
             document.getElementById('channelLabel').innerText = t('channelLabel');
             document.getElementById('checkBtn').innerText = t('checkBtn');
             document.getElementById('inviteLabel').innerText = t('inviteLabel');
