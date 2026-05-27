@@ -6,6 +6,53 @@
     <title>Create Task</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* ========== SPLASH SCREEN (как в основном приложении) ========== */
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #0f1015;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+        #splash img {
+            width: 120px;
+            height: 120px;
+            border-radius: 28px;
+            object-fit: cover;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        #loadingText {
+            font-size: 22px;
+            font-weight: 600;
+            color: #c0c0c0;
+            letter-spacing: 3px;
+        }
+        .loading-letter {
+            display: inline-block;
+            animation: pulse 1.2s infinite;
+        }
+        .loading-letter:nth-child(1) { animation-delay: 0s; }
+        .loading-letter:nth-child(2) { animation-delay: 0.1s; }
+        .loading-letter:nth-child(3) { animation-delay: 0.2s; }
+        .loading-letter:nth-child(4) { animation-delay: 0.3s; }
+        .loading-letter:nth-child(5) { animation-delay: 0.4s; }
+        .loading-letter:nth-child(6) { animation-delay: 0.5s; }
+        .loading-letter:nth-child(7) { animation-delay: 0.6s; }
+        .loading-letter:nth-child(8) { animation-delay: 0.7s; }
+        .loading-letter:nth-child(9) { animation-delay: 0.8s; }
+        .loading-letter:nth-child(10) { animation-delay: 0.9s; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+        }
+
         /* ========== ГЛОБАЛЬНЫЕ СТИЛИ (как в основном приложении) ========== */
         * {
             margin: 0;
@@ -167,7 +214,6 @@
             border: 2px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
-        /* прочие стили */
         .balance-row {
             font-size: 16px;
             font-weight: 700;
@@ -262,61 +308,72 @@
     </style>
 </head>
 <body>
-    <div class="lang-switch">
-        <button id="langEn" onclick="setLang('en')">EN</button>
-        <button id="langRu" onclick="setLang('ru')">RU</button>
-    </div>
-
-    <h2 id="pageTitle">📢 Create Task</h2>
-
-    <!-- Карточка баланса (в стиле главного приложения) -->
-    <div class="card" style="margin-top: 6px;">
-        <div class="balance">
-            <div class="balance-left">
-                <span class="num" id="topBalanceNum">0</span>
-                <span class="unit">DOGS</span>
-            </div>
-            <div class="user">
-                <img id="userAvatar" src="dogs.png" alt="avatar" />
-            </div>
+    <!-- Splash Screen -->
+    <div id="splash">
+        <img src="dogs.png" alt="loading">
+        <div id="loadingText">
+            <span class="loading-letter">L</span><span class="loading-letter">o</span><span class="loading-letter">a</span><span class="loading-letter">d</span><span class="loading-letter">i</span><span class="loading-letter">n</span><span class="loading-letter">g</span><span class="loading-letter">.</span><span class="loading-letter">.</span><span class="loading-letter">.</span>
         </div>
     </div>
 
-    <!-- Инструкция -->
-    <div class="card" id="guideCard">
-        <h3 id="guideTitle">📋 How to create a task</h3>
-        <div id="guideContent"></div>
-    </div>
-
-    <!-- Проверка канала -->
-    <div class="card">
-        <label for="channelInput" id="channelLabel">Channel link / @username / ID</label>
-        <input id="channelInput" placeholder="@username or -100..." />
-        <button onclick="checkChannel()" id="checkBtn">Check Channel</button>
-        <div id="channelPreview"></div>
-    </div>
-
-    <!-- Форма создания заявки -->
-    <div class="card" id="createForm" style="display: none;">
-        <label for="inviteLink" id="inviteLabel">Invite link (required for private channels)</label>
-        <input id="inviteLink" placeholder="https://t.me/+..." />
-
-        <label for="subsSlider" id="subsLabel">Number of subscribers to attract (min 100)</label>
-        <input type="range" id="subsSlider" min="100" max="10000" value="100" step="10" oninput="updateCost()" />
-        <span class="subs-value" id="subsValue">100</span>
-
-        <div class="balance-row">
-            <span id="costText">Cost:</span>
-            <b id="totalCost">10,000</b> DOGS
+    <!-- Основной контент (изначально скрыт) -->
+    <div id="mainContent" style="display: none;">
+        <div class="lang-switch">
+            <button id="langEn" onclick="setLang('en')">EN</button>
+            <button id="langRu" onclick="setLang('ru')">RU</button>
         </div>
 
-        <button onclick="createRequest()" id="createBtn" disabled>Create Task</button>
-    </div>
+        <h2 id="pageTitle">📢 Create Task</h2>
 
-    <!-- Мои заявки -->
-    <div class="card">
-        <h3 id="myRequestsTitle">My Requests</h3>
-        <div id="myRequests"></div>
+        <!-- Карточка баланса (в стиле главного приложения) -->
+        <div class="card" style="margin-top: 6px;">
+            <div class="balance">
+                <div class="balance-left">
+                    <span class="num" id="topBalanceNum">0</span>
+                    <span class="unit">DOGS</span>
+                </div>
+                <div class="user">
+                    <img id="userAvatar" src="dogs.png" alt="avatar" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Инструкция -->
+        <div class="card" id="guideCard">
+            <h3 id="guideTitle">📋 How to create a task</h3>
+            <div id="guideContent"></div>
+        </div>
+
+        <!-- Проверка канала -->
+        <div class="card">
+            <label for="channelInput" id="channelLabel">Channel link / @username / ID</label>
+            <input id="channelInput" placeholder="@username or -100..." />
+            <button onclick="checkChannel()" id="checkBtn">Check Channel</button>
+            <div id="channelPreview"></div>
+        </div>
+
+        <!-- Форма создания заявки -->
+        <div class="card" id="createForm" style="display: none;">
+            <label for="inviteLink" id="inviteLabel">Invite link (required for private channels)</label>
+            <input id="inviteLink" placeholder="https://t.me/+..." />
+
+            <label for="subsSlider" id="subsLabel">Number of subscribers to attract (min 100)</label>
+            <input type="range" id="subsSlider" min="100" max="10000" value="100" step="10" oninput="updateCost()" />
+            <span class="subs-value" id="subsValue">100</span>
+
+            <div class="balance-row">
+                <span id="costText">Cost:</span>
+                <b id="totalCost">10,000</b> DOGS
+            </div>
+
+            <button onclick="createRequest()" id="createBtn" disabled>Create Task</button>
+        </div>
+
+        <!-- Мои заявки -->
+        <div class="card">
+            <h3 id="myRequestsTitle">My Requests</h3>
+            <div id="myRequests"></div>
+        </div>
     </div>
 
     <script>
@@ -570,12 +627,28 @@
             }
         }
 
-        // Инициализация
+        // Инициализация с экраном загрузки
+        async function initApp() {
+            try {
+                // Параллельная загрузка данных
+                await Promise.all([
+                    loadBalance(),
+                    loadMyRequests()
+                ]);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                // Скрываем splash и показываем контент
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            }
+        }
+
+        // Старт
         loadUser();
         applyLanguage();
-        loadBalance(); // сразу показываем баланс
-        loadMyRequests();
         document.getElementById('subsSlider').addEventListener('input', updateCost);
+        initApp();
     </script>
 </body>
 </html>
