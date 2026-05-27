@@ -12,7 +12,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%);
             color: #f5f5f7;
@@ -24,8 +23,6 @@
             user-select: none;
             -webkit-user-select: none;
         }
-
-        /* Карточки с эффектом стекла */
         .card {
             background: rgba(28, 28, 32, 0.55);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -37,20 +34,17 @@
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
             transition: all 0.3s ease;
         }
-
         h2 {
             font-size: 20px;
             font-weight: 800;
             margin-bottom: 12px;
             letter-spacing: -0.2px;
         }
-
         h3 {
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 10px;
         }
-
         label {
             font-size: 14px;
             font-weight: 600;
@@ -58,7 +52,6 @@
             margin-bottom: 6px;
             display: block;
         }
-
         input {
             width: 100%;
             padding: 15px 16px;
@@ -73,17 +66,14 @@
             -webkit-backdrop-filter: blur(10px);
             font-family: inherit;
         }
-
         input:focus {
             border-color: #c0c0c0;
             box-shadow: 0 0 0 3px rgba(192, 192, 192, 0.12);
         }
-
         input::placeholder {
             color: #555;
             opacity: 0.8;
         }
-
         button {
             width: 100%;
             padding: 16px;
@@ -100,13 +90,11 @@
             font-family: inherit;
             margin-top: 10px;
         }
-
         button:active {
             transform: scale(0.96);
             opacity: 0.85;
             box-shadow: 0 1px 4px rgba(192, 192, 192, 0.1);
         }
-
         button:disabled {
             background: rgba(40, 40, 44, 0.7);
             color: #666;
@@ -117,8 +105,6 @@
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
         }
-
-        /* Ползунок (range) */
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -130,7 +116,6 @@
             padding: 0;
             border: none;
         }
-
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 22px;
@@ -140,15 +125,12 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
-
-        /* Информационные блоки */
         .info {
             font-size: 14px;
             opacity: 0.7;
             margin-top: 8px;
             line-height: 1.4;
         }
-
         .balance {
             font-size: 16px;
             font-weight: 700;
@@ -157,14 +139,12 @@
             justify-content: space-between;
             align-items: center;
         }
-
         #channelPreview {
             margin: 14px 0;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         #channelPreview img {
             width: 42px;
             height: 42px;
@@ -172,12 +152,10 @@
             object-fit: cover;
             background: rgba(34, 35, 42, 0.6);
         }
-
         .lang-switch {
             text-align: right;
             margin-bottom: 20px;
         }
-
         .lang-switch button {
             width: auto;
             padding: 8px 16px;
@@ -190,14 +168,11 @@
             -webkit-backdrop-filter: blur(10px);
             margin-left: 6px;
         }
-
         .lang-switch button.active {
             background: #c0c0c0;
             color: #1a1a1d;
             border-color: #c0c0c0;
         }
-
-        /* Элементы списка заявок */
         .request-item {
             background: rgba(22, 22, 28, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -207,7 +182,6 @@
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
         }
-
         .status {
             font-weight: 700;
             font-size: 13px;
@@ -215,17 +189,9 @@
             letter-spacing: 0.3px;
             margin-top: 4px;
         }
-
-        .status.pending {
-            color: #ffb300;
-        }
-        .status.approved {
-            color: #00e676;
-        }
-        .status.rejected {
-            color: #ff5252;
-        }
-
+        .status.pending { color: #ffb300; }
+        .status.approved { color: #00e676; }
+        .status.rejected { color: #ff5252; }
         .subs-value {
             display: inline-block;
             margin-left: 8px;
@@ -235,7 +201,6 @@
     </style>
 </head>
 <body>
-    <!-- Переключатель языка -->
     <div class="lang-switch">
         <button id="langEn" onclick="setLang('en')">EN</button>
         <button id="langRu" onclick="setLang('ru')">RU</button>
@@ -243,7 +208,6 @@
 
     <h2 id="pageTitle">📢 Create Task</h2>
 
-    <!-- Проверка канала -->
     <div class="card">
         <label for="channelInput" id="channelLabel">Channel link / @username / ID</label>
         <input id="channelInput" placeholder="@username or -100..." />
@@ -251,7 +215,6 @@
         <div id="channelPreview"></div>
     </div>
 
-    <!-- Форма создания заявки (скрыта до проверки) -->
     <div class="card" id="createForm" style="display: none;">
         <label for="inviteLink" id="inviteLabel">Invite link (required for private channels)</label>
         <input id="inviteLink" placeholder="https://t.me/+..." />
@@ -272,7 +235,6 @@
         <button onclick="createRequest()" id="createBtn" disabled>Create Task</button>
     </div>
 
-    <!-- Список заявок пользователя -->
     <div class="card">
         <h3 id="myRequestsTitle">My Requests</h3>
         <div id="myRequests"></div>
@@ -299,7 +261,7 @@
                 rejected: "Rejected",
                 noRequests: "No requests yet",
                 insufficient: "Insufficient balance",
-                minSubs: "Minimum 100 subscribers",
+                minSubs: "Minimum 100 subscribers to attract",
                 channelError: "Channel not found or bot not admin",
                 success: "Request created! Cost: {cost} DOGS"
             },
@@ -317,7 +279,7 @@
                 rejected: "Отклонено",
                 noRequests: "Заявок пока нет",
                 insufficient: "Недостаточно средств",
-                minSubs: "Минимум 100 подписчиков",
+                minSubs: "Минимум 100 привлекаемых подписчиков",
                 channelError: "Канал не найден или бот не админ",
                 success: "Заявка создана! Списано: {cost} DOGS"
             }
@@ -326,9 +288,7 @@
         function t(key, replacements) {
             let str = LOCALE[currentLang]?.[key] || key;
             if (replacements) {
-                for (const k in replacements) {
-                    str = str.replace(`{${k}}`, replacements[k]);
-                }
+                for (const k in replacements) str = str.replace(`{${k}}`, replacements[k]);
             }
             return str;
         }
@@ -377,12 +337,11 @@
                     photo_url: data.photo_url,
                     username: data.username
                 };
-
                 const preview = document.getElementById('channelPreview');
                 preview.innerHTML = `
                     <b>${data.title}</b>
                     ${data.photo_url ? `<img src="${data.photo_url}" />` : ''}
-                    <div class="info">Subscribers: ${data.member_count}</div>
+                    <div class="info">Current subscribers: ${data.member_count}</div>
                 `;
                 document.getElementById('createForm').style.display = 'block';
                 loadBalance();
@@ -476,7 +435,6 @@
                     container.innerHTML = `<div class="info">${t('noRequests')}</div>`;
                     return;
                 }
-
                 data.requests.forEach(r => {
                     const statusClass = r.status;
                     container.innerHTML += `
