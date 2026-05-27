@@ -1,1 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <title>Create Task</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* ========== ГЛОБАЛЬНЫЕ СТИЛИ (как в основном приложении) ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%);
+            color: #f5f5f7;
+            font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Карточки с эффектом стекла */
+        .card {
+            background: rgba(28, 28, 32, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            padding: 18px;
+            margin-bottom: 14px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.2px;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.7;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(20, 20, 24, 0.6);
+            color: #f5f5f7;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.25s ease, box-shadow 0.25s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: #c0c0c0;
+            box-shadow: 0 0 0 3px rgba(192, 192, 192, 0.12);
+        }
+
+        input::placeholder {
+            color: #555;
+            opacity: 0.8;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            background: #c0c0c0;
+            color: #1a1a1d;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 12px rgba(192, 192, 192, 0.2);
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        button:active {
+            transform: scale(0.96);
+            opacity: 0.85;
+            box-shadow: 0 1px 4px rgba(192, 192, 192, 0.1);
+        }
+
+        button:disabled {
+            background: rgba(40, 40, 44, 0.7);
+            color: #666;
+            cursor: default;
+            transform: none;
+            opacity: 0.7;
+            box-shadow: none;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        /* Ползунок (range) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(60, 60, 70, 0.5);
+            outline: none;
+            margin: 16px 0 8px;
+            padding: 0;
+            border: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #c0c0c0;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        /* Информационные блоки */
+        .info {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .balance {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #channelPreview {
+            margin: 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #channelPreview img {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            object-fit: cover;
+            background: rgba(34, 35, 42, 0.6);
+        }
+
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .lang-switch button {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 13px;
+            background: rgba(40, 40, 44, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            box-shadow: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            margin-left: 6px;
+        }
+
+        .lang-switch button.active {
+            background: #c0c0c0;
+            color: #1a1a1d;
+            border-color: #c0c0c0;
+        }
+
+        /* Элементы списка заявок */
+        .request-item {
+            background: rgba(22, 22, 28, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .status {
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 4px;
+        }
+
+        .status.pending {
+            color: #ffb300;
+        }
+        .status.approved {
+            color: #00e676;
+        }
+        .status.rejected {
+            color: #ff5252;
+        }
+
+        .subs-value {
+            display: inline-block;
+            margin-left: 8px;
+            font-weight: 700;
+            color: #c0c0c0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Переключатель языка -->
+    <div class="lang-switch">
+        <button id="langEn" onclick="setLang('en')">EN</button>
+        <button id="langRu" onclick="setLang('ru')">RU</button>
+    </div>
+
+    <h2 id="pageTitle">📢 Create Task</h2>
+
+    <!-- Проверка канала -->
+    <div class="card">
+        <label for="channelInput" id="channelLabel">Channel link / @username / ID</label>
+        <input id="channelInput" placeholder="@username or -100..." />
+        <button onclick="checkChannel()" id="checkBtn">Check Channel</button>
+        <div id="channelPreview"></div>
+    </div>
+
+    <!-- Форма создания заявки (скрыта до проверки) -->
+    <div class="card" id="createForm" style="display: none;">
+        <label for="inviteLink" id="inviteLabel">Invite link (required for private channels)</label>
+        <input id="inviteLink" placeholder="https://t.me/+..." />
+
+        <label for="subsSlider" id="subsLabel">Number of subscribers to attract (min 100)</label>
+        <input type="range" id="subsSlider" min="100" max="10000" value="100" step="10" oninput="updateCost()" />
+        <span class="subs-value" id="subsValue">100</span>
+
+        <div class="balance">
+            <span id="costText">Cost:</span>
+            <b id="totalCost">10,000</b> DOGS
+        </div>
+        <div class="balance">
+            <span>Your balance:</span>
+            <b id="balanceAmount">0</b> DOGS
+        </div>
+
+        <button onclick="createRequest()" id="createBtn" disabled>Create Task</button>
+    </div>
+
+    <!-- Список заявок пользователя -->
+    <div class="card">
+        <h3 id="myRequestsTitle">My Requests</h3>
+        <div id="myRequests"></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram?.WebApp;
+        tg?.expand?.();
+        const API = "https://dogs-7ntt.onrender.com";
+
+        let currentLang = localStorage.getItem('lang') || 'en';
+        const LOCALE = {
+            en: {
+                pageTitle: "📢 Create Task",
+                channelLabel: "Channel link / @username / ID",
+                checkBtn: "Check Channel",
+                inviteLabel: "Invite link (required for private channels)",
+                subsLabel: "Number of subscribers to attract (min 100)",
+                costText: "Cost:",
+                createBtn: "Create Task",
+                myRequestsTitle: "My Requests",
+                pending: "Pending",
+                approved: "Approved",
+                rejected: "Rejected",
+                noRequests: "No requests yet",
+                insufficient: "Insufficient balance",
+                minSubs: "Minimum 100 subscribers",
+                channelError: "Channel not found or bot not admin",
+                success: "Request created! Cost: {cost} DOGS"
+            },
+            ru: {
+                pageTitle: "📢 Создать задание",
+                channelLabel: "Ссылка / @username / ID канала",
+                checkBtn: "Проверить канал",
+                inviteLabel: "Ссылка-приглашение (обязательно для приватных)",
+                subsLabel: "Сколько подписчиков привлечь (мин 100)",
+                costText: "Стоимость:",
+                createBtn: "Создать задание",
+                myRequestsTitle: "Мои заявки",
+                pending: "Ожидает",
+                approved: "Одобрено",
+                rejected: "Отклонено",
+                noRequests: "Заявок пока нет",
+                insufficient: "Недостаточно средств",
+                minSubs: "Минимум 100 подписчиков",
+                channelError: "Канал не найден или бот не админ",
+                success: "Заявка создана! Списано: {cost} DOGS"
+            }
+        };
+
+        function t(key, replacements) {
+            let str = LOCALE[currentLang]?.[key] || key;
+            if (replacements) {
+                for (const k in replacements) {
+                    str = str.replace(`{${k}}`, replacements[k]);
+                }
+            }
+            return str;
+        }
+
+        function applyLanguage() {
+            document.getElementById('pageTitle').innerText = t('pageTitle');
+            document.getElementById('channelLabel').innerText = t('channelLabel');
+            document.getElementById('checkBtn').innerText = t('checkBtn');
+            document.getElementById('inviteLabel').innerText = t('inviteLabel');
+            document.getElementById('subsLabel').innerText = t('subsLabel');
+            document.getElementById('costText').innerText = t('costText');
+            document.getElementById('createBtn').innerText = t('createBtn');
+            document.getElementById('myRequestsTitle').innerText = t('myRequestsTitle');
+
+            const langEnBtn = document.getElementById('langEn');
+            const langRuBtn = document.getElementById('langRu');
+            langEnBtn.classList.toggle('active', currentLang === 'en');
+            langRuBtn.classList.toggle('active', currentLang === 'ru');
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            applyLanguage();
+        }
+
+        let selectedChannel = null;
+
+        async function checkChannel() {
+            const input = document.getElementById('channelInput').value.trim();
+            if (!input) return;
+            try {
+                const res = await fetch(API + "/check-channel", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg?.initData || "", channel_input: input })
+                });
+                const data = await res.json();
+                if (!data.ok) {
+                    tg.showPopup({ message: t('channelError') + ': ' + data.error });
+                    return;
+                }
+                selectedChannel = {
+                    chat_id: data.chat_id,
+                    title: data.title,
+                    photo_url: data.photo_url,
+                    username: data.username
+                };
+
+                const preview = document.getElementById('channelPreview');
+                preview.innerHTML = `
+                    <b>${data.title}</b>
+                    ${data.photo_url ? `<img src="${data.photo_url}" />` : ''}
+                    <div class="info">Subscribers: ${data.member_count}</div>
+                `;
+                document.getElementById('createForm').style.display = 'block';
+                loadBalance();
+            } catch (e) {
+                tg.showPopup({ message: 'Network error' });
+            }
+        }
+
+        function updateCost() {
+            const subs = parseInt(document.getElementById('subsSlider').value);
+            document.getElementById('subsValue').innerText = subs;
+            const cost = subs * 100;
+            document.getElementById('totalCost').innerText = cost.toLocaleString();
+            loadBalance();
+        }
+
+        async function loadBalance() {
+            try {
+                const res = await fetch(API + "/status", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg?.initData || "" })
+                });
+                const data = await res.json();
+                const balance = data.balance || 0;
+                document.getElementById('balanceAmount').innerText = balance.toLocaleString();
+                const cost = parseInt(document.getElementById('subsSlider').value) * 100;
+                const createBtn = document.getElementById('createBtn');
+                createBtn.disabled = (balance < cost);
+                createBtn.innerText = balance < cost ? t('insufficient') : t('createBtn');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function createRequest() {
+            const input = document.getElementById('channelInput').value.trim();
+            const invite = document.getElementById('inviteLink').value.trim();
+            const subs = parseInt(document.getElementById('subsSlider').value);
+
+            if (subs < 100) {
+                tg.showPopup({ message: t('minSubs') });
+                return;
+            }
+            if (!selectedChannel) {
+                tg.showPopup({ message: 'Check channel first' });
+                return;
+            }
+            if (!selectedChannel.username && !invite) {
+                tg.showPopup({ message: 'Invite link required for private channels' });
+                return;
+            }
+
+            try {
+                const res = await fetch(API + "/create-task-request", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        init_data: tg?.initData || "",
+                        channel_input: input,
+                        invite_link: invite,
+                        requested_completions: subs
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    tg.showPopup({ message: t('success', { cost: data.total_cost.toLocaleString() }) });
+                    document.getElementById('inviteLink').value = '';
+                    loadBalance();
+                    loadMyRequests();
+                } else {
+                    tg.showPopup({ message: data.error });
+                }
+            } catch (e) {
+                tg.showPopup({ message: 'Network error' });
+            }
+        }
+
+        async function loadMyRequests() {
+            try {
+                const res = await fetch(API + "/my-task-requests", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg?.initData || "" })
+                });
+                const data = await res.json();
+                const container = document.getElementById('myRequests');
+                container.innerHTML = '';
+
+                if (!data.requests || data.requests.length === 0) {
+                    container.innerHTML = `<div class="info">${t('noRequests')}</div>`;
+                    return;
+                }
+
+                data.requests.forEach(r => {
+                    const statusClass = r.status;
+                    container.innerHTML += `
+                        <div class="request-item">
+                            <div><b>${r.title}</b></div>
+                            <div>${r.completions} subscribers · ${r.cost.toLocaleString()} DOGS</div>
+                            <div class="status ${statusClass}">${t(r.status)}</div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Инициализация
+        applyLanguage();
+        loadMyRequests();
+        document.getElementById('subsSlider').addEventListener('input', updateCost);
+    </script>
+</body>
+</html>
