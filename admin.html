@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -298,6 +297,37 @@ th, td{
 
 </div>
 
+<!-- ================= TASK REQUESTS PAGE (NEW) ================= -->
+<div id="taskRequestsPage" class="page">
+
+    <div class="card">
+
+        <h3>📩 User Task Requests</h3>
+
+        <button onclick="loadTaskRequests()">
+            Refresh requests
+        </button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Channel</th>
+                    <th>Subs</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="taskRequests"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
 </div>
 
 <!-- ================= NAVIGATION ================= -->
@@ -322,6 +352,11 @@ th, td{
     <div class="nav-item" onclick="openPage('taskPage', this)">
         <span>📋</span>
         Tasks
+    </div>
+
+    <div class="nav-item" onclick="openPage('taskRequestsPage', this)">
+        <span>📩</span>
+        Requests
     </div>
 
 </div>
@@ -778,6 +813,64 @@ async function deleteTask(id){
 }
 
 
+// ================= TASK REQUESTS (NEW) =================
+
+async function loadTaskRequests() {
+    try {
+        const r = await fetch(API + "/admin/task-requests", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ init_data: initData })
+        });
+        const d = await r.json();
+        const tbody = document.getElementById("taskRequests");
+        tbody.innerHTML = "";
+
+        (d.requests || []).forEach(req => {
+            const statusClass = req.status === "pending" ? "pending" : 
+                                req.status === "approved" ? "paid" : "rejected";
+            tbody.innerHTML += `
+                <tr>
+                    <td>${req.id}</td>
+                    <td>${req.user_id}</td>
+                    <td>${req.title}</td>
+                    <td>${req.completions}</td>
+                    <td>${req.cost}</td>
+                    <td class="status ${statusClass}">${req.status}</td>
+                    <td>
+                        ${req.status === 'pending' ? `
+                            <button class="approve" onclick="approveTaskReq(${req.id})">✔</button>
+                            <button class="reject" onclick="rejectTaskReq(${req.id})">✖</button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `;
+        });
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+async function approveTaskReq(id) {
+    await fetch(API + "/admin/task-requests/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ init_data: initData, id })
+    });
+    loadTaskRequests();
+    loadTasks(); // обновить список активных заданий
+}
+
+async function rejectTaskReq(id) {
+    await fetch(API + "/admin/task-requests/reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ init_data: initData, id, comment: "" })
+    });
+    loadTaskRequests();
+}
+
+
 // ================= AUTO REFRESH =================
 
 function autoRefresh(){
@@ -787,6 +880,7 @@ function autoRefresh(){
     loadWithdraws();
     loadPromos();
     loadTasks();
+    loadTaskRequests();   // <-- добавлено
 }
 
 autoRefresh();
