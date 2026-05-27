@@ -233,6 +233,14 @@
 
     <h2 id="pageTitle">📢 Create Task</h2>
 
+    <!-- Карточка баланса (вверху) -->
+    <div class="card" id="balanceCard">
+        <div class="balance">
+            <span id="balanceLabel">Your balance:</span>
+            <b id="topBalanceAmount">0</b> DOGS
+        </div>
+    </div>
+
     <!-- Инструкция -->
     <div class="card" id="guideCard">
         <h3 id="guideTitle">📋 How to create a task</h3>
@@ -283,6 +291,7 @@
         const LOCALE = {
             en: {
                 pageTitle: "📢 Create Task",
+                balanceLabel: "Your balance:",
                 guideTitle: "📋 How to create a task",
                 guideSteps: [
                     "Add the bot to your channel as an administrator (required for subscription verification).",
@@ -311,6 +320,7 @@
             },
             ru: {
                 pageTitle: "📢 Создать задание",
+                balanceLabel: "Ваш баланс:",
                 guideTitle: "📋 Как создать задание",
                 guideSteps: [
                     "Добавьте бота в администраторы вашего канала (это нужно для проверки подписки).",
@@ -360,6 +370,7 @@
 
         function applyLanguage() {
             document.getElementById('pageTitle').innerText = t('pageTitle');
+            document.getElementById('balanceLabel').innerText = t('balanceLabel');
             document.getElementById('guideTitle').innerText = t('guideTitle');
             renderGuide();
             document.getElementById('channelLabel').innerText = t('channelLabel');
@@ -434,6 +445,7 @@
                 });
                 const data = await res.json();
                 const balance = data.balance || 0;
+                document.getElementById('topBalanceAmount').innerText = balance.toLocaleString();
                 document.getElementById('balanceAmount').innerText = balance.toLocaleString();
                 const cost = parseInt(document.getElementById('subsSlider').value) * 100;
                 const createBtn = document.getElementById('createBtn');
@@ -519,6 +531,7 @@
 
         // Инициализация
         applyLanguage();
+        loadBalance(); // сразу показываем баланс
         loadMyRequests();
         document.getElementById('subsSlider').addEventListener('input', updateCost);
     </script>
