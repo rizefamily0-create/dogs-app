@@ -601,7 +601,7 @@
                 surfingTitle: "🏄 Сёрфинг",
                 surfingSubtitle: "Подпишись на спонсоров и получи DOGS",
                 surfingDailyLimit: "Лимит на день:",
-                surfingStatus: "Осталось {remaining} попыток",
+                surfingStatus: "Осталось {0} попыток",
                 surfingLimitReached: "Лимит исчерпан"
             },
             en: {
@@ -704,7 +704,7 @@
                 surfingTitle: "🏄 Surfing",
                 surfingSubtitle: "Subscribe to sponsors and earn DOGS",
                 surfingDailyLimit: "Daily limit:",
-                surfingStatus: "{remaining} attempts left today",
+                surfingStatus: "{0} attempts left today",
                 surfingLimitReached: "Daily limit reached"
             }
         };
@@ -1726,7 +1726,7 @@
                         btn.disabled = false;
                         btn.innerText = '▶ Start Surfing';
                     }
-                    document.getElementById("surfingStatus").innerText = t('surfingStatus', { remaining: d.remaining });
+                    document.getElementById("surfingStatus").innerText = t('surfingStatus', d.remaining);
                 }
             } catch (e) { console.error(e); }
         }
