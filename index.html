@@ -1736,6 +1736,18 @@
             if (btn.disabled) return;
             btn.disabled = true;
             btn.innerText = t('loading');
+
+    // Ждём, пока Telegram WebApp будет готов
+            if (!window.Telegram?.WebApp?.initData) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                if (!window.Telegram?.WebApp?.initData) {
+                    tg.showPopup({ message: "Telegram not ready, try again" });
+                    btn.disabled = false;
+                    btn.innerText = '▶ Start Surfing';
+                    return;
+                }
+            }
+
             try {
                 const r = await fetch(API + "/surfing/start", {
                     method: "POST",
@@ -1745,7 +1757,12 @@
                 const d = await r.json();
                 if (d.ok && d.link) {
                     tg.openTelegramLink(d.link);
-                    setTimeout(loadSurfingStatus, 3000);  // обновим статус после возврата
+                    tg.showPopup({ message: "Подпишитесь на канал, и награда придёт автоматически" });
+            // После возврата обновим баланс и лимит
+                    setTimeout(async () => {
+                        await loadStatus();        // обновит баланс на всех вкладках
+                        await loadSurfingStatus(); // обновит счётчик сёрфинга
+                    }, 5000);
                 } else {
                     tg.showPopup({ message: d.error || "Error" });
                     btn.disabled = false;
