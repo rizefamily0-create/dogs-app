@@ -319,6 +319,15 @@
                 </div>
                 <div id="tasksList"></div>
             </div>
+            <!-- Surfing (Linknibot) -->
+            <div class="card" id="surfingCard">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="surfingTitle" style="font-size:18px; font-weight:800;">🏄 Surfing</span>
+                    <span id="surfingLimit" style="font-size:14px; font-weight:700; opacity:0.8;">0 / 50</span>
+                </div>
+                <div id="surfingStatus" style="margin-top:8px; font-size:14px; opacity:0.7;"></div>
+                <button id="startSurfingBtn" onclick="startSurfing()" style="margin-top:12px;">▶ Start Surfing</button>
+            </div>
             <div class="card" id="specialOfferCard">
                 <div id="specialOfferTitle"></div>
                 <div id="specialOfferWrapper">
@@ -587,7 +596,13 @@
                 x3_prompt: "Посмотрите рекламу, чтобы утроить ваше вознаграждение",
                 x3_btn: "Смотреть X3",
                 no_thanks: "Нет, спасибо",
-                final_reward: "Вы получили:\n{0} DOGS"
+                final_reward: "Вы получили:\n{0} DOGS",
+                surfing: "Сёрфинг",
+                surfingTitle: "🏄 Сёрфинг",
+                surfingSubtitle: "Подпишись на спонсоров и получи DOGS",
+                surfingDailyLimit: "Лимит на день:",
+                surfingStatus: "Осталось {remaining} попыток",
+                surfingLimitReached: "Лимит исчерпан"
             },
             en: {
                 faucet: "Faucet",
@@ -684,7 +699,13 @@
                 x3_prompt: "Watch ad to triple your reward",
                 x3_btn: "Watch X3",
                 no_thanks: "No thanks",
-                final_reward: "You received:\n{0} DOGS"
+                final_reward: "You received:\n{0} DOGS",
+                surfing: "Surfing",
+                surfingTitle: "🏄 Surfing",
+                surfingSubtitle: "Subscribe to sponsors and earn DOGS",
+                surfingDailyLimit: "Daily limit:",
+                surfingStatus: "{remaining} attempts left today",
+                surfingLimitReached: "Daily limit reached"
             }
         };
 
@@ -831,7 +852,10 @@
             document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
             el.classList.add("active");
             if(id === "withdraw") loadWithdrawHistory();
-            if(id === "tasks") loadTasks();
+            if(id === "tasks") {
+                loadTasks();
+                loadSurfingStatus(); 
+            }
             if(id === "games") {
                 await loadGamesStatus();
                 await loadGameDifficulties();   // ← теперь дожидается ответа
@@ -1681,6 +1705,57 @@
                     loadDailyQuests();
                 }
             }catch(e){ console.log("CLAIM QUEST ERROR", e); }
+        }
+
+        // ========== SURFING (LINKNIBOT) ==========
+        async function loadSurfingStatus() {
+            try {
+                const r = await fetch(API + "/surfing/status", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    document.getElementById("surfingLimit").innerText = `${d.completed} / ${d.limit}`;
+                    const btn = document.getElementById("startSurfingBtn");
+                    if (d.remaining <= 0) {
+                        btn.disabled = true;
+                        btn.innerText = t('surfingLimitReached');  // если есть ключ, иначе просто текст
+                    } else {
+                        btn.disabled = false;
+                        btn.innerText = '▶ Start Surfing';
+                    }
+                    document.getElementById("surfingStatus").innerText = t('surfingStatus', { remaining: d.remaining });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function startSurfing() {
+            const btn = document.getElementById("startSurfingBtn");
+            if (btn.disabled) return;
+            btn.disabled = true;
+            btn.innerText = t('loading');
+            try {
+                const r = await fetch(API + "/surfing/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const d = await r.json();
+                if (d.ok && d.link) {
+                    tg.openTelegramLink(d.link);
+                    setTimeout(loadSurfingStatus, 3000);  // обновим статус после возврата
+                } else {
+                    tg.showPopup({ message: d.error || "Error" });
+                    btn.disabled = false;
+                    btn.innerText = '▶ Start Surfing';
+                }
+            } catch (e) {
+                tg.showPopup({ message: "Network error" });
+                btn.disabled = false;
+                btn.innerText = '▶ Start Surfing';
+            }
         }
 
         // ---------- ИНИЦИАЛИЗАЦИЯ ----------
