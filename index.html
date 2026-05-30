@@ -328,6 +328,15 @@
                 <div id="surfingStatus" style="margin-top:8px; font-size:14px; opacity:0.7;"></div>
                 <button id="startSurfingBtn" onclick="startSurfing()" style="margin-top:12px;">▶ Start Surfing</button>
             </div>
+            <!-- Watch Ads -->
+            <div class="card" id="watchAdsCard">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="watchAdsTitle" style="font-size:18px; font-weight:800;">📺 Watch Ads</span>
+                    <span id="watchAdsLimit" style="font-size:14px; font-weight:700; opacity:0.8;">0 / 12</span>
+                </div>
+                <div id="watchAdsStatus" style="margin-top:8px; font-size:14px; opacity:0.7;"></div>
+                <button id="startWatchAdsBtn" onclick="startWatchAds()" style="margin-top:12px;">▶ Watch Ad</button>
+            </div>
             <div class="card" id="specialOfferCard">
                 <div id="specialOfferTitle"></div>
                 <div id="specialOfferWrapper">
@@ -602,7 +611,12 @@
                 surfingSubtitle: "Подпишись на спонсоров и получи DOGS",
                 surfingDailyLimit: "Лимит на день:",
                 surfingStatus: "Осталось {0} попыток",
-                surfingLimitReached: "Лимит исчерпан"
+                surfingLimitReached: "Лимит исчерпан",
+                watchAds: "Смотреть рекламу",
+                watchAdsTitle: "📺 Смотреть рекламу",
+                watchAdsSubtitle: "Смотри рекламу и зарабатывай 15 DOGS",
+                watchAdsStatus: "Осталось {0} просмотров",
+                watchAdsLimitReached: "Лимит на сегодня исчерпан"
             },
             en: {
                 faucet: "Faucet",
@@ -705,7 +719,13 @@
                 surfingSubtitle: "Subscribe to sponsors and earn DOGS",
                 surfingDailyLimit: "Daily limit:",
                 surfingStatus: "{0} attempts left today",
-                surfingLimitReached: "Daily limit reached"
+                surfingLimitReached: "Daily limit reached",
+                watchAds: "Watch Ads",
+                watchAdsTitle: "📺 Watch Ads",
+                watchAdsSubtitle: "Watch ads and earn 15 DOGS",
+                watchAdsStatus: "{0} views left today",
+                watchAdsLimitReached: "Daily limit reached"
+// и аналогично для ru
             }
         };
 
@@ -855,6 +875,7 @@
             if(id === "tasks") {
                 loadTasks();
                 loadSurfingStatus(); 
+                loadWatchAdsStatus();
             }
             if(id === "games") {
                 await loadGamesStatus();
@@ -1773,6 +1794,132 @@
                 btn.disabled = false;
                 btn.innerText = '▶ Start Surfing';
             }
+        }
+
+
+        // ========== WATCH ADS (AdsGram + Monetag) ==========
+        let monetagInitialized = false;
+
+        function loadMonetagSDK() {
+            return new Promise((resolve, reject) => {
+                if (window[`show_11040021`]) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = '//libtl.com/sdk.js';
+                script.setAttribute('data-zone', '11040021');
+                script.setAttribute('data-sdk', 'show_11040021');
+                script.onload = () => {
+            // Ждём появления функции
+                    let attempts = 0;
+                    const checkReady = setInterval(() => {
+                        if (window[`show_11040021`]) {
+                            clearInterval(checkReady);
+                            resolve();
+                        }
+                        attempts++;
+                        if (attempts > 50) { // 5 секунд максимум
+                            clearInterval(checkReady);
+                            reject(new Error('Monetag SDK not ready'));
+                        }
+                    }, 100);
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function loadWatchAdsStatus() {
+            try {
+                const r = await fetch(API + "/watch-ads/status", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    document.getElementById("watchAdsLimit").innerText = `${d.completed} / ${d.limit}`;
+                    const btn = document.getElementById("startWatchAdsBtn");
+                    if (d.remaining <= 0) {
+                        btn.disabled = true;
+                        btn.innerText = t('watchAdsLimitReached'); // добавь ключ в локализацию
+                    } else {
+                        btn.disabled = false;
+                        btn.innerText = '▶ Watch Ad';
+                    }
+                    document.getElementById("watchAdsStatus").innerText = t('watchAdsStatus', { remaining: d.remaining });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function startWatchAds() {
+            const btn = document.getElementById("startWatchAdsBtn");
+            if (btn.disabled) return;
+            btn.disabled = true;
+            btn.innerText = t('loading');
+
+            try {
+        // Получаем, какую рекламу показывать
+                const r = await fetch(API + "/watch-ads/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const d = await r.json();
+                if (!d.ok) {
+                    tg.showPopup({ message: d.error || "Error" });
+                    btn.disabled = false;
+                    btn.innerText = '▶ Watch Ad';
+                    return;
+                }
+
+                const { provider, adsgram_block_id, monetag_zone_id } = d;
+
+                if (provider === 'adsgram') {
+            // Показываем AdsGram
+                    const adController = window.Adsgram.init({ blockId: adsgram_block_id });
+                    try {
+                        await adController.show();
+                // Успех – отправляем завершение
+                        await completeWatchAds('adsgram');
+                    } catch (e) {
+                        tg.showPopup({ message: t('adFailed') });
+                        btn.disabled = false;
+                        btn.innerText = '▶ Watch Ad';
+                    }
+                } else if (provider === 'monetag') {
+            // Загружаем SDK Monetag (если не загружен) и показываем
+                    try {
+                        await loadMonetagSDK();
+                // Вызываем показ (zone ID подставь из переменной)
+                        await window['show_11040021']({ ymid: tg.initDataUnsafe?.user?.id?.toString() });
+                // Успех – отправляем завершение
+                        await completeWatchAds('monetag');
+                    } catch (e) {
+                        tg.showPopup({ message: t('adFailed') });
+                        btn.disabled = false;
+                        btn.innerText = '▶ Watch Ad';
+                    }
+                }
+            } catch (e) {
+                tg.showPopup({ message: "Network error" });
+                btn.disabled = false;
+                btn.innerText = '▶ Watch Ad';
+            }
+        }
+
+        async function completeWatchAds(provider) {
+            try {
+                await fetch(API + "/watch-ads/complete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData, provider })
+                });
+        // Обновляем статус и баланс
+                await loadStatus();
+                await loadWatchAdsStatus();
+            } catch (e) { console.error(e); }
         }
 
         // ---------- ИНИЦИАЛИЗАЦИЯ ----------
