@@ -7,13 +7,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script src="//libtl.com/sdk.js" data-zone="11040021" data-sdk="show_11040021"></script>
-    <script>
-        window.TelegramAdsController = new TelegramAdsController();
-        window.TelegramAdsController.initialize({
-            pubId: "1013216",
-            appId: "7607",
-        });
-    </script>
     <style>
         /* ========== SPLASH SCREEN ========== */
         #splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f1015; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; }
@@ -1876,6 +1869,7 @@
                     }
                 } else if (provider === 'richads') {
                     try {
+                        await initRichAds();
                         await window.TelegramAdsController.showVideoAd();
                         await completeWatchAds('richads');
                     } catch (e) {
@@ -1905,6 +1899,25 @@
                     await loadWatchAdsStatus();
                 }
             } catch (e) { console.error(e); }
+        }
+
+        let richAdsInitialized = false;
+
+        function initRichAds() {
+            return new Promise((resolve) => {
+                if (richAdsInitialized) {
+                    resolve();
+                    return;
+                }
+                window.TelegramAdsController = new TelegramAdsController();
+                window.TelegramAdsController.initialize({
+                    pubId: "1013216",
+                    appId: "7607",
+                });
+                richAdsInitialized = true;
+        // Даём небольшую задержку на инициализацию
+                setTimeout(resolve, 500);
+            });
         }
 
         // ---------- ИНИЦИАЛИЗАЦИЯ ----------
