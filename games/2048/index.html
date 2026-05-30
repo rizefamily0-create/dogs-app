@@ -293,7 +293,7 @@
 
     const tg = window.Telegram?.WebApp;
     tg?.expand?.();
-    const API = "https://dogs-7uz3.onrender.com"; 
+    const API = "https://dogs-7uz3.onrender.com";
     const sessionToken = new URLSearchParams(window.location.search).get("session_token");
     const initDataFromUrl = new URLSearchParams(window.location.search).get("init_data");
     let finishSent = false;
@@ -392,8 +392,6 @@
         // *** ИСПРАВЛЕНИЕ: немедленная победа при достижении цели ***
         if (!goalReached && hasTargetTile()) {
             goalReached = true;
-            gameActive = false;                // останавливаем игру
-            clearInterval(timerInterval);      // останавливаем таймер
 
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:16px;font-weight:bold;z-index:999;';
@@ -402,8 +400,10 @@
 
             setTimeout(() => {
                 toast.remove();
-                endGame(false);                // автоматическая победа
             }, 1000);
+
+            // Вызываем завершение игры (победа), endGame сама остановит таймер и gameActive
+            endGame(false);
         }
     }
 
