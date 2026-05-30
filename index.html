@@ -1848,7 +1848,7 @@
                         btn.disabled = false;
                         btn.innerText = '▶ Watch Ad';
                     }
-                    document.getElementById("watchAdsStatus").innerText = t('watchAdsStatus', { remaining: d.remaining });
+                    document.getElementById("watchAdsStatus").innerText = t('watchAdsStatus', d.remaining);
                 }
             } catch (e) { console.error(e); }
         }
