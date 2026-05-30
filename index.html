@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script src="//libtl.com/sdk.js" data-zone="11040021" data-sdk="show_11040021"></script>
     <style>
         /* ========== SPLASH SCREEN ========== */
@@ -1903,6 +1902,7 @@
         }
 
         let richAdsController = null;
+        let richAdsScriptLoaded = false;
 
         function initRichAds() {
             return new Promise((resolve) => {
@@ -1910,14 +1910,32 @@
                     resolve();
                     return;
                 }
-                richAdsController = new window.TelegramAdsController();
-                richAdsController.initialize({
-                    pubId: "1013216",
-                    appId: "7607",
-                    debug: true,  // включи для тестов, выключи перед продакшеном
-                });
-        // Даём время на инициализацию
-                setTimeout(resolve, 500);
+        
+        // Если скрипт ещё не загружен — загружаем
+                if (!richAdsScriptLoaded) {
+                    const script = document.createElement('script');
+                    script.src = 'https://richinfo.co/richpartners/telegram/js/tg-ob.js';
+                    script.onload = () => {
+                        richAdsScriptLoaded = true;
+                        createController();
+                    };
+                    script.onerror = () => {
+                        resolve(); // даже если ошибка, не блокируем
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    createController();
+                }
+        
+                function createController() {
+                    richAdsController = new window.TelegramAdsController();
+                    richAdsController.initialize({
+                        pubId: "1013216",
+                        appId: "7607",
+                        debug: true,
+                    });
+                    setTimeout(resolve, 500);
+                }
             });
         }
 
