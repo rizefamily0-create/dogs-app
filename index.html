@@ -1870,9 +1870,10 @@
                 } else if (provider === 'richads') {
                     try {
                         await initRichAds();
-                        await window.TelegramAdsController.showVideoAd();
+                        await richAdsController.triggerInterstitialVideo();
                         await completeWatchAds('richads');
                     } catch (e) {
+                        console.log('RichAds error:', e);
                         tg.showPopup({ message: t('adFailed') });
                         btn.disabled = false;
                         btn.innerText = '▶ Watch Ad';
@@ -1901,21 +1902,21 @@
             } catch (e) { console.error(e); }
         }
 
-        let richAdsInitialized = false;
+        let richAdsController = null;
 
         function initRichAds() {
             return new Promise((resolve) => {
-                if (richAdsInitialized) {
+                if (richAdsController) {
                     resolve();
                     return;
                 }
-                window.TelegramAdsController = new TelegramAdsController();
-                window.TelegramAdsController.initialize({
+                richAdsController = new window.TelegramAdsController();
+                richAdsController.initialize({
                     pubId: "1013216",
                     appId: "7607",
+                    debug: true,  // включи для тестов, выключи перед продакшеном
                 });
-                richAdsInitialized = true;
-        // Даём небольшую задержку на инициализацию
+        // Даём время на инициализацию
                 setTimeout(resolve, 500);
             });
         }
