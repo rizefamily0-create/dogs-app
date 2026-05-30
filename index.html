@@ -616,7 +616,8 @@
                 watchAdsTitle: "📺 Смотреть рекламу",
                 watchAdsSubtitle: "Смотри рекламу и зарабатывай 15 DOGS",
                 watchAdsStatus: "Осталось {0} просмотров",
-                watchAdsLimitReached: "Лимит на сегодня исчерпан"
+                watchAdsLimitReached: "Лимит на сегодня исчерпан",
+                watchAdsRewarded: "Награда +{0} DOGS успешно начислена! 🎉"
             },
             en: {
                 faucet: "Faucet",
@@ -724,7 +725,8 @@
                 watchAdsTitle: "📺 Watch Ads",
                 watchAdsSubtitle: "Watch ads and earn 15 DOGS",
                 watchAdsStatus: "{0} views left today",
-                watchAdsLimitReached: "Daily limit reached"
+                watchAdsLimitReached: "Daily limit reached",
+                watchAdsRewarded: "Reward +{0} DOGS successfully credited! 🎉"
 // и аналогично для ru
             }
         };
@@ -1911,14 +1913,17 @@
 
         async function completeWatchAds(provider) {
             try {
-                await fetch(API + "/watch-ads/complete", {
+                const res = await fetch(API + "/watch-ads/complete", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ init_data: tg.initData, provider })
                 });
-        // Обновляем статус и баланс
-                await loadStatus();
-                await loadWatchAdsStatus();
+                const data = await res.json();
+                if (data.ok) {
+                    tg.showPopup({ message: t('watchAdsRewarded', data.reward) });
+                    await loadStatus();
+                    await loadWatchAdsStatus();
+                }
             } catch (e) { console.error(e); }
         }
 
