@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <meta name="ton-connect-manifest" content="https://rizefamily0-create.github.io/dogs-app/tonconnect-manifest.json">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="//libtl.com/sdk.js" data-zone="11040021" data-sdk="show_11040021"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
+        /* ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ========== */
+        :root {
+            --tg-safe-area-top: 0px;
+            --tg-safe-area-bottom: 0px;
+        }
+
         /* ========== SPLASH SCREEN ========== */
         #splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f1015; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; }
         #splash img { width: 120px; height: 120px; border-radius: 28px; object-fit: cover; margin-bottom: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
@@ -26,10 +33,10 @@
         .loading-letter:nth-child(10) { animation-delay: 0.9s; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 
-        /* ========== ГЛОБАЛЬНЫЕ СТИЛИ ========== */
+        /* ========== ОСНОВНЫЕ СТИЛИ ========== */
         body { margin: 0; background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%); color: #f5f5f7; font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
         * { box-sizing: border-box; }
-        .app { height: 100vh; display: none; flex-direction: column; padding: 12px 14px; padding-bottom: 95px; }
+        .app { height: 100vh; display: none; flex-direction: column; padding: 12px 14px; padding-bottom: 95px; padding-top: max(12px, var(--tg-safe-area-top)); overflow-y: auto; }
         .app.ready { display: flex; }
         .page { display: none; flex-direction: column; height: 100%; overflow-y: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         .page.active { display: flex; }
@@ -49,7 +56,7 @@
         input { width: 100%; padding: 15px 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(20, 20, 24, 0.6); color: #f5f5f7; margin-top: 10px; font-size: 15px; transition: border 0.25s ease, box-shadow 0.25s ease; outline: none; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         input:focus { border-color: #c0c0c0; box-shadow: 0 0 0 3px rgba(192, 192, 192, 0.12); }
         input::placeholder { color: #555; opacity: 0.8; }
-        .nav { position: fixed; bottom: 10px; left: 10px; right: 10px; display: flex; background: rgba(28, 28, 34, 0.78); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 5px 6px 9px; backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); z-index: 100; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 1px 0 rgba(255, 255, 255, 0.06) inset; transition: all 0.3s ease; }
+        .nav { position: fixed; bottom: max(10px, var(--tg-safe-area-bottom)); left: 10px; right: 10px; display: flex; background: rgba(28, 28, 34, 0.78); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 5px 6px 9px; backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); z-index: 100; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 1px 0 rgba(255, 255, 255, 0.06) inset; transition: all 0.3s ease; }
         .nav-item { flex: 1; text-align: center; color: #6e6e73; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; padding: 5px 0 3px; letter-spacing: 0.2px; border-radius: 18px; position: relative; }
         .nav-label { font-size: 10px !important; font-weight: 600; display: block; }
         .nav-item.active { color: #c0c0c0; }
@@ -170,7 +177,7 @@
         .stat-label { font-size: 13px; opacity: 0.6; margin-bottom: 4px; }
         .stat-value { font-size: 22px; font-weight: 900; color: #fff; }
 
-        /* ========== КОШЕЛЁК (ЧЁРНЫЙ, НАСЫЩЕННЫЙ) ========== */
+        /* ========== КОШЕЛЁК ========== */
         .wallet-card {
             width: 100%;
             max-width: 340px;
@@ -215,8 +222,6 @@
             margin-top: 6px;
             line-height: 1;
         }
-
-        /* Кнопки действий */
         .wallet-actions {
             display: flex;
             justify-content: space-between;
@@ -255,8 +260,6 @@
             color: #c0c0c0;
             letter-spacing: 0.2px;
         }
-
-        /* NFT */
         .nft-card { padding-top: 10px !important; }
         .nft-item {
             width: 80px;
@@ -272,7 +275,6 @@
             -webkit-backdrop-filter: blur(10px);
         }
         .nft-placeholder { font-size: 28px; margin-bottom: 6px; opacity: 0.7; }
-
         .back-btn {
             background: rgba(40, 40, 44, 0.6);
             color: #aaa;
@@ -312,7 +314,7 @@
             <button id="claimBtn" class="claim-btn" onclick="claim()"></button>
         </div>
 
-        <!-- WALLET (с TON Connect) -->
+        <!-- WALLET -->
         <div id="withdraw" class="page">
             <div class="wallet-card" id="walletCard">
                 <div class="wallet-card-inner">
@@ -349,7 +351,7 @@
                 <input id="memo" placeholder="">
                 <input id="amount" type="number" placeholder="" oninput="updateWithdrawInfo()">
                 <div class="withdraw-info" id="withdrawSummary"></div>
-                <button onclick="withdraw()" style="margin-top:12px;" id="withdrawBtn"></button>
+                <button onclick="performWithdraw()" style="margin-top:12px;" id="withdrawBtn"></button>
                 <button onclick="showMainWallet()" class="back-btn">Back</button>
             </div>
 
@@ -364,7 +366,7 @@
             </div>
         </div>
 
-        <!-- TASKS (без ежедневного бонуса и промокода) -->
+        <!-- TASKS -->
         <div id="tasks" class="page">
             <div style="margin-bottom:18px; text-align: center;" id="tasksHeader"></div>
 
@@ -467,7 +469,7 @@
             </div>
         </div>
 
-        <!-- PROFILE (исправленная вёрстка) -->
+        <!-- PROFILE -->
         <div id="profile" class="page">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                 <div style="font-size: 32px; font-weight: 900; letter-spacing: -0.5px;" id="profileTitle"></div>
@@ -588,237 +590,112 @@
     </div>
 
     <script>
-        // ========== ГЛОБАЛЬНАЯ ЛОКАЛИЗАЦИЯ ==========
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let currentLang = localStorage.getItem('lang') || 'en';
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        // Устанавливаем отступы safe area
+        const topInset = tg.safeAreaInset?.top || 0;
+        const bottomInset = tg.safeAreaInset?.bottom || 0;
+        document.documentElement.style.setProperty('--tg-safe-area-top', topInset + 'px');
+        document.documentElement.style.setProperty('--tg-safe-area-bottom', bottomInset + 'px');
 
+        const initData = tg.initData;
+        const startParam = tg.initDataUnsafe?.start_param || "";
+        const API = "https://dogs-7uz3.onrender.com";
+        const MIN_WITHDRAW = 14000;
+        const WITHDRAW_FEE = 1700;
+
+        const AdController = window.Adsgram.init({ blockId: "30995" });
+        const AdControllerX3 = window.Adsgram.init({ blockId: "29657" });
+
+        // Таймеры
+        let timerInterval = null;
+        let specialOfferInterval = null;
+        let dailyQuestTimer = null;
+        let refTimerInterval = null;
+        let gamesTimerInterval = null;
+        let dailyTimerInterval = null;
+
+        let cooldown = 0;
+        let userRefLink = "";
+        let lastClaimReward = 0;
+        let connectedWalletAddress = null;
+        let tonConnectUI = null;
+
+        // ========== ЛОКАЛИЗАЦИЯ ==========
         const locale = {
             ru: {
-                faucet: "Кран",
-                wallet: "Кошелёк",
-                tasks: "Задания",
-                games: "Игры",
-                offerwall: "Офферы",
-                profile: "Профиль",
-                faucetTitle: "🐶 Кран",
-                walletTitle: "💸 Кошелёк",
-                walletSubtitle: "Вывод заработанного",
-                tasksTitle: "📋 Задания",
-                tasksSubtitle: "Выполняйте задания и получайте награды",
-                gamesTitle: "🎮 Игры",
-                gamesSubtitle: "Играйте и зарабатывайте DOGS",
-                offerwallTitle: "🎁 Офферы",
-                offerwallSubtitle: "Выполняйте офферы и получайте DOGS",
-                profileTitle: "👤 Профиль",
-                claim: "ЗАБРАТЬ",
-                loading: "Загрузка...",
-                withdrawBtn: "ВЫВЕСТИ",
-                historyTitle: "📜 История выводов",
-                noWithdraws: "Нет выводов",
-                minWithdraw: "Минимальный вывод: 14000 DOGS",
-                networkFee: "Сетевая комиссия: 1700 DOGS",
-                walletPlaceholder: "TON кошелёк",
-                memoPlaceholder: "Memo (необязательно)",
-                amountPlaceholder: "Сумма",
-                withdrawLabel: "Вывод",
-                receive: "Получите",
-                fee: "Комиссия",
-                dailyStreak: "🔥 Ежедневная серия",
+                faucet: "Кран", wallet: "Кошелёк", tasks: "Задания", games: "Игры", offerwall: "Офферы", profile: "Профиль",
+                faucetTitle: "🐶 Кран", walletTitle: "💸 Кошелёк", walletSubtitle: "Вывод заработанного", tasksTitle: "📋 Задания",
+                tasksSubtitle: "Выполняйте задания и получайте награды", gamesTitle: "🎮 Игры", gamesSubtitle: "Играйте и зарабатывайте DOGS",
+                offerwallTitle: "🎁 Офферы", offerwallSubtitle: "Выполняйте офферы и получайте DOGS", profileTitle: "👤 Профиль",
+                claim: "ЗАБРАТЬ", loading: "Загрузка...", withdrawBtn: "ВЫВЕСТИ", historyTitle: "📜 История выводов",
+                noWithdraws: "Нет выводов", minWithdraw: "Минимальный вывод: 14000 DOGS", networkFee: "Сетевая комиссия: 1700 DOGS",
+                walletPlaceholder: "TON кошелёк", memoPlaceholder: "Memo (необязательно)", amountPlaceholder: "Сумма",
+                withdrawLabel: "Вывод", receive: "Получите", fee: "Комиссия", dailyStreak: "🔥 Ежедневная серия",
                 streakDesc: "Заходите каждый день и сохраняйте серию.<br>Смотрите рекламу и получайте больше наград ежедневно.",
-                claimStreak: "ЗАБРАТЬ ЕЖЕДНЕВНУЮ НАГРАДУ",
-                dailyQuests: "⏳ Ежедневные квесты",
-                updating: "Обновление...",
-                promoCode: "🎟 Промокод",
-                promoPlaceholder: "Введите промокод",
-                activate: "АКТИВИРОВАТЬ",
-                tasksBlock: "📋 Задания",
-                specialOffers: "🚀 Специальные предложения (60 DOGS)",
-                energy: "🔋 Энергия",
-                fullEnergy: "Полная энергия",
-                watchAdEnergy: "Смотреть рекламу +12 энергии",
-                availableGames: "Доступные игры",
-                flappyDesc: "Продержитесь 40-50 секунд и получите DOGS.",
-                game2048Desc: "Соберите нужную плитку, чтобы заработать DOGS.",
-                match3Desc: "Собери 3 в ряд и зарабатывай DOGS!",
-                play: "▶ ИГРАТЬ",
-                offerwallOpen: "ОТКРЫТЬ ОФФЕРВОЛ",
-                bitcotasksDesc: "Выполняйте задания и мгновенно получайте DOGS на баланс",
-                statEarned: "Всего заработано",
-                statWithdrawn: "Всего выведено",
-                statGames: "Игр сыграно",
-                statRefs: "Всего рефералов",
-                statRefEarned: "Заработано с рефералов",
-                refBalance: "Реферальный баланс",
-                refCount: "Всего друзей",
-                claimRefBtn: "Забрать награду",
-                inviteBtn: "Пригласить друзей",
+                claimStreak: "ЗАБРАТЬ ЕЖЕДНЕВНУЮ НАГРАДУ", dailyQuests: "⏳ Ежедневные квесты", updating: "Обновление...",
+                promoCode: "🎟 Промокод", promoPlaceholder: "Введите промокод", activate: "АКТИВИРОВАТЬ", tasksBlock: "📋 Задания",
+                specialOffers: "🚀 Специальные предложения (60 DOGS)", energy: "🔋 Энергия", fullEnergy: "Полная энергия",
+                watchAdEnergy: "Смотреть рекламу +12 энергии", availableGames: "Доступные игры", flappyDesc: "Продержитесь 40-50 секунд и получите DOGS.",
+                game2048Desc: "Соберите нужную плитку, чтобы заработать DOGS.", match3Desc: "Собери 3 в ряд и зарабатывай DOGS!",
+                play: "▶ ИГРАТЬ", offerwallOpen: "ОТКРЫТЬ ОФФЕРВОЛ", bitcotasksDesc: "Выполняйте задания и мгновенно получайте DOGS на баланс",
+                statEarned: "Всего заработано", statWithdrawn: "Всего выведено", statGames: "Игр сыграно", statRefs: "Всего рефералов",
+                statRefEarned: "Заработано с рефералов", refBalance: "Реферальный баланс", refCount: "Всего друзей",
+                claimRefBtn: "Забрать награду", inviteBtn: "Пригласить друзей",
                 refDesc: "Приглашайте друзей и получайте 10% от их заработка! Токены поступают на ваш реферальный баланс сразу после их получения.",
-                balanceEmpty: "Баланс пуст",
-                x3Title: "Умножить награду x3?",
-                x3Watch: "Смотреть рекламу x3",
-                x3No: "Нет, спасибо",
-                fundsTransferred: "Средства успешно переведены на основной баланс",
-                adFailed: "Ошибка рекламы",
-                enterPromo: "Введите промокод",
-                promoActivated: "Промокод активирован",
-                promoFailed: "Ошибка промокода",
-                taskFailed: "Ошибка задания",
-                serverError: "Ошибка сервера",
-                noEnergy: "Нет энергии. Подождите восстановления.",
-                gameStartFailed: "Ошибка запуска игры",
-                sessionError: "Ошибка сессии",
-                rewardCredited: "Награда будет начислена автоматически",
-                balanceUpdated: "Баланс обновлён",
-                rewardTitle: "Награда",
-                enterValidWallet: "Введите корректный TON кошелёк",
-                enterAmount: "Введите сумму",
-                minWithdrawMsg: "Минимальный вывод: 14000",
-                amountTooSmall: "Сумма слишком мала",
-                withdrawSuccess: "Вы получите {0} DOGS",
-                supportText: "Взаимодействуйте с рекламой, чтобы поддерживать текущую ставку наград ❤️",
-                noTasks: "Нет доступных заданий",
-                open: "Открыть",
-                claimTask: "Забрать",
-                completed: "Завершено",
-                inProgress: "В процессе",
-                reward: "Награда",
-                alreadyClaimed: "Уже получено",
-                refClaimCooldown: "Кулдаун",
-                collected: "Собрано {0} DOGS",
-                x3_prompt: "Посмотрите рекламу, чтобы утроить ваше вознаграждение",
-                x3_btn: "Смотреть X3",
-                no_thanks: "Нет, спасибо",
-                final_reward: "Вы получили:\n{0} DOGS",
-                surfing: "Сёрфинг",
-                surfingTitle: "🏄 Сёрфинг",
-                surfingSubtitle: "Подпишись на спонсоров и получи DOGS",
-                surfingDailyLimit: "Лимит на день:",
-                surfingStatus: "Осталось {0} попыток",
-                surfingLimitReached: "Лимит исчерпан",
-                watchAds: "Смотреть рекламу",
-                watchAdsTitle: "📺 Смотреть рекламу",
-                watchAdsSubtitle: "Смотри рекламу и зарабатывай 15 DOGS",
-                watchAdsStatus: "Осталось {0} просмотров",
-                watchAdsLimitReached: "Лимит на сегодня исчерпан",
-                watchAdsRewarded: "Награда +{0} DOGS успешно начислена! 🎉",
-                withdrawAction: "Вывести",
-                sendAction: "Отправить",
-                historyAction: "История",
-                walletCardTitle: "DOGS",
-                refProgramTitle: "Реферальная программа"
+                balanceEmpty: "Баланс пуст", x3Title: "Умножить награду x3?", x3Watch: "Смотреть рекламу x3", x3No: "Нет, спасибо",
+                fundsTransferred: "Средства успешно переведены на основной баланс", adFailed: "Ошибка рекламы", enterPromo: "Введите промокод",
+                promoActivated: "Промокод активирован", promoFailed: "Ошибка промокода", taskFailed: "Ошибка задания", serverError: "Ошибка сервера",
+                noEnergy: "Нет энергии. Подождите восстановления.", gameStartFailed: "Ошибка запуска игры", sessionError: "Ошибка сессии",
+                rewardCredited: "Награда будет начислена автоматически", balanceUpdated: "Баланс обновлён", rewardTitle: "Награда",
+                enterValidWallet: "Введите корректный TON кошелёк", enterAmount: "Введите сумму", minWithdrawMsg: "Минимальный вывод: 14000",
+                amountTooSmall: "Сумма слишком мала", withdrawSuccess: "Вы получите {0} DOGS", supportText: "Взаимодействуйте с рекламой, чтобы поддерживать текущую ставку наград ❤️",
+                noTasks: "Нет доступных заданий", open: "Открыть", claimTask: "Забрать", completed: "Завершено", inProgress: "В процессе",
+                reward: "Награда", alreadyClaimed: "Уже получено", refClaimCooldown: "Кулдаун", collected: "Собрано {0} DOGS",
+                x3_prompt: "Посмотрите рекламу, чтобы утроить ваше вознаграждение", x3_btn: "Смотреть X3", no_thanks: "Нет, спасибо",
+                final_reward: "Вы получили:\n{0} DOGS", surfing: "Сёрфинг", surfingTitle: "🏄 Сёрфинг", surfingSubtitle: "Подпишись на спонсоров и получи DOGS",
+                surfingDailyLimit: "Лимит на день:", surfingStatus: "Осталось {0} попыток", surfingLimitReached: "Лимит исчерпан",
+                watchAds: "Смотреть рекламу", watchAdsTitle: "📺 Смотреть рекламу", watchAdsSubtitle: "Смотри рекламу и зарабатывай 15 DOGS",
+                watchAdsStatus: "Осталось {0} просмотров", watchAdsLimitReached: "Лимит на сегодня исчерпан", watchAdsRewarded: "Награда +{0} DOGS успешно начислена! 🎉",
+                withdrawAction: "Вывести", sendAction: "Отправить", historyAction: "История", walletCardTitle: "DOGS", refProgramTitle: "Реферальная программа"
             },
             en: {
-                faucet: "Faucet",
-                wallet: "Wallet",
-                tasks: "Tasks",
-                games: "Games",
-                offerwall: "Offerwall",
-                profile: "Profile",
-                faucetTitle: "🐶 Faucet",
-                walletTitle: "💸 Wallet",
-                walletSubtitle: "Withdraw your earnings",
-                tasksTitle: "📋 Tasks",
-                tasksSubtitle: "Complete quests and earn rewards",
-                gamesTitle: "🎮 GameHub",
-                gamesSubtitle: "Play games and earn DOGS",
-                offerwallTitle: "🎁 Offerwalls",
-                offerwallSubtitle: "Complete offers and earn DOGS",
-                profileTitle: "👤 Profile",
-                claim: "CLAIM",
-                loading: "Loading...",
-                withdrawBtn: "WITHDRAW",
-                historyTitle: "📜 Withdraw history",
-                noWithdraws: "No withdraws",
-                minWithdraw: "Minimum withdraw: 14000 DOGS",
-                networkFee: "Network fee: 1700 DOGS",
-                walletPlaceholder: "TON wallet",
-                memoPlaceholder: "Memo (optional)",
-                amountPlaceholder: "Amount",
-                withdrawLabel: "Withdraw",
-                receive: "Receive",
-                fee: "Fee",
-                dailyStreak: "🔥 Daily Streak",
+                faucet: "Faucet", wallet: "Wallet", tasks: "Tasks", games: "Games", offerwall: "Offerwall", profile: "Profile",
+                faucetTitle: "🐶 Faucet", walletTitle: "💸 Wallet", walletSubtitle: "Withdraw your earnings", tasksTitle: "📋 Tasks",
+                tasksSubtitle: "Complete quests and earn rewards", gamesTitle: "🎮 GameHub", gamesSubtitle: "Play games and earn DOGS",
+                offerwallTitle: "🎁 Offerwalls", offerwallSubtitle: "Complete offers and earn DOGS", profileTitle: "👤 Profile",
+                claim: "CLAIM", loading: "Loading...", withdrawBtn: "WITHDRAW", historyTitle: "📜 Withdraw history",
+                noWithdraws: "No withdraws", minWithdraw: "Minimum withdraw: 14000 DOGS", networkFee: "Network fee: 1700 DOGS",
+                walletPlaceholder: "TON wallet", memoPlaceholder: "Memo (optional)", amountPlaceholder: "Amount",
+                withdrawLabel: "Withdraw", receive: "Receive", fee: "Fee", dailyStreak: "🔥 Daily Streak",
                 streakDesc: "Login every day and keep your streak alive.<br>Watch ads and earn bigger rewards daily.",
-                claimStreak: "CLAIM STREAK REWARD",
-                dailyQuests: "⏳ Daily Quests",
-                updating: "Updating...",
-                promoCode: "🎟 Promo Code",
-                promoPlaceholder: "Enter promo code",
-                activate: "ACTIVATE",
-                tasksBlock: "📋 Tasks",
-                specialOffers: "🚀 Special Offers (60 Dogs)",
-                energy: "🔋 Energy",
-                fullEnergy: "Full energy",
-                watchAdEnergy: "Watch Ad +12 Energy",
-                availableGames: "Available Games",
-                flappyDesc: "Survive for 40-50 seconds and earn DOGS rewards.",
-                game2048Desc: "Reach target tile to earn DOGS. Difficulty rises!",
-                match3Desc: "Match gems to earn DOGS!",
-                play: "▶ PLAY",
-                offerwallOpen: "OPEN OFFERWALL",
-                bitcotasksDesc: "Complete offers and get instant DOGS rewards directly to your balance",
-                statEarned: "Total Earned",
-                statWithdrawn: "Total Withdrawn",
-                statGames: "Games Played",
-                statRefs: "Total Referrals",
-                statRefEarned: "Earned from Referrals",
-                refBalance: "Referral Balance",
-                refCount: "Total Friends",
-                claimRefBtn: "Claim Reward",
-                inviteBtn: "Invite Friends",
+                claimStreak: "CLAIM STREAK REWARD", dailyQuests: "⏳ Daily Quests", updating: "Updating...",
+                promoCode: "🎟 Promo Code", promoPlaceholder: "Enter promo code", activate: "ACTIVATE", tasksBlock: "📋 Tasks",
+                specialOffers: "🚀 Special Offers (60 Dogs)", energy: "🔋 Energy", fullEnergy: "Full energy",
+                watchAdEnergy: "Watch Ad +12 Energy", availableGames: "Available Games", flappyDesc: "Survive for 40-50 seconds and earn DOGS rewards.",
+                game2048Desc: "Reach target tile to earn DOGS. Difficulty rises!", match3Desc: "Match gems to earn DOGS!",
+                play: "▶ PLAY", offerwallOpen: "OPEN OFFERWALL", bitcotasksDesc: "Complete offers and get instant DOGS rewards directly to your balance",
+                statEarned: "Total Earned", statWithdrawn: "Total Withdrawn", statGames: "Games Played", statRefs: "Total Referrals",
+                statRefEarned: "Earned from Referrals", refBalance: "Referral Balance", refCount: "Total Friends",
+                claimRefBtn: "Claim Reward", inviteBtn: "Invite Friends",
                 refDesc: "Invite your friends and earn 10% of their earnings! Tokens are added to your referral balance immediately after they claim.",
-                balanceEmpty: "Balance Empty",
-                x3Title: "Multiply reward x3?",
-                x3Watch: "Watch ad x3",
-                x3No: "No thanks",
-                fundsTransferred: "Funds successfully transferred to main balance",
-                adFailed: "Ad failed",
-                enterPromo: "Enter promo code",
-                promoActivated: "Promo activated",
-                promoFailed: "Promo failed",
-                taskFailed: "Task failed",
-                serverError: "Server error",
-                noEnergy: "No energy. Wait for restore.",
-                gameStartFailed: "Game start failed",
-                sessionError: "Session error",
-                rewardCredited: "Reward will be credited automatically",
-                balanceUpdated: "Balance updated",
-                rewardTitle: "Reward",
-                enterValidWallet: "Enter valid TON wallet",
-                enterAmount: "Enter amount",
-                minWithdrawMsg: "Minimum withdraw 14000",
-                amountTooSmall: "Amount too small",
-                withdrawSuccess: "You will receive {0} DOGS",
-                supportText: "Please interact with ads to help maintain the current reward rate ❤️",
-                noTasks: "No available tasks",
-                open: "Open",
-                claimTask: "Claim",
-                completed: "Completed",
-                inProgress: "In Progress",
-                reward: "Reward",
-                alreadyClaimed: "Already claimed",
-                refClaimCooldown: "Cooldown",
-                collected: "Collected {0} DOGS",
-                x3_prompt: "Watch ad to triple your reward",
-                x3_btn: "Watch X3",
-                no_thanks: "No thanks",
-                final_reward: "You received:\n{0} DOGS",
-                surfing: "Surfing",
-                surfingTitle: "🏄 Surfing",
-                surfingSubtitle: "Subscribe to sponsors and earn DOGS",
-                surfingDailyLimit: "Daily limit:",
-                surfingStatus: "{0} attempts left today",
-                surfingLimitReached: "Daily limit reached",
-                watchAds: "Watch Ads",
-                watchAdsTitle: "📺 Watch Ads",
-                watchAdsSubtitle: "Watch ads and earn 15 DOGS",
-                watchAdsStatus: "{0} views left today",
-                watchAdsLimitReached: "Daily limit reached",
-                watchAdsRewarded: "Reward +{0} DOGS successfully credited! 🎉",
-                withdrawAction: "Withdraw",
-                sendAction: "Send",
-                historyAction: "History",
-                walletCardTitle: "DOGS",
-                refProgramTitle: "Referral Program"
+                balanceEmpty: "Balance Empty", x3Title: "Multiply reward x3?", x3Watch: "Watch ad x3", x3No: "No thanks",
+                fundsTransferred: "Funds successfully transferred to main balance", adFailed: "Ad failed", enterPromo: "Enter promo code",
+                promoActivated: "Promo activated", promoFailed: "Promo failed", taskFailed: "Task failed", serverError: "Server error",
+                noEnergy: "No energy. Wait for restore.", gameStartFailed: "Game start failed", sessionError: "Session error",
+                rewardCredited: "Reward will be credited automatically", balanceUpdated: "Balance updated", rewardTitle: "Reward",
+                enterValidWallet: "Enter valid TON wallet", enterAmount: "Enter amount", minWithdrawMsg: "Minimum withdraw 14000",
+                amountTooSmall: "Amount too small", withdrawSuccess: "You will receive {0} DOGS", supportText: "Please interact with ads to help maintain the current reward rate ❤️",
+                noTasks: "No available tasks", open: "Open", claimTask: "Claim", completed: "Completed", inProgress: "In Progress",
+                reward: "Reward", alreadyClaimed: "Already claimed", refClaimCooldown: "Cooldown", collected: "Collected {0} DOGS",
+                x3_prompt: "Watch ad to triple your reward", x3_btn: "Watch X3", no_thanks: "No thanks",
+                final_reward: "You received:\n{0} DOGS", surfing: "Surfing", surfingTitle: "🏄 Surfing", surfingSubtitle: "Subscribe to sponsors and earn DOGS",
+                surfingDailyLimit: "Daily limit:", surfingStatus: "{0} attempts left today", surfingLimitReached: "Daily limit reached",
+                watchAds: "Watch Ads", watchAdsTitle: "📺 Watch Ads", watchAdsSubtitle: "Watch ads and earn 15 DOGS",
+                watchAdsStatus: "{0} views left today", watchAdsLimitReached: "Daily limit reached", watchAdsRewarded: "Reward +{0} DOGS successfully credited! 🎉",
+                withdrawAction: "Withdraw", sendAction: "Send", historyAction: "History", walletCardTitle: "DOGS", refProgramTitle: "Referral Program"
             }
         };
 
@@ -891,34 +768,58 @@
             applyAllLanguage();
             document.getElementById('langRuBtn').classList.toggle('active', lang === 'ru');
             document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
-            if (document.getElementById('profile').classList.contains('active')) {
-                loadProfile();
+            if (document.getElementById('profile').classList.contains('active')) loadProfile();
+        }
+
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function clearAllTimers() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (specialOfferInterval) clearInterval(specialOfferInterval);
+            if (dailyQuestTimer) clearInterval(dailyQuestTimer);
+            if (refTimerInterval) clearInterval(refTimerInterval);
+            if (gamesTimerInterval) clearInterval(gamesTimerInterval);
+            if (dailyTimerInterval) clearInterval(dailyTimerInterval);
+        }
+
+        async function fetchJson(url, options) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (e) {
+                console.error(e);
+                return { ok: false, error: t('serverError') };
             }
+        }
+
+        function formatNumber(num) { return new Intl.NumberFormat().format(Math.floor(num)); }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
 
         // ========== ПРОФИЛЬ ==========
         async function loadProfile() {
             try {
-                const r = await fetch(API + "/profile", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({init_data: tg.initData})
+                const d = await fetchJson(API + "/profile", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
                 });
-                const d = await r.json();
                 if (!d.ok) return;
-
                 document.getElementById('statEarned').innerText = formatNumber(d.total_earned);
                 document.getElementById('statWithdrawn').innerText = formatNumber(d.total_withdrawn);
                 document.getElementById('statGames').innerText = d.total_games_played;
                 document.getElementById('statRefs').innerText = d.referrals_count;
                 document.getElementById('statRefEarned').innerText = formatNumber(d.referral_earned);
-
                 document.getElementById('refBalance').innerText = d.referral_balance.toFixed(2);
                 document.getElementById('refCount').innerText = d.referrals_count;
-
-                if (d.ref_link) {
-                    userRefLink = d.ref_link;
-                }
+                if (d.ref_link) userRefLink = d.ref_link;
 
                 const user = tg.initDataUnsafe?.user;
                 if (user) {
@@ -940,39 +841,16 @@
             } catch (e) { console.error(e); }
         }
 
-        // ========== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ==========
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        const initData = tg.initData;
-        const startParam = tg.initDataUnsafe?.start_param || "";
-        const API = "https://dogs-7uz3.onrender.com";
-        const MIN_WITHDRAW = 14000;
-        const WITHDRAW_FEE = 1700;
-
-        const AdController = window.Adsgram.init({ blockId: "30995" });
-        const AdControllerX3 = window.Adsgram.init({ blockId: "29657" });
-
-        let cooldown = 0;
-        let timerInterval = null;
-        let specialOfferInterval = null;
-        let dailyQuestTimer = null;
-        let refTimerInterval = null;
-        let userRefLink = "";
-        let lastClaimReward = 0;
-
-        async function tab(id, el){
+        // ========== ТАБЫ ==========
+        async function tab(id, el) {
             document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
             document.getElementById(id).classList.add("active");
             document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
             el.classList.add("active");
-            if(id === "withdraw") { showMainWallet(); loadWallet(); }
-            if(id === "tasks") { loadTasks(); loadSurfingStatus(); loadWatchAdsStatus(); }
-            if(id === "games") { await loadGamesStatus(); await loadGameDifficulties(); }
-            if(id === "profile") {
-                await loadProfile();
-                loadDailyStatus();
-                applyAllLanguage();
-            }
+            if (id === "withdraw") { showMainWallet(); loadWallet(); }
+            if (id === "tasks") { loadTasks(); loadSurfingStatus(); loadWatchAdsStatus(); }
+            if (id === "games") { await loadGamesStatus(); await loadGameDifficulties(); }
+            if (id === "profile") { await loadProfile(); loadDailyStatus(); applyAllLanguage(); }
         }
 
         // ========== КОШЕЛЁК ==========
@@ -990,9 +868,7 @@
             document.getElementById("withdrawFormCard").style.display = "block";
             updateWithdrawInfo();
             const walletInput = document.getElementById('wallet');
-            if (connectedWalletAddress && !walletInput.value) {
-                walletInput.value = connectedWalletAddress;
-            }
+            if (connectedWalletAddress && !walletInput.value) walletInput.value = connectedWalletAddress;
         }
 
         function showWalletHistory() {
@@ -1003,30 +879,117 @@
             loadWithdrawHistory();
         }
 
-        function sendCrypto() {
-            tg.showPopup({ message: t('sendAction') + " coming soon" });
-        }
+        function sendCrypto() { tg.showPopup({ message: t('sendAction') + " coming soon" }); }
 
         async function loadWallet() {
             try {
-                const r = await fetch(API + "/status", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                const d = await fetchJson(API + "/status", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ init_data: tg.initData })
                 });
-                const d = await r.json();
                 const balance = d.balance || 0;
                 document.getElementById("walletCardBalance").innerText = balance.toLocaleString();
             } catch (e) { console.error(e); }
         }
 
-        const originalWithdraw = withdraw;
-        withdraw = async function() {
-            await originalWithdraw();
-            if (document.getElementById("withdrawFormCard").style.display === "block") {
-                showMainWallet(); loadWallet();
+        function updateWithdrawInfo() {
+            const amount = Number(document.getElementById("amount").value || 0);
+            let receive = amount - WITHDRAW_FEE;
+            if (receive < 0) receive = 0;
+            document.getElementById("withdrawAmount").innerText = amount;
+            document.getElementById("receiveAmount").innerText = receive;
+            document.getElementById("feeAmount").innerText = WITHDRAW_FEE;
+        }
+
+        async function performWithdraw() {
+            const wallet = document.getElementById("wallet").value.trim();
+            const memo = document.getElementById("memo").value.trim();
+            const amount = Number(document.getElementById("amount").value.trim());
+            // базовая проверка TON адреса
+            if (!/^[A-Za-z0-9_-]{48}$/.test(wallet) && !wallet.startsWith('EQ')) {
+                tg.showPopup({ message: t('enterValidWallet') });
+                return;
             }
-        };
+            if (!amount || amount <= 0) { tg.showPopup({ message: t('enterAmount') }); return; }
+            if (amount < MIN_WITHDRAW) { tg.showPopup({ message: t('minWithdrawMsg') }); return; }
+            if (amount <= WITHDRAW_FEE) { tg.showPopup({ message: t('amountTooSmall') }); return; }
+
+            const d = await fetchJson(API + "/withdraw", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ init_data: tg.initData, wallet, memo, amount })
+            });
+            if (d.ok) {
+                tg.showPopup({ message: t('withdrawSuccess', d.receive) });
+                document.getElementById("wallet").value = "";
+                document.getElementById("memo").value = "";
+                document.getElementById("amount").value = "";
+                updateWithdrawInfo(); loadStatus(); loadWithdrawHistory();
+                showMainWallet(); loadWallet();
+            } else { tg.showPopup({ message: d.error }); }
+        }
+
+        async function loadWithdrawHistory() {
+            try {
+                const d = await fetchJson(API + "/withdraw/history", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const box = document.getElementById("withdrawHistory");
+                box.innerHTML = "";
+                if (!d.history || d.history.length === 0) { box.innerHTML = t('noWithdraws'); return; }
+                d.history.forEach(w => {
+                    let statusClass = "pending";
+                    if (w.status === "paid") statusClass = "paid";
+                    if (w.status === "rejected") statusClass = "rejected";
+                    box.innerHTML += `
+                        <div class="history-item">
+                            <div><b>${t('withdrawLabel')}:</b> ${w.amount}</div>
+                            <div><b>${t('receive')}:</b> ${w.receive_amount}</div>
+                            <div><b>${t('fee')}:</b> ${w.fee}</div>
+                            <div style="margin-top:6px;"><b>Wallet:</b><br>${escapeHtml(w.wallet)}</div>
+                            ${w.memo ? `<div style="margin-top:6px;"><b>Memo:</b> ${escapeHtml(w.memo)}</div>` : ""}
+                            <div class="status ${statusClass}">${w.status}</div>
+                        </div>`;
+                });
+            } catch (e) { console.log(e); }
+        }
+
+        // ========== ОСНОВНОЙ КРАН ==========
+        async function loadStatus() {
+            const d = await fetchJson(API + "/status", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ init_data: tg.initData })
+            });
+            document.getElementById("balance1").querySelector(".num").innerText = d.balance;
+            const btn = document.getElementById("claimBtn");
+            if (d.remaining > 0) {
+                cooldown = d.remaining;
+                btn.disabled = true;
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (cooldown <= 0) { btn.innerText = t('claim'); btn.disabled = false; clearInterval(timerInterval); return; }
+                    let m = Math.floor(cooldown / 60);
+                    let s = cooldown % 60;
+                    btn.innerText = `${m}:${s.toString().padStart(2, "0")}`;
+                    cooldown--;
+                }, 1000);
+            } else {
+                btn.innerText = t('claim'); btn.disabled = false;
+            }
+        }
+
+        async function claim() {
+            const btn = document.getElementById("claimBtn");
+            btn.disabled = true; btn.innerText = t('loading');
+            try {
+                const d = await fetchJson(API + "/claim", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData, device: navigator.userAgent })
+                });
+                if (d.ok) { loadStatus(); showClaimModal(d.reward); }
+                else { tg.showPopup({ message: d.error }); btn.disabled = false; btn.innerText = t('claim'); }
+            } catch (e) { btn.disabled = false; btn.innerText = t('claim'); }
+        }
 
         function showClaimModal(reward) {
             document.getElementById('claimModal').style.display = 'flex';
@@ -1042,7 +1005,564 @@
 
         function closeClaimModal() { document.getElementById('claimModal').style.display = 'none'; }
 
-        function loadUser(){
+        async function watchX3() {
+            const btnX3 = document.getElementById('claimX3Btn');
+            if (btnX3.dataset.loading === "1") return;
+            btnX3.dataset.loading = "1"; btnX3.disabled = true; btnX3.innerText = t('loading');
+            try {
+                await AdControllerX3.show();
+                document.getElementById('claimRewardText').innerHTML = t('final_reward', lastClaimReward * 3).replace('\n', '<br>');
+                document.getElementById('claimPromptText').style.display = 'none';
+                btnX3.style.display = 'none';
+                document.getElementById('claimNoThanksBtn').style.display = 'none';
+                setTimeout(() => { closeClaimModal(); loadStatus(); }, 2500);
+            } catch (e) {
+                console.log(e); tg.showPopup({ message: t('adFailed') }); closeClaimModal();
+            }
+            btnX3.dataset.loading = "0"; btnX3.disabled = false;
+        }
+
+        // ========== DAILY STREAK ==========
+        async function dailyBonus() {
+            const btn = document.getElementById("dailyBtn");
+            if (btn.dataset.locked === "1") return;
+            btn.disabled = true; btn.innerText = t('loading');
+            try {
+                await AdController.show();
+                const d = await fetchJson(API + "/daily_bonus", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (d.ok) {
+                    tg.showPopup({ message: `+${d.reward} DOGS` });
+                    loadStatus();
+                    updateDailyStreak((d.streak_day % 7) + 1);
+                    startDailyCooldown(86400);
+                } else {
+                    tg.showPopup({ message: d.error || t('alreadyClaimed') });
+                    if (d.error === "already_claimed") loadDailyStatus();
+                    else { btn.disabled = false; btn.innerText = t('claimStreak'); }
+                }
+            } catch (e) { tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = t('claimStreak'); }
+        }
+
+        function startDailyCooldown(seconds) {
+            const btn = document.getElementById("dailyBtn");
+            btn.dataset.locked = "1";
+            if (dailyTimerInterval) clearInterval(dailyTimerInterval);
+            let timeLeft = seconds;
+            function update() {
+                if (timeLeft <= 0) { clearInterval(dailyTimerInterval); btn.disabled = false; btn.dataset.locked = "0"; btn.innerText = t('claimStreak'); return; }
+                const h = Math.floor(timeLeft / 3600);
+                const m = Math.floor((timeLeft % 3600) / 60);
+                const s = timeLeft % 60;
+                btn.disabled = true; btn.innerText = `${h}h ${m}m ${s}s`;
+                timeLeft--;
+            }
+            update();
+            dailyTimerInterval = setInterval(update, 1000);
+        }
+
+        function updateDailyStreak(day) {
+            document.querySelectorAll(".streak-day").forEach(el => { el.classList.remove("active"); el.classList.remove("claimed"); });
+            for (let i = 1; i < day; i++) { const el = document.getElementById(`day${i}`); if (el) el.classList.add("claimed"); }
+            const current = document.getElementById(`day${day}`); if (current) current.classList.add("active");
+        }
+
+        async function loadDailyStatus() {
+            try {
+                const d = await fetchJson(API + "/daily_bonus/status", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                updateDailyStreak(d.streak_day || 1);
+                const btn = document.getElementById("dailyBtn");
+                if (d.ok && d.remaining > 0) { startDailyCooldown(d.remaining); }
+                else { btn.disabled = false; btn.dataset.locked = "0"; btn.innerText = `${t('claimStreak')} ${d.reward || 50} DOGS`; }
+            } catch (e) { console.log(e); }
+        }
+
+        // ========== ПРОМОКОД ==========
+        async function activatePromo() {
+            const code = document.getElementById("promoInput").value.trim();
+            if (!code) { tg.showPopup({ message: t('enterPromo') }); return; }
+            try {
+                await AdController.show();
+                const d = await fetchJson(API + "/promo/activate", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData, code })
+                });
+                if (d.ok) {
+                    tg.showPopup({ message: `${t('promoActivated')} +${d.reward} DOGS` });
+                    document.getElementById("promoInput").value = "";
+                    loadStatus();
+                } else { tg.showPopup({ message: d.error || t('promoFailed') }); }
+            } catch (e) { tg.showPopup({ message: t('adFailed') }); }
+        }
+
+        // ========== ИГРЫ ==========
+        async function loadGameDifficulties() {
+            try {
+                const d = await fetchJson(API + "/games/difficulty", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (!d.ok) return;
+                const diffNames = {1: 'EASY', 2: 'MEDIUM', 3: 'HARD'};
+                const diffColors = {
+                    1: { bg: 'rgba(168,85,247,0.25)', text: '#c084fc' },
+                    2: { bg: 'rgba(255,165,0,0.25)', text: '#ffa500' },
+                    3: { bg: 'rgba(255,0,0,0.25)', text: '#ff4444' }
+                };
+                const gameCards = document.querySelectorAll('#games .gameCard');
+                const flappyBadge = gameCards[0]?.querySelector('.gameBadge');
+                if (flappyBadge) { const diff = d['flappy_difficulty'] || 1; flappyBadge.textContent = diffNames[diff]; flappyBadge.style.backgroundColor = diffColors[diff].bg; flappyBadge.style.color = diffColors[diff].text; }
+                const badge2048 = gameCards[1]?.querySelector('.gameBadge');
+                if (badge2048) { const diff = d['2048_difficulty'] || 1; badge2048.textContent = diffNames[diff]; badge2048.style.backgroundColor = diffColors[diff].bg; badge2048.style.color = diffColors[diff].text; }
+                const match3Badge = gameCards[2]?.querySelector('.gameBadge');
+                if (match3Badge) { const diff = d['match3_difficulty'] || 1; match3Badge.textContent = diffNames[diff]; match3Badge.style.backgroundColor = diffColors[diff].bg; match3Badge.style.color = diffColors[diff].text; }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadGamesStatus() {
+            try {
+                const data = await fetchJson(API + "/games/status", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: Telegram.WebApp.initData })
+                });
+                if (!data.ok) return;
+                const restoreBtn = document.getElementById("restoreEnergyBtn");
+                if (data.energy <= 0) restoreBtn.style.display = "block"; else restoreBtn.style.display = "none";
+                document.getElementById("gamesEnergy").innerText = `${data.energy} / ${data.max_energy}`;
+                const percent = (data.energy / data.max_energy) * 100;
+                document.getElementById("gamesEnergyFill").style.width = percent + "%";
+                if (data.energy >= data.max_energy) {
+                    document.getElementById("gamesRestore").innerText = t('fullEnergy');
+                    if (gamesTimerInterval) clearInterval(gamesTimerInterval);
+                } else {
+                    startEnergyTimer(data.next_restore);
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        function startEnergyTimer(seconds) {
+            if (gamesTimerInterval) clearInterval(gamesTimerInterval);
+            let remaining = seconds;
+            const el = document.getElementById("gamesRestore");
+            function render() { const m = Math.floor(remaining / 60); const s = remaining % 60; el.innerText = `${t('energy')} ${m}:${s.toString().padStart(2,"0")}`; }
+            render();
+            gamesTimerInterval = setInterval(() => { remaining--; render(); if (remaining <= 0) { clearInterval(gamesTimerInterval); loadGamesStatus(); } }, 1000);
+        }
+
+        async function startFlappyGame(btn) { await startGame(btn, "/games/flappy/start", "games/flappy/"); }
+        async function start2048Game(btn) { await startGame(btn, "/games/2048/start", "games/2048/"); }
+        async function startMatch3Game(btn) { await startGame(btn, "/games/match3/start", "games/match3/"); }
+
+        async function startGame(btn, endpoint, gamePath) {
+            if (btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1"; btn.disabled = true; const oldText = btn.innerText; btn.innerText = t('loading');
+            try {
+                const d = await fetchJson(API + endpoint, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (!d.ok) { if (d.error === "no_energy") tg.showPopup({ message: t('noEnergy') }); else tg.showPopup({ message: d.error || t('gameStartFailed') }); await loadGamesStatus(); return; }
+                const token = d.session_token;
+                if (!token) { tg.showPopup({ message: t('sessionError') }); await loadGamesStatus(); return; }
+                await loadGamesStatus();
+                window.location.href = `${gamePath}?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(tg?.initData || "")}`;
+            } catch (e) { console.log(e); tg.showPopup({ message: t('serverError') }); }
+            finally { btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = oldText; }
+        }
+
+        async function watchEnergyAd() {
+            const btn = document.getElementById("restoreEnergyBtn");
+            if (btn.dataset.loading === "1") return;
+            btn.dataset.loading = "1"; btn.disabled = true; btn.innerText = t('loading');
+            try {
+                await AdController.show();
+                const d = await fetchJson(API + "/games/restore-energy", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (d.ok) { tg.showPopup({ message: "+12 Energy restored" }); await loadGamesStatus(); }
+                else { tg.showPopup({ message: d.error || "Restore failed" }); }
+            } catch (e) { console.log(e); tg.showPopup({ message: t('adFailed') }); }
+            btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = t('watchAdEnergy');
+        }
+
+        // ========== ЗАДАНИЯ ==========
+        async function loadTasks() {
+            try {
+                const d = await fetchJson(API + "/tasks", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                const box = document.getElementById("tasksList");
+                box.innerHTML = "";
+                if (!d.tasks || d.tasks.length === 0) { box.innerHTML = `<div class="card" style="margin-top:12px;">${t('noTasks')}</div>`; return; }
+                d.tasks.forEach(task => {
+                    box.innerHTML += `
+                        <div class="task-item">
+                            <div class="task-top">
+                                <div class="task-left">
+                                    <img class="task-avatar" src="${escapeHtml(task.image || 'https://via.placeholder.com/50')}">
+                                    <div>
+                                        <div class="task-title">${escapeHtml(task.title)}</div>
+                                        <div class="task-reward">+${task.reward} DOGS</div>
+                                    </div>
+                                </div>
+                                <div class="task-buttons">
+                                    <button onclick="subscribeTask('${escapeHtml(task.link)}')">${t('open')}</button>
+                                    <button onclick="checkTask(${task.id})">${t('claimTask')}</button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            } catch (e) { console.log(e); }
+        }
+
+        function subscribeTask(link) { try { tg.openTelegramLink(link); } catch(e) { console.log(e); } }
+
+        async function checkTask(taskId) {
+            try {
+                const d = await fetchJson(API + "/task/complete", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData, task_id: taskId })
+                });
+                if (d.ok) { tg.showPopup({ message: `+${d.reward} DOGS` }); loadStatus(); loadTasks(); }
+                else { tg.showPopup({ message: d.error || t('taskFailed') }); }
+            } catch (e) { tg.showPopup({ message: t('serverError') }); }
+        }
+
+        // ========== DAILY QUESTS ==========
+        function startDailyQuestResetTimer() {
+            if (dailyQuestTimer) clearInterval(dailyQuestTimer);
+            function update() {
+                const now = new Date();
+                const kyivNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Kiev" }));
+                const next = new Date(kyivNow);
+                next.setHours(25, 0, 0, 0);
+                const diff = Math.floor((next - kyivNow) / 1000);
+                const h = Math.floor(diff / 3600);
+                const m = Math.floor((diff % 3600) / 60);
+                const s = diff % 60;
+                document.getElementById("dailyQuestReset").innerText = `⏳ ${t('updating')} ${h}h ${m}m ${s}s`;
+            }
+            update();
+            dailyQuestTimer = setInterval(update, 1000);
+        }
+
+        async function loadDailyQuests() {
+            try {
+                const d = await fetchJson(API + "/daily_quests", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (!d.ok) return;
+                const container = document.getElementById("dailyQuests");
+                container.innerHTML = "";
+                d.quests.forEach(q => {
+                    const completed = q.progress >= q.target;
+                    let button = "";
+                    if (q.claimed) button = `<button class="dailyQuestBtn" disabled>${t('completed')}</button>`;
+                    else if (completed) button = `<button class="dailyQuestBtn" onclick="claimDailyQuest(${q.id})">${t('claimTask')}</button>`;
+                    else button = `<button class="dailyQuestBtn" disabled>${t('inProgress')}</button>`;
+                    const percent = Math.min(100, (q.progress / q.target) * 100);
+                    container.innerHTML += `
+                        <div class="dailyQuest">
+                            <div class="dailyQuestTop">
+                                <div class="dailyQuestTitle">${escapeHtml(q.title)}</div>
+                                <div class="dailyQuestReward">+${q.reward} DOGS</div>
+                            </div>
+                            <div class="dailyQuestProgress">
+                                <div class="dailyQuestBar" style="width:${percent}%;"></div>
+                            </div>
+                            <div class="dailyQuestBottom">
+                                <div class="dailyQuestText">${q.progress}/${q.target}</div>
+                                ${button}
+                            </div>
+                        </div>`;
+                });
+            } catch (e) { console.log("DAILY QUESTS ERROR", e); }
+        }
+
+        async function claimDailyQuest(id) {
+            try {
+                const d = await fetchJson(API + "/daily_quests/claim", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData, quest_id: id })
+                });
+                if (d.ok) {
+                    tg.showPopup({ title: t('rewardTitle'), message: `🎉 +${d.reward} DOGS`, buttons: [{ type: "ok" }] });
+                    loadStatus(); loadDailyQuests();
+                }
+            } catch (e) { console.log("CLAIM QUEST ERROR", e); }
+        }
+
+        // ========== SURFING ==========
+        async function loadSurfingStatus() {
+            try {
+                const d = await fetchJson(API + "/surfing/status", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (d.ok) {
+                    document.getElementById("surfingLimit").innerText = `${d.completed} / ${d.limit}`;
+                    const btn = document.getElementById("startSurfingBtn");
+                    if (d.remaining <= 0) { btn.disabled = true; btn.innerText = t('surfingLimitReached'); }
+                    else { btn.disabled = false; btn.innerText = '▶ Start Surfing'; }
+                    document.getElementById("surfingStatus").innerText = t('surfingStatus', d.remaining);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function startSurfing() {
+            const btn = document.getElementById("startSurfingBtn");
+            if (btn.disabled) return;
+            btn.disabled = true; btn.innerText = t('loading');
+            try {
+                const d = await fetchJson(API + "/surfing/start", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (d.ok && d.link) {
+                    tg.openTelegramLink(d.link);
+                    tg.showPopup({ message: "Подпишитесь на канал, и награда придёт автоматически" });
+                    setTimeout(async () => { await loadStatus(); await loadSurfingStatus(); }, 5000);
+                } else { tg.showPopup({ message: d.error || "Error" }); btn.disabled = false; btn.innerText = '▶ Start Surfing'; }
+            } catch (e) { tg.showPopup({ message: "Network error" }); btn.disabled = false; btn.innerText = '▶ Start Surfing'; }
+        }
+
+        // ========== WATCH ADS ==========
+        async function loadWatchAdsStatus() {
+            try {
+                const d = await fetchJson(API + "/watch-ads/status", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (d.ok) {
+                    document.getElementById("watchAdsLimit").innerText = `${d.completed} / ${d.limit}`;
+                    const btn = document.getElementById("startWatchAdsBtn");
+                    if (d.remaining <= 0) { btn.disabled = true; btn.innerText = t('watchAdsLimitReached'); }
+                    else { btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
+                    document.getElementById("watchAdsStatus").innerText = t('watchAdsStatus', d.remaining);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function startWatchAds() {
+            const btn = document.getElementById("startWatchAdsBtn");
+            if (btn.disabled) return;
+            btn.disabled = true; btn.innerText = t('loading');
+            try {
+                const d = await fetchJson(API + "/watch-ads/start", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (!d.ok) { tg.showPopup({ message: d.error || "Error" }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; return; }
+                const { provider } = d;
+                if (provider === 'adsgram') {
+                    const adController = window.Adsgram.init({ blockId: "30995" });
+                    try { await adController.show(); await completeWatchAds('adsgram'); }
+                    catch (e) { tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
+                } else if (provider === 'monetag') {
+                    try { await window.show_11040021({ ymid: tg.initDataUnsafe?.user?.id?.toString() }); await completeWatchAds('monetag'); }
+                    catch (e) { tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
+                } else if (provider === 'richads') {
+                    try { await initRichAds(); await richAdsController.triggerInterstitialVideo(); await completeWatchAds('richads'); }
+                    catch (e) { console.log('RichAds error:', e); tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
+                }
+            } catch (e) { tg.showPopup({ message: "Network error" }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
+        }
+
+        async function completeWatchAds(provider) {
+            try {
+                const res = await fetchJson(API + "/watch-ads/complete", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData, provider })
+                });
+                if (res.ok) { tg.showPopup({ message: t('watchAdsRewarded', res.reward) }); await loadStatus(); await loadWatchAdsStatus(); }
+            } catch (e) { console.error(e); }
+        }
+
+        let richAdsController = null;
+        let richAdsScriptLoaded = false;
+
+        function initRichAds() {
+            return new Promise((resolve) => {
+                if (richAdsController) { resolve(); return; }
+                if (!richAdsScriptLoaded) {
+                    const script = document.createElement('script');
+                    script.src = 'https://richinfo.co/richpartners/telegram/js/tg-ob.js';
+                    script.onload = () => { richAdsScriptLoaded = true; createController(); };
+                    script.onerror = () => { resolve(); };
+                    document.head.appendChild(script);
+                } else { createController(); }
+                function createController() {
+                    richAdsController = new window.TelegramAdsController();
+                    richAdsController.initialize({ pubId: "1013216", appId: "7607", debug: false });
+                    setTimeout(resolve, 500);
+                }
+            });
+        }
+
+        // ========== РЕФЕРАЛЫ ==========
+        async function claimRef() {
+            const btn = document.getElementById('claimRefBtn');
+            if (btn.dataset.locked === "1") return;
+            btn.disabled = true; btn.innerText = t('loading');
+            try {
+                await AdController.show();
+                const d = await fetchJson(API + "/ref/claim", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: initData })
+                });
+                if (d.ok) { tg.showPopup({ message: t('fundsTransferred') }); loadStatus(); loadProfile(); startRefCooldown(86400); }
+                else { tg.showPopup({ message: d.error || t('balanceEmpty') }); btn.disabled = false; btn.innerText = t('claimRefBtn'); }
+            } catch (e) { console.log(e); tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = t('claimRefBtn'); }
+        }
+
+        function startRefCooldown(seconds) {
+            const btn = document.getElementById('claimRefBtn');
+            btn.dataset.locked = "1";
+            if (refTimerInterval) clearInterval(refTimerInterval);
+            let timeLeft = seconds;
+            function update() {
+                if (timeLeft <= 0) { clearInterval(refTimerInterval); btn.disabled = false; btn.dataset.locked = "0"; btn.innerText = t('claimRefBtn'); return; }
+                const h = Math.floor(timeLeft / 3600);
+                const m = Math.floor((timeLeft % 3600) / 60);
+                const s = timeLeft % 60;
+                btn.disabled = true; btn.innerText = `${h}h ${m}m ${s}s`;
+                timeLeft--;
+            }
+            update();
+            refTimerInterval = setInterval(update, 1000);
+        }
+
+        function inviteFriend() {
+            if (!userRefLink) return;
+            const url = `https://t.me/share/url?url=${encodeURIComponent(userRefLink)}&text=${encodeURIComponent("Join me and earn free DOGS tokens! 🦴")}`;
+            tg.openTelegramLink(url);
+        }
+
+        function openBitcoTasks() {
+            const userId = tg.initDataUnsafe?.user?.id;
+            const url = `https://bitcotasks.com/offerwall/yqnqn322rsrx9oia6u9004fq8q2jg0/${userId}`;
+            tg.openLink(url);
+        }
+
+        // ========== АВТОРИЗАЦИЯ И СТАТИСТИКА ==========
+        async function auth() {
+            try {
+                await fetch(API + "/auth", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: initData, start_param: startParam })
+                });
+            } catch (e) { console.log(e); }
+        }
+
+        async function loadStats() {
+            try {
+                const d = await fetchJson(API + "/stats", { method: "POST" });
+                if (d.ok) { document.getElementById("usersCount").innerText = formatNumber(d.users + 28); document.getElementById("earnedCount").innerText = formatNumber(d.earned + 17576); }
+            } catch (e) { console.log("STATS ERROR", e); }
+        }
+
+        // ========== SPECIAL OFFER ==========
+        function startSpecialOfferCooldown(seconds) {
+            const task = document.getElementById("specialOfferTask");
+            const timer = document.getElementById("specialOfferTimer");
+            if (!task || !timer) return;
+            task.style.display = "none"; timer.style.display = "block";
+            if (specialOfferInterval) clearInterval(specialOfferInterval);
+            let timeLeft = seconds;
+            function update() {
+                if (timeLeft <= 0) { clearInterval(specialOfferInterval); timer.style.display = "none"; task.style.display = "block"; return; }
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                timer.innerText = `⏳ ${m}:${s.toString().padStart(2, "0")}`;
+                timeLeft--;
+            }
+            update();
+            specialOfferInterval = setInterval(update, 1000);
+        }
+
+        async function loadSpecialOfferStatus() {
+            try {
+                const d = await fetchJson(API + "/special_offer/status", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ init_data: tg.initData })
+                });
+                if (d.ok && d.remaining > 0) startSpecialOfferCooldown(d.remaining);
+            } catch (e) { console.log("SPECIAL OFFER STATUS ERROR", e); }
+        }
+
+        // ========== TON CONNECT ==========
+        async function initTonConnect() {
+            try {
+                if (typeof TON_CONNECT_UI === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    if (typeof TON_CONNECT_UI === 'undefined') { console.error("TON Connect UI not loaded"); return; }
+                }
+                tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                    manifestUrl: 'https://rizefamily0-create.github.io/dogs-app/tonconnect-manifest.json',
+                    buttonRootId: null
+                });
+                const connected = await tonConnectUI.connected;
+                if (connected) {
+                    const wallet = tonConnectUI.wallet;
+                    if (wallet && wallet.account?.address) {
+                        connectedWalletAddress = wallet.account.address;
+                        localStorage.setItem('ton_wallet_address', connectedWalletAddress);
+                        updateWalletUI();
+                    }
+                }
+                tonConnectUI.onStatusChange((wallet) => {
+                    if (wallet && wallet.account?.address) {
+                        connectedWalletAddress = wallet.account.address;
+                        localStorage.setItem('ton_wallet_address', connectedWalletAddress);
+                    } else {
+                        connectedWalletAddress = null;
+                        localStorage.removeItem('ton_wallet_address');
+                    }
+                    updateWalletUI();
+                });
+            } catch (e) { console.error('TON Connect init error:', e); }
+        }
+
+        async function connectWallet() {
+            if (!tonConnectUI) await initTonConnect();
+            try { await tonConnectUI.connectWallet(); } catch (e) { console.error('Connect wallet error:', e); }
+        }
+
+        function updateWalletUI() {
+            const btn = document.getElementById('connectWalletBtn');
+            const addrSpan = document.getElementById('walletAddress');
+            if (connectedWalletAddress) {
+                const shortAddr = connectedWalletAddress.slice(0, 6) + '...' + connectedWalletAddress.slice(-4);
+                addrSpan.innerText = shortAddr;
+                addrSpan.style.display = 'inline';
+                if (btn) btn.style.display = 'none';
+                const walletInput = document.getElementById('wallet');
+                if (walletInput && !walletInput.value) walletInput.value = connectedWalletAddress;
+            } else {
+                addrSpan.style.display = 'none';
+                addrSpan.innerText = '';
+                if (btn) btn.style.display = 'inline-block';
+            }
+        }
+
+        function loadSavedWalletAddress() {
+            const saved = localStorage.getItem('ton_wallet_address');
+            if (saved && !connectedWalletAddress) {
+                connectedWalletAddress = saved;
+                updateWalletUI();
+            }
+        }
+
+        // ========== ОБЩАЯ ИНИЦИАЛИЗАЦИЯ ==========
+        function loadUser() {
             const user = tg.initDataUnsafe?.user;
             if (user?.photo_url) {
                 const avatar = document.getElementById('avatar');
@@ -1075,723 +1595,20 @@
             const y = rect.top + rect.height / 2;
             spawnConfetti(x, y);
         });
-
         document.getElementById('mainCharacter').addEventListener('touchstart', function(e) {
             e.preventDefault();
             const touch = e.touches[0];
             spawnConfetti(touch.clientX, touch.clientY);
         });
 
-        function setBalance(id, value){ 
-            const el = document.getElementById(id);
-            if (el) {
-                const numSpan = el.querySelector(".num");
-                if (numSpan) numSpan.innerText = value;
-            }
-        }
-
-        function updateWithdrawInfo(){
-            const amount = Number(document.getElementById("amount").value || 0);
-            let receive = amount - WITHDRAW_FEE;
-            if(receive < 0) receive = 0;
-            document.getElementById("withdrawAmount").innerText = amount;
-            document.getElementById("receiveAmount").innerText = receive;
-            document.getElementById("feeAmount").innerText = WITHDRAW_FEE;
-        }
-
-        async function loadStatus(){
-            const r = await fetch(API + "/status", {
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({init_data: tg.initData})
-            });
-            const d = await r.json();
-            setBalance("balance1", d.balance);
-            const btn = claimBtn;
-            if(d.remaining > 0){
-                cooldown = d.remaining;
-                btn.disabled = true;
-                clearInterval(timerInterval);
-                timerInterval = setInterval(()=>{
-                    if(cooldown <= 0){ btn.innerText = t('claim'); btn.disabled = false; clearInterval(timerInterval); return; }
-                    let m = Math.floor(cooldown / 60);
-                    let s = cooldown % 60;
-                    btn.innerText = `${m}:${s.toString().padStart(2,"0")}`;
-                    cooldown--;
-                },1000);
-            }else{
-                btn.innerText = t('claim'); btn.disabled = false;
-            }
-        }
-
-        async function claim(){
-            const btn = claimBtn;
-            btn.disabled = true; btn.innerText = t('loading');
-            try{
-                const r = await fetch(API + "/claim", {
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({init_data: tg.initData, device: navigator.userAgent})
-                });
-                const d = await r.json();
-                if(d.ok){ loadStatus(); showClaimModal(d.reward); }
-                else { tg.showPopup?.({message: d.error}); btn.disabled = false; btn.innerText = t('claim'); }
-            }catch(e){ btn.disabled = false; btn.innerText = t('claim'); }
-        }
-
-        async function watchX3(){
-            const btnX3 = document.getElementById('claimX3Btn');
-            if(btnX3.dataset.loading === "1") return;
-            btnX3.dataset.loading = "1"; btnX3.disabled = true; btnX3.innerText = t('loading');
-            try{
-                await AdControllerX3.show();
-                document.getElementById('claimRewardText').innerHTML = t('final_reward', lastClaimReward * 3).replace('\n', '<br>');
-                document.getElementById('claimPromptText').style.display = 'none';
-                btnX3.style.display = 'none';
-                document.getElementById('claimNoThanksBtn').style.display = 'none';
-                setTimeout(() => { closeClaimModal(); loadStatus(); }, 2500);
-            }catch(e){
-                console.log(e); tg.showPopup?.({message: t('adFailed')}); closeClaimModal();
-            }
-            btnX3.dataset.loading = "0"; btnX3.disabled = false;
-        }
-
-        // ========== DAILY STREAK / QUESTS / TASKS / GAMES / WALLET ==========
-        let dailyTimerInterval = null;
-        async function dailyBonus(){
-            const btn = document.getElementById("dailyBtn");
-            if(btn.dataset.locked === "1") return;
-            btn.disabled = true; btn.innerText = t('loading');
-            try{
-                await AdController.show();
-                const r = await fetch(API + "/daily_bonus", {
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({init_data: tg.initData})
-                });
-                const d = await r.json();
-                if(d.ok){
-                    tg.showPopup?.({message:`+${d.reward} DOGS`});
-                    loadStatus();
-                    updateDailyStreak((d.streak_day % 7) + 1);
-                    startDailyCooldown(86400);
-                }else{
-                    tg.showPopup?.({message:d.error || t('alreadyClaimed')});
-                    if(d.error === "already_claimed") loadDailyStatus();
-                    else{ btn.disabled = false; btn.innerText = t('claimStreak'); }
-                }
-            }catch(e){ tg.showPopup?.({message:t('adFailed')}); btn.disabled = false; btn.innerText = t('claimStreak'); }
-        }
-
-        function startDailyCooldown(seconds){
-            const btn = document.getElementById("dailyBtn");
-            btn.dataset.locked = "1";
-            clearInterval(dailyTimerInterval);
-            let timeLeft = seconds;
-            function update(){
-                if(timeLeft <= 0){
-                    clearInterval(dailyTimerInterval); btn.disabled = false; btn.dataset.locked = "0"; btn.innerText = t('claimStreak'); return;
-                }
-                const h = Math.floor(timeLeft / 3600);
-                const m = Math.floor((timeLeft % 3600) / 60);
-                const s = timeLeft % 60;
-                btn.disabled = true; btn.innerText = `${h}h ${m}m ${s}s`;
-                timeLeft--;
-            }
-            update();
-            dailyTimerInterval = setInterval(update, 1000);
-        }
-
-        function updateDailyStreak(day){
-            document.querySelectorAll(".streak-day").forEach(el => { el.classList.remove("active"); el.classList.remove("claimed"); });
-            for(let i = 1; i < day; i++){ const el = document.getElementById(`day${i}`); if(el) el.classList.add("claimed"); }
-            const current = document.getElementById(`day${day}`); if(current) current.classList.add("active");
-        }
-
-        async function loadDailyStatus(){
-            try{
-                const r = await fetch(API + "/daily_bonus/status", {
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({init_data: tg.initData})
-                });
-                const d = await r.json();
-                updateDailyStreak(d.streak_day || 1);
-                const btn = document.getElementById("dailyBtn");
-                if(d.ok && d.remaining > 0){ startDailyCooldown(d.remaining); }
-                else { btn.disabled = false; btn.dataset.locked = "0"; btn.innerText = `${t('claimStreak')} ${d.reward || 50} DOGS`; }
-            }catch(e){ console.log(e); }
-        }
-
-        async function activatePromo(){
-            const code = document.getElementById("promoInput").value.trim();
-            if(!code){ tg.showPopup?.({message:t('enterPromo')}); return; }
-            try{
-                await AdController.show();
-                const r = await fetch(API + "/promo/activate", {
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({init_data: tg.initData, code})
-                });
-                const d = await r.json();
-                if(d.ok){
-                    tg.showPopup?.({message:`${t('promoActivated')} +${d.reward} DOGS`});
-                    document.getElementById("promoInput").value = "";
-                    loadStatus();
-                }else{ tg.showPopup?.({message:d.error || t('promoFailed')}); }
-            }catch(e){ tg.showPopup?.({message:t('adFailed')}); }
-        }
-
-       async function loadGameDifficulties() {
-            try {
-                const r = await fetch(API + "/games/difficulty", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ init_data: tg.initData })
-                });
-                const d = await r.json();
-                if (!d.ok) return;
-                const diffNames = {1: 'EASY', 2: 'MEDIUM', 3: 'HARD'};
-                const diffColors = {
-                    1: { bg: 'rgba(168,85,247,0.25)', text: '#c084fc' },
-                    2: { bg: 'rgba(255,165,0,0.25)', text: '#ffa500' },
-                    3: { bg: 'rgba(255,0,0,0.25)', text: '#ff4444' }
-                };
-                const gameCards = document.querySelectorAll('#games .gameCard');
-                const flappyBadge = gameCards[0]?.querySelector('.gameBadge');
-                if (flappyBadge) { const diff = d['flappy_difficulty'] || 1; flappyBadge.textContent = diffNames[diff]; flappyBadge.style.backgroundColor = diffColors[diff].bg; flappyBadge.style.color = diffColors[diff].text; }
-                const badge2048 = gameCards[1]?.querySelector('.gameBadge');
-                if (badge2048) { const diff = d['2048_difficulty'] || 1; badge2048.textContent = diffNames[diff]; badge2048.style.backgroundColor = diffColors[diff].bg; badge2048.style.color = diffColors[diff].text; }
-                const match3Badge = gameCards[2]?.querySelector('.gameBadge');
-                if (match3Badge) { const diff = d['match3_difficulty'] || 1; match3Badge.textContent = diffNames[diff]; match3Badge.style.backgroundColor = diffColors[diff].bg; match3Badge.style.color = diffColors[diff].text; }
-            } catch(e) { console.error(e); }
-        }
-
-        let gamesTimerInterval = null;
-
-        async function loadGamesStatus(){
-            try{
-                const r = await fetch(API + "/games/status", {
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({init_data: Telegram.WebApp.initData})
-                });
-                const data = await r.json();
-                if(!data.ok) return;
-                const restoreBtn = document.getElementById("restoreEnergyBtn");
-                if(data.energy <= 0) restoreBtn.style.display = "block"; else restoreBtn.style.display = "none";
-                document.getElementById("gamesEnergy").innerText = `${data.energy} / ${data.max_energy}`;
-                const percent = (data.energy / data.max_energy) * 100;
-                document.getElementById("gamesEnergyFill").style.width = percent + "%";
-                if(data.energy >= data.max_energy){ document.getElementById("gamesRestore").innerText = t('fullEnergy'); if(gamesTimerInterval) clearInterval(gamesTimerInterval); }
-                else { startEnergyTimer(data.next_restore); }
-            }catch(e){ console.log(e); }
-        }
-
-        function startEnergyTimer(seconds){
-            if(gamesTimerInterval) clearInterval(gamesTimerInterval);
-            let remaining = seconds;
-            const el = document.getElementById("gamesRestore");
-            function render(){ const m = Math.floor(remaining / 60); const s = remaining % 60; el.innerText = `${t('energy')} ${m}:${s.toString().padStart(2,"0")}`; }
-            render();
-            gamesTimerInterval = setInterval(() => { remaining--; render(); if(remaining <= 0){ clearInterval(gamesTimerInterval); loadGamesStatus(); } },1000);
-        }
-
-        async function startRunnerGame(btn){
-            if(btn.dataset.loading === "1") return;
-            btn.dataset.loading = "1"; btn.disabled = true; const oldText = btn.innerText; btn.innerText = t('loading');
-            try{
-                const r = await fetch(API + "/games/runner/start", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(!d.ok){ if(d.error === "no_energy") tg.showPopup?.({ message: t('noEnergy') }); else tg.showPopup?.({ message: d.error || t('gameStartFailed') }); await loadGamesStatus(); return; }
-                const token = d.session_token;
-                if(!token){ tg.showPopup?.({ message: t('sessionError') }); await loadGamesStatus(); return; }
-                await loadGamesStatus();
-                const initData = tg?.initData || "";
-                window.location.href = `games/runner/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
-            }catch(e){ console.log("RUNNER START CLIENT ERROR:", e); tg.showPopup?.({ message: t('serverError') }); }
-            finally{ btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = oldText; }
-        }
-
-        async function startMatch3Game(btn){
-            if(btn.dataset.loading === "1") return;
-            btn.dataset.loading = "1"; btn.disabled = true; const oldText = btn.innerText; btn.innerText = t('loading');
-            try{
-                const r = await fetch(API + "/games/match3/start", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(!d.ok){ if(d.error === "no_energy") tg.showPopup?.({ message: t('noEnergy') }); else tg.showPopup?.({ message: d.error || t('gameStartFailed') }); await loadGamesStatus(); return; }
-                const token = d.session_token;
-                if(!token){ tg.showPopup?.({ message: t('sessionError') }); await loadGamesStatus(); return; }
-                await loadGamesStatus();
-                window.location.href = `games/match3/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(tg?.initData || "")}`;
-            }catch(e){ console.log("MATCH3 START CLIENT ERROR:", e); tg.showPopup?.({ message: t('serverError') }); }
-            finally{ btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = oldText; }
-        }
-
-        async function startFlappyGame(btn){
-            if(btn.dataset.loading === "1") return;
-            btn.dataset.loading = "1"; btn.disabled = true; const oldText = btn.innerText; btn.innerText = t('loading');
-            try{
-                const r = await fetch(API + "/games/flappy/start", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(!d.ok){ if(d.error === "no_energy") tg.showPopup?.({ message: t('noEnergy') }); else tg.showPopup?.({ message: d.error || t('gameStartFailed') }); await loadGamesStatus(); return; }
-                const token = d.session_token;
-                if(!token){ tg.showPopup?.({ message: t('sessionError') }); await loadGamesStatus(); return; }
-                await loadGamesStatus();
-                const initData = tg?.initData || "";
-                window.location.href = `games/flappy/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(initData)}`;
-            }catch(e){ console.log("FLAPPY START CLIENT ERROR:", e); tg.showPopup?.({ message: t('serverError') }); }
-            finally{ btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = oldText; }
-        }
-
-        async function start2048Game(btn){
-            if(btn.dataset.loading === "1") return;
-            btn.dataset.loading = "1"; btn.disabled = true; const oldText = btn.innerText; btn.innerText = t('loading');
-            try{
-                const r = await fetch(API + "/games/2048/start", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(!d.ok){ if(d.error === "no_energy") tg.showPopup?.({ message: t('noEnergy') }); else tg.showPopup?.({ message: d.error || t('gameStartFailed') }); await loadGamesStatus(); return; }
-                const token = d.session_token;
-                if(!token){ tg.showPopup?.({ message: t('sessionError') }); await loadGamesStatus(); return; }
-                await loadGamesStatus();
-                window.location.href = `games/2048/?session_token=${encodeURIComponent(token)}&init_data=${encodeURIComponent(tg?.initData || "")}`;
-            }catch(e){ console.log("2048 START CLIENT ERROR:", e); tg.showPopup?.({ message: t('serverError') }); }
-            finally{ btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = oldText; }
-        }
-
-        async function watchEnergyAd(){
-            const btn = document.getElementById("restoreEnergyBtn");
-            if(btn.dataset.loading === "1") return;
-            btn.dataset.loading = "1"; btn.disabled = true; btn.innerText = t('loading');
-            try{
-                await AdController.show();
-                const r = await fetch(API + "/games/restore-energy", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(d.ok){ tg.showPopup?.({message:"+12 Energy restored"}); await loadGamesStatus(); }
-                else{ tg.showPopup?.({message:d.error || "Restore failed"}); }
-            }catch(e){ console.log(e); tg.showPopup?.({message:t('adFailed')}); }
-            btn.dataset.loading = "0"; btn.disabled = false; btn.innerText = t('watchAdEnergy');
-        }
-
-        async function loadTasks(){
-            try{
-                const r = await fetch(API + "/tasks", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                const box = document.getElementById("tasksList");
-                box.innerHTML = "";
-                if(!d.tasks || d.tasks.length === 0){ box.innerHTML = `<div class="card" style="margin-top:12px;">${t('noTasks')}</div>`; return; }
-                d.tasks.forEach(task => {
-                    box.innerHTML += `
-                <div class="task-item">
-                    <div class="task-top">
-                        <div class="task-left">
-                            <img class="task-avatar" src="${escapeHtml(task.image || 'https://via.placeholder.com/50')}">
-                            <div>
-                                <div class="task-title">${escapeHtml(task.title)}</div>
-                                <div class="task-reward">+${task.reward} DOGS</div>
-                            </div>
-                        </div>
-                        <div class="task-buttons">
-                            <button onclick="subscribeTask('${escapeHtml(task.link)}')">${t('open')}</button>
-                            <button onclick="checkTask(${task.id})">${t('claimTask')}</button>
-                        </div>
-                    </div>
-                </div>`;
-                });
-            }catch(e){ console.log(e); }
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        function subscribeTask(link){ try{ tg.openTelegramLink(link); }catch(e){ console.log(e); } }
-
-        async function checkTask(taskId){
-            try{
-                const r = await fetch(API + "/task/complete", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData, task_id: taskId}) });
-                const d = await r.json();
-                if(d.ok){ tg.showPopup?.({message:`+${d.reward} DOGS`}); loadStatus(); loadTasks(); }
-                else{ tg.showPopup?.({message:d.error || t('taskFailed')}); }
-            }catch(e){ tg.showPopup?.({message:t('serverError')}); }
-        }
-
-        async function withdraw(){
-            const wallet = document.getElementById("wallet").value.trim();
-            const memo = document.getElementById("memo").value.trim();
-            const amount = Number(document.getElementById("amount").value.trim());
-            if(wallet.length < 20){ tg.showPopup?.({message:t('enterValidWallet')}); return; }
-            if(!amount || amount <= 0){ tg.showPopup?.({message:t('enterAmount')}); return; }
-            if(amount < MIN_WITHDRAW){ tg.showPopup?.({message:t('minWithdrawMsg')}); return; }
-            if(amount <= WITHDRAW_FEE){ tg.showPopup?.({message:t('amountTooSmall')}); return; }
-            const r = await fetch(API + "/withdraw", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData, wallet, memo, amount}) });
-            const d = await r.json();
-            if(d.ok){
-                tg.showPopup?.({message:t('withdrawSuccess', d.receive)});
-                document.getElementById("wallet").value = "";
-                document.getElementById("memo").value = "";
-                document.getElementById("amount").value = "";
-                updateWithdrawInfo(); loadStatus(); loadWithdrawHistory();
-            }else{ tg.showPopup?.({message:d.error}); }
-        }
-
-        async function loadWithdrawHistory(){
-            try{
-                const r = await fetch(API + "/withdraw/history", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                const box = document.getElementById("withdrawHistory");
-                box.innerHTML = "";
-                if(!d.history || d.history.length === 0){ box.innerHTML = t('noWithdraws'); return; }
-                d.history.forEach(w => {
-                    let statusClass = "pending";
-                    if(w.status === "paid") statusClass = "paid";
-                    if(w.status === "rejected") statusClass = "rejected";
-                    box.innerHTML += `
-                <div class="history-item">
-                    <div><b>${t('withdrawLabel')}:</b> ${w.amount}</div>
-                    <div><b>${t('receive')}:</b> ${w.receive_amount}</div>
-                    <div><b>${t('fee')}:</b> ${w.fee}</div>
-                    <div style="margin-top:6px;"><b>Wallet:</b><br>${escapeHtml(w.wallet)}</div>
-                    ${w.memo ? `<div style="margin-top:6px;"><b>Memo:</b> ${escapeHtml(w.memo)}</div>` : ""}
-                    <div class="status ${statusClass}">${w.status}</div>
-                </div>`;
-                });
-            }catch(e){ console.log(e); }
-        }
-
-        async function claimRef() {
-            const btn = document.getElementById('claimRefBtn');
-            if(btn.dataset.locked === "1") return;
-            btn.disabled = true; btn.innerText = t('loading');
-            try {
-                await AdController.show();
-                const r = await fetch(API + "/ref/claim", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: initData }) });
-                const d = await r.json();
-                if (d.ok) { tg.showPopup?.({ message: t('fundsTransferred') }); loadStatus(); loadProfile(); startRefCooldown(86400); }
-                else { tg.showPopup?.({ message: d.error || t('balanceEmpty') }); btn.disabled = false; btn.innerText = t('claimRefBtn'); }
-            } catch(e) { console.log(e); tg.showPopup?.({ message: t('adFailed') }); btn.disabled = false; btn.innerText = t('claimRefBtn'); }
-        }
-
-        function startRefCooldown(seconds) {
-            const btn = document.getElementById('claimRefBtn');
-            btn.dataset.locked = "1";
-            clearInterval(refTimerInterval);
-            let timeLeft = seconds;
-            function update() {
-                if(timeLeft <= 0){ clearInterval(refTimerInterval); btn.disabled = false; btn.dataset.locked = "0"; btn.innerText = t('claimRefBtn'); return; }
-                const h = Math.floor(timeLeft / 3600);
-                const m = Math.floor((timeLeft % 3600) / 60);
-                const s = timeLeft % 60;
-                btn.disabled = true; btn.innerText = `${h}h ${m}m ${s}s`;
-                timeLeft--;
-            }
-            update();
-            refTimerInterval = setInterval(update, 1000);
-        }
-
-        function inviteFriend() {
-            if (!userRefLink) return;
-            const url = `https://t.me/share/url?url=${encodeURIComponent(userRefLink)}&text=${encodeURIComponent("Join me and earn free DOGS tokens! 🦴")}`;
-            tg.openTelegramLink(url);
-        }
-
-        function openBitcoTasks(){
-            const userId = tg.initDataUnsafe?.user?.id;
-            const url = `https://bitcotasks.com/offerwall/yqnqn322rsrx9oia6u9004fq8q2jg0/${userId}`;
-            tg.openLink(url);
-        }
-
-        async function auth(){
-            try{ await fetch(API + "/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: initData, start_param: startParam}) }); }
-            catch(e){ console.log(e); }
-        }
-
-        function formatNumber(num){ return new Intl.NumberFormat().format(Math.floor(num)); }
-
-        async function loadStats(){
-            try{
-                const r = await fetch(API + "/stats", { method:"POST" });
-                const d = await r.json();
-                if(d.ok){ document.getElementById("usersCount").innerText = formatNumber(d.users + 28); document.getElementById("earnedCount").innerText = formatNumber(d.earned + 17576); }
-            }catch(e){ console.log("STATS ERROR", e); }
-        }
-
-        function startSpecialOfferCooldown(seconds){
-            const task = document.getElementById("specialOfferTask");
-            const timer = document.getElementById("specialOfferTimer");
-            if(!task || !timer) return;
-            task.style.display = "none"; timer.style.display = "block";
-            clearInterval(specialOfferInterval);
-            let timeLeft = seconds;
-            function update(){
-                if(timeLeft <= 0){ clearInterval(specialOfferInterval); timer.style.display = "none"; task.style.display = "block"; return; }
-                const m = Math.floor(timeLeft / 60);
-                const s = timeLeft % 60;
-                timer.innerText = `⏳ ${m}:${s.toString().padStart(2,"0")}`;
-                timeLeft--;
-            }
-            update();
-            specialOfferInterval = setInterval(update, 1000);
-        }
-
-        async function loadSpecialOfferStatus(){
-            try{
-                const r = await fetch(API + "/special_offer/status", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(d.ok && d.remaining > 0) startSpecialOfferCooldown(d.remaining);
-            }catch(e){ console.log("SPECIAL OFFER STATUS ERROR", e); }
-        }
-
         const adsTask = document.querySelector("adsgram-task");
-        if(adsTask){
+        if (adsTask) {
             adsTask.addEventListener("reward", async () => {
-                tg.showPopup({title: t('rewardTitle'), message: t('rewardCredited'), buttons: [{ type: "ok" }]});
-                setTimeout(async () => { await loadStatus(); tg.showPopup({title: "DOGS", message: t('balanceUpdated'), buttons: [{ type: "ok" }]}); }, 3000);
+                tg.showPopup({ title: t('rewardTitle'), message: t('rewardCredited'), buttons: [{ type: "ok" }] });
+                setTimeout(async () => { await loadStatus(); tg.showPopup({ title: "DOGS", message: t('balanceUpdated'), buttons: [{ type: "ok" }] }); }, 3000);
             });
         }
 
-        function startDailyQuestResetTimer(){
-            clearInterval(dailyQuestTimer);
-            function update(){
-                const now = new Date();
-                const kyivNow = new Date(now.toLocaleString("en-US", {timeZone:"Europe/Kiev"}));
-                const next = new Date(kyivNow);
-                next.setHours(25,0,0,0);
-                const diff = Math.floor((next - kyivNow) / 1000);
-                const h = Math.floor(diff / 3600);
-                const m = Math.floor((diff % 3600)/60);
-                const s = diff % 60;
-                document.getElementById("dailyQuestReset").innerText = `⏳ ${t('updating')} ${h}h ${m}m ${s}s`;
-            }
-            update();
-            dailyQuestTimer = setInterval(update,1000);
-        }
-
-        async function loadDailyQuests(){
-            try{
-                const r = await fetch(API + "/daily_quests", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData}) });
-                const d = await r.json();
-                if(!d.ok) return;
-                const container = document.getElementById("dailyQuests");
-                container.innerHTML = "";
-                d.quests.forEach(q => {
-                    const completed = q.progress >= q.target;
-                    let button = "";
-                    if(q.claimed) button = `<button class="dailyQuestBtn" disabled>${t('completed')}</button>`;
-                    else if(completed) button = `<button class="dailyQuestBtn" onclick="claimDailyQuest(${q.id})">${t('claimTask')}</button>`;
-                    else button = `<button class="dailyQuestBtn" disabled>${t('inProgress')}</button>`;
-                    const percent = Math.min(100, (q.progress / q.target) * 100);
-                    container.innerHTML += `
-                <div class="dailyQuest">
-                    <div class="dailyQuestTop">
-                        <div class="dailyQuestTitle">${escapeHtml(q.title)}</div>
-                        <div class="dailyQuestReward">+${q.reward} DOGS</div>
-                    </div>
-                    <div class="dailyQuestProgress">
-                        <div class="dailyQuestBar" style="width:${percent}%;"></div>
-                    </div>
-                    <div class="dailyQuestBottom">
-                        <div class="dailyQuestText">${q.progress}/${q.target}</div>
-                        ${button}
-                    </div>
-                </div>`;
-                });
-            }catch(e){ console.log("DAILY QUESTS ERROR", e); }
-        }
-
-        async function claimDailyQuest(id){
-            try{
-                const r = await fetch(API + "/daily_quests/claim", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData, quest_id: id}) });
-                const d = await r.json();
-                if(d.ok){
-                    tg.showPopup({title:t('rewardTitle'), message:`🎉 +${d.reward} DOGS`, buttons:[{type:"ok"}]});
-                    loadStatus(); loadDailyQuests();
-                }
-            }catch(e){ console.log("CLAIM QUEST ERROR", e); }
-        }
-
-        // ========== SURFING ==========
-        async function loadSurfingStatus() {
-            try {
-                const r = await fetch(API + "/surfing/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData }) });
-                const d = await r.json();
-                if (d.ok) {
-                    document.getElementById("surfingLimit").innerText = `${d.completed} / ${d.limit}`;
-                    const btn = document.getElementById("startSurfingBtn");
-                    if (d.remaining <= 0) { btn.disabled = true; btn.innerText = t('surfingLimitReached'); }
-                    else { btn.disabled = false; btn.innerText = '▶ Start Surfing'; }
-                    document.getElementById("surfingStatus").innerText = t('surfingStatus', d.remaining);
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        async function startSurfing() {
-            const btn = document.getElementById("startSurfingBtn");
-            if (btn.disabled) return;
-            btn.disabled = true; btn.innerText = t('loading');
-            if (!window.Telegram?.WebApp?.initData) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                if (!window.Telegram?.WebApp?.initData) { tg.showPopup({ message: "Telegram not ready, try again" }); btn.disabled = false; btn.innerText = '▶ Start Surfing'; return; }
-            }
-            try {
-                const r = await fetch(API + "/surfing/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData }) });
-                const d = await r.json();
-                if (d.ok && d.link) {
-                    tg.openTelegramLink(d.link);
-                    tg.showPopup({ message: "Подпишитесь на канал, и награда придёт автоматически" });
-                    setTimeout(async () => { await loadStatus(); await loadSurfingStatus(); }, 5000);
-                } else { tg.showPopup({ message: d.error || "Error" }); btn.disabled = false; btn.innerText = '▶ Start Surfing'; }
-            } catch (e) { tg.showPopup({ message: "Network error" }); btn.disabled = false; btn.innerText = '▶ Start Surfing'; }
-        }
-
-        // ========== WATCH ADS ==========
-        async function loadWatchAdsStatus() {
-            try {
-                const r = await fetch(API + "/watch-ads/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData }) });
-                const d = await r.json();
-                if (d.ok) {
-                    document.getElementById("watchAdsLimit").innerText = `${d.completed} / ${d.limit}`;
-                    const btn = document.getElementById("startWatchAdsBtn");
-                    if (d.remaining <= 0) { btn.disabled = true; btn.innerText = t('watchAdsLimitReached'); }
-                    else { btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
-                    document.getElementById("watchAdsStatus").innerText = t('watchAdsStatus', d.remaining);
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        async function startWatchAds() {
-            const btn = document.getElementById("startWatchAdsBtn");
-            if (btn.disabled) return;
-            btn.disabled = true; btn.innerText = t('loading');
-            try {
-                const r = await fetch(API + "/watch-ads/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData }) });
-                const d = await r.json();
-                if (!d.ok) { tg.showPopup({ message: d.error || "Error" }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; return; }
-                const { provider } = d;
-                if (provider === 'adsgram') {
-                    const adController = window.Adsgram.init({ blockId: "30995" });
-                    try { await adController.show(); await completeWatchAds('adsgram'); }
-                    catch (e) { tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
-                } else if (provider === 'monetag') {
-                    try { await window.show_11040021({ ymid: tg.initDataUnsafe?.user?.id?.toString() }); await completeWatchAds('monetag'); }
-                    catch (e) { tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
-                } else if (provider === 'richads') {
-                    try { await initRichAds(); await richAdsController.triggerInterstitialVideo(); await completeWatchAds('richads'); }
-                    catch (e) { console.log('RichAds error:', e); tg.showPopup({ message: t('adFailed') }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
-                }
-            } catch (e) { tg.showPopup({ message: "Network error" }); btn.disabled = false; btn.innerText = '▶ Watch Ad'; }
-        }
-
-        async function completeWatchAds(provider) {
-            try {
-                const res = await fetch(API + "/watch-ads/complete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData, provider }) });
-                const data = await res.json();
-                if (data.ok) { tg.showPopup({ message: t('watchAdsRewarded', data.reward) }); await loadStatus(); await loadWatchAdsStatus(); }
-            } catch (e) { console.error(e); }
-        }
-
-        let richAdsController = null;
-        let richAdsScriptLoaded = false;
-
-        function initRichAds() {
-            return new Promise((resolve) => {
-                if (richAdsController) { resolve(); return; }
-                if (!richAdsScriptLoaded) {
-                    const script = document.createElement('script');
-                    script.src = 'https://richinfo.co/richpartners/telegram/js/tg-ob.js';
-                    script.onload = () => { richAdsScriptLoaded = true; createController(); };
-                    script.onerror = () => { resolve(); };
-                    document.head.appendChild(script);
-                } else { createController(); }
-                function createController() {
-                    richAdsController = new window.TelegramAdsController();
-                    richAdsController.initialize({ pubId: "1013216", appId: "7607", debug: false });
-                    setTimeout(resolve, 500);
-                }
-            });
-        }
-
-        // ========== TON CONNECT ==========
-        let tonConnectUI = null;
-        let connectedWalletAddress = null;
-
-        async function initTonConnect() {
-            try {
-                tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-                    manifestUrl: 'https://rizefamily0-create.github.io/dogs-app/tonconnect-manifest.json',
-                    buttonRootId: null
-                });
-
-                const connected = await tonConnectUI.connected;
-                if (connected) {
-                    const wallet = tonConnectUI.wallet;
-                    if (wallet && wallet.account?.address) {
-                        connectedWalletAddress = wallet.account.address;
-                        localStorage.setItem('ton_wallet_address', connectedWalletAddress);
-                        updateWalletUI();
-                    }
-                }
-
-                tonConnectUI.onStatusChange((wallet) => {
-                    if (wallet && wallet.account?.address) {
-                        connectedWalletAddress = wallet.account.address;
-                        localStorage.setItem('ton_wallet_address', connectedWalletAddress);
-                    } else {
-                        connectedWalletAddress = null;
-                        localStorage.removeItem('ton_wallet_address');
-                    }
-                    updateWalletUI();
-                });
-
-            } catch (e) {
-                console.error('TON Connect init error:', e);
-            }
-        }
-
-        async function connectWallet() {
-            if (!tonConnectUI) await initTonConnect();
-            try {
-                await tonConnectUI.connectWallet();
-            } catch (e) {
-                console.error('Connect wallet error:', e);
-            }
-        }
-
-        function updateWalletUI() {
-            const btn = document.getElementById('connectWalletBtn');
-            const addrSpan = document.getElementById('walletAddress');
-
-            if (connectedWalletAddress) {
-                const shortAddr = connectedWalletAddress.slice(0, 6) + '...' + connectedWalletAddress.slice(-4);
-                addrSpan.innerText = shortAddr;
-                addrSpan.style.display = 'inline';
-                if (btn) btn.style.display = 'none';
-                const walletInput = document.getElementById('wallet');
-                if (walletInput && !walletInput.value) {
-                    walletInput.value = connectedWalletAddress;
-                }
-            } else {
-                addrSpan.style.display = 'none';
-                addrSpan.innerText = '';
-                if (btn) btn.style.display = 'inline-block';
-            }
-        }
-
-        function loadSavedWalletAddress() {
-            const saved = localStorage.getItem('ton_wallet_address');
-            if (saved && !connectedWalletAddress) {
-                connectedWalletAddress = saved;
-                updateWalletUI();
-            }
-        }
-
-        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
         async function initApp() {
             try {
                 await Promise.all([
@@ -1801,19 +1618,19 @@
                 localStorage.removeItem('flappy_difficulty'); localStorage.removeItem('2048_difficulty');
                 await loadGameDifficulties();
                 startDailyQuestResetTimer();
-
                 initTonConnect();
                 loadSavedWalletAddress();
-
                 document.getElementById("splash").style.display = "none";
                 document.getElementById("mainApp").classList.add("ready");
-                setInterval(()=>{ loadStatus(); loadStats(); }, 15000);
+                setInterval(() => { loadStatus(); loadStats(); }, 15000);
             } catch (e) {
                 console.error("Init failed", e);
                 setTimeout(() => { document.getElementById("splash").style.display = "none"; document.getElementById("mainApp").classList.add("ready"); }, 3000);
             }
         }
+
         window.addEventListener('DOMContentLoaded', () => { loadUser(); initApp(); applyAllLanguage(); });
+        window.performWithdraw = performWithdraw; // для onclick
     </script>
 </body>
 </html>
