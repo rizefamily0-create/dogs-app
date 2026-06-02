@@ -29,13 +29,17 @@
         /* ========== ГЛОБАЛЬНЫЕ СТИЛИ ========== */
         body { margin: 0; background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%); color: #f5f5f7; font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
         * { box-sizing: border-box; }
+
+        /* ---------- ИСПРАВЛЕНИЕ ДЛЯ FULLSCREEN ---------- */
         .app {
             height: 100vh;
             display: none;
             flex-direction: column;
-            padding: calc(12px + env(safe-area-inset-top)) 14px calc(95px + env(safe-area-inset-bottom));
-            /* padding-bottom оставляем для нижней навигации */
+            /* Надёжный минимальный отступ сверху, чтобы контент не прилипал к краю экрана */
+            padding: max(20px, env(safe-area-inset-top)) 14px calc(95px + env(safe-area-inset-bottom));
         }
+        /* -------------------------------------------------- */
+
         .app.ready { display: flex; }
         .page { display: none; flex-direction: column; height: 100%; overflow-y: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         .page.active { display: flex; }
@@ -948,8 +952,8 @@
 
         // ========== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ==========
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();   // для полноэкранного режима
+        tg.requestFullscreen(); // ← замена для полноэкранного режима
+        tg.enableClosingConfirmation();
         const initData = tg.initData;
         const startParam = tg.initDataUnsafe?.start_param || "";
         const API = "https://dogs-7uz3.onrender.com";
@@ -1027,13 +1031,27 @@
             } catch (e) { console.error(e); }
         }
 
-        const originalWithdraw = withdraw;
-        withdraw = async function() {
-            await originalWithdraw();
-            if (document.getElementById("withdrawFormCard").style.display === "block") {
-                showMainWallet(); loadWallet();
-            }
-        };
+        async function withdraw() {
+            const wallet = document.getElementById("wallet").value.trim();
+            const memo = document.getElementById("memo").value.trim();
+            const amount = Number(document.getElementById("amount").value.trim());
+            if(wallet.length < 20){ tg.showPopup?.({message:t('enterValidWallet')}); return; }
+            if(!amount || amount <= 0){ tg.showPopup?.({message:t('enterAmount')}); return; }
+            if(amount < MIN_WITHDRAW){ tg.showPopup?.({message:t('minWithdrawMsg')}); return; }
+            if(amount <= WITHDRAW_FEE){ tg.showPopup?.({message:t('amountTooSmall')}); return; }
+            const r = await fetch(API + "/withdraw", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData, wallet, memo, amount}) });
+            const d = await r.json();
+            if(d.ok){
+                tg.showPopup?.({message:t('withdrawSuccess', d.receive)});
+                document.getElementById("wallet").value = "";
+                document.getElementById("memo").value = "";
+                document.getElementById("amount").value = "";
+                updateWithdrawInfo(); loadStatus(); loadWithdrawHistory();
+                if (document.getElementById("withdrawFormCard").style.display === "block") {
+                    showMainWallet(); loadWallet();
+                }
+            }else{ tg.showPopup?.({message:d.error}); }
+        }
 
         function showClaimModal(reward) {
             document.getElementById('claimModal').style.display = 'flex';
@@ -1427,25 +1445,6 @@
                 if(d.ok){ tg.showPopup?.({message:`+${d.reward} DOGS`}); loadStatus(); loadTasks(); }
                 else{ tg.showPopup?.({message:d.error || t('taskFailed')}); }
             }catch(e){ tg.showPopup?.({message:t('serverError')}); }
-        }
-
-        async function withdraw(){
-            const wallet = document.getElementById("wallet").value.trim();
-            const memo = document.getElementById("memo").value.trim();
-            const amount = Number(document.getElementById("amount").value.trim());
-            if(wallet.length < 20){ tg.showPopup?.({message:t('enterValidWallet')}); return; }
-            if(!amount || amount <= 0){ tg.showPopup?.({message:t('enterAmount')}); return; }
-            if(amount < MIN_WITHDRAW){ tg.showPopup?.({message:t('minWithdrawMsg')}); return; }
-            if(amount <= WITHDRAW_FEE){ tg.showPopup?.({message:t('amountTooSmall')}); return; }
-            const r = await fetch(API + "/withdraw", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({init_data: tg.initData, wallet, memo, amount}) });
-            const d = await r.json();
-            if(d.ok){
-                tg.showPopup?.({message:t('withdrawSuccess', d.receive)});
-                document.getElementById("wallet").value = "";
-                document.getElementById("memo").value = "";
-                document.getElementById("amount").value = "";
-                updateWithdrawInfo(); loadStatus(); loadWithdrawHistory();
-            }else{ tg.showPopup?.({message:d.error}); }
         }
 
         async function loadWithdrawHistory(){
