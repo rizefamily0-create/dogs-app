@@ -29,13 +29,7 @@
         /* ========== ГЛОБАЛЬНЫЕ СТИЛИ ========== */
         body { margin: 0; background: radial-gradient(ellipse at 50% 0%, #1a1b24 0%, #0f1015 55%, #0a0b0f 100%); color: #f5f5f7; font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
         * { box-sizing: border-box; }
-        .app {
-            height: 100vh;
-            display: none;
-            flex-direction: column;
-            padding: calc(12px + env(safe-area-inset-top)) 14px calc(95px + env(safe-area-inset-bottom));
-            /* padding-bottom оставляем для нижней навигации */
-        }
+        .app { height: 100vh; display: none; flex-direction: column; padding: 12px 14px; padding-bottom: 95px; }
         .app.ready { display: flex; }
         .page { display: none; flex-direction: column; height: 100%; overflow-y: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         .page.active { display: flex; }
@@ -949,7 +943,6 @@
         // ========== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ==========
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();   // для полноэкранного режима
         const initData = tg.initData;
         const startParam = tg.initDataUnsafe?.start_param || "";
         const API = "https://dogs-7uz3.onrender.com";
